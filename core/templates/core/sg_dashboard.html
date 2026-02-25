@@ -1,0 +1,151 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col gap-3">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Tableau de bord</h1>
+        <p class="text-sm text-slate-600 mt-1">Secrétaire Général — Vue d'ensemble et parapheur technique</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 px-4 py-3.5 text-sm border bg-white shadow-sm {% if message.tags == 'error' %}border-red-200 bg-red-50{% elif message.tags == 'success' %}border-emerald-200 bg-emerald-50{% else %}border-blue-200 bg-blue-50{% endif %}">
+        <i class="shrink-0 mt-0.5 {% if message.tags == 'error' %}fas fa-times-circle text-red-600{% elif message.tags == 'success' %}fas fa-check-circle text-emerald-600{% else %}fas fa-info-circle text-blue-600{% endif %}"></i>
+        <span class="flex-1 {% if message.tags == 'error' %}text-red-800{% elif message.tags == 'success' %}text-emerald-800{% else %}text-blue-800{% endif %}">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Widgets statistiques (4 cards) -->
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    <!-- Card 1: Fédérations actives -->
+    <div class="bg-white border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-slate-100 text-slate-600">
+                <i class="fas fa-building text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-normal text-slate-500 mb-1">Fédérations actives</p>
+            <p class="text-3xl font-light text-slate-900">{{ fed_actives }}</p>
+        </div>
+    </div>
+
+    <!-- Card 2: Dossiers en attente -->
+    <div class="bg-white border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-slate-100 text-slate-600">
+                <i class="fas fa-folder-open text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-normal text-slate-500 mb-1">Dossiers en attente</p>
+            <p class="text-3xl font-light text-slate-900">{{ dossiers_attente }}</p>
+        </div>
+    </div>
+
+    <!-- Card 3: Alertes de conformité -->
+    <div class="bg-white border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-slate-100 text-slate-600">
+                <i class="fas fa-exclamation-triangle text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-normal text-slate-500 mb-1">Alertes conformité</p>
+            <p class="text-3xl font-light text-slate-900">{{ alertes_mandats }}</p>
+        </div>
+    </div>
+
+    <!-- Card 4: Utilisateurs connectés -->
+    <div class="bg-white border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-slate-100 text-slate-600">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-normal text-slate-500 mb-1">Utilisateurs actifs</p>
+            <p class="text-3xl font-light text-slate-900">{{ users_actifs }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Parapheur technique -->
+<div class="bg-white border border-slate-200 shadow-sm">
+    <div class="border-b border-slate-200 px-5 py-4 bg-slate-50">
+        <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center bg-slate-200 text-slate-700">
+                <i class="fas fa-file-alt text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-base font-semibold text-slate-900">Parapheur technique</h2>
+                <p class="text-xs text-slate-600 mt-0.5">10 dernières demandes d'agrément</p>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th scope="col" class="px-5 py-3.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Institution</th>
+                    <th scope="col" class="px-5 py-3.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Discipline</th>
+                    <th scope="col" class="px-5 py-3.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Date de dépôt</th>
+                    <th scope="col" class="px-5 py-3.5 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">État</th>
+                    <th scope="col" class="px-5 py-3.5 text-right text-xs font-medium text-slate-700 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+                {% for inst in parapheur %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-5 py-4">
+                        <div class="text-sm font-medium text-slate-900">{{ inst.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500 mt-0.5">{{ inst.code }}</div>
+                    </td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{{ inst.type_institution.designation|default:"—" }}</td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{{ inst.etat_administrative.date_delivrance|date:"d/m/Y"|default:"—" }}</td>
+                    <td class="px-5 py-4">
+                        {% with etat=inst.etat_administrative.etat_agrement %}
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium
+                            {% if etat.code == 'EN_INSTRUCTION' %}bg-amber-50 text-amber-700 border border-amber-200
+                            {% elif etat.code == 'ACCORDE' or etat.code == 'SIGNE' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                            {% elif etat.code == 'REFUSE' or etat.code == 'REVOQUE' %}bg-rose-50 text-rose-700 border border-rose-200
+                            {% else %}bg-slate-50 text-slate-700 border border-slate-200{% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full
+                                {% if etat.code == 'EN_INSTRUCTION' %}bg-amber-500
+                                {% elif etat.code == 'ACCORDE' or etat.code == 'SIGNE' %}bg-emerald-500
+                                {% elif etat.code == 'REFUSE' or etat.code == 'REVOQUE' %}bg-rose-500
+                                {% else %}bg-slate-400{% endif %}"></span>
+                            {{ etat.designation|default:etat.code|default:"—" }}
+                        </span>
+                        {% endwith %}
+                    </td>
+                    <td class="px-5 py-4 text-right">
+                        <a href="#" class="inline-flex items-center gap-1.5 text-sm font-medium text-[#0036ca] hover:text-[#002a9e] transition-colors">
+                            <span>Ouvrir</span>
+                            <i class="fas fa-chevron-right text-xs"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-5 py-12 text-center">
+                        <i class="fas fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <p class="mt-3 text-sm font-medium text-slate-500">Aucune demande d'agrément enregistrée</p>
+                        <p class="mt-1 text-xs text-slate-400">Les demandes apparaîtront ici une fois soumises</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

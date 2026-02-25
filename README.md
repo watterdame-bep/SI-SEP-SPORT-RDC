@@ -13,7 +13,7 @@ Backend Django — Base de données et API pour les modules **Gouvernance** et *
 ## Prérequis
 
 - Python 3.10+
-- PostgreSQL 14+
+- MySQL 8+ (ou MariaDB 10.3+)
 
 ## Installation
 
@@ -25,22 +25,37 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Copier `.env.example` en `.env` et renseigner les variables (notamment la base PostgreSQL).
+Copier `.env.example` en `.env` et renseigner les variables (notamment la base MySQL).
 
 ```bash
-cp .env.example .env
+copy .env.example .env   # Windows
 ```
 
-## Base de données
+## Base de données MySQL « si-sep sport »
+
+1. **Créer la base** (si elle n’existe pas) :
+
+```sql
+CREATE DATABASE `si-sep sport` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+2. **Variables dans `.env`** : `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT=3306`.
+
+3. **Créer les migrations** (après modification des modèles) :
 
 ```bash
-# Créer la base PostgreSQL (exemple)
-createdb -U postgres sisep_sport_rdc
+python manage.py makemigrations gouvernance infrastructures
+```
 
-# Migrations
+4. **Appliquer les migrations** :
+
+```bash
 python manage.py migrate
+```
 
-# Créer un superutilisateur (admin Django)
+5. **Créer un superutilisateur** (admin Django) :
+
+```bash
 python manage.py createsuperuser
 ```
 
@@ -50,7 +65,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-- Admin : http://127.0.0.1:8000/admin/
+- Admin Django : http://127.0.0.1:8000/admin/
 - API : http://127.0.0.1:8000/api/gouvernance/ et /api/infrastructures/
 
 ## Modules
@@ -70,6 +85,6 @@ python manage.py runserver
 
 ## Contraintes techniques
 
-- Base **PostgreSQL**.
+- Base **MySQL** (« si-sep sport »).
 - **Souveraineté des données** : coordonnées GPS et codes d’homologation gérés en base.
 - Clés primaires **UUID** pour les entités métier (UID/UniqueID du MLD).

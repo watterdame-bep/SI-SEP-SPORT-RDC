@@ -66,8 +66,8 @@ class EtatAdministrativeAdmin(admin.ModelAdmin):
 
 @admin.register(Institution)
 class InstitutionAdmin(admin.ModelAdmin):
-    list_display = ('code', 'nom_officiel', 'sigle', 'type_institution', 'institution_tutelle')
-    list_filter = ('type_institution',)
+    list_display = ('code', 'nom_officiel', 'sigle', 'type_institution', 'niveau_territorial', 'institution_tutelle')
+    list_filter = ('type_institution', 'niveau_territorial')
     search_fields = ('nom_officiel', 'sigle', 'code')
     raw_id_fields = ('institution_tutelle', 'etat_administrative', 'type_institution')
 

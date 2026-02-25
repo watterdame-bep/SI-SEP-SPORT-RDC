@@ -1,0 +1,189 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Initialisation du Système | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Initialisation du Système</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:setup_sisep' %}">Super Admin</a></li>
+            <li class="breadcrumb-item">Initialisation du Système</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if setup_deja_fait %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-top-0">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Configuration déjà effectuée</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">L'institution racine <strong>{{ institution_racine.nom_officiel }}</strong> ({{ institution_racine.code }}) est déjà créée et les comptes clés existent.</p>
+                <a href="{% url 'admin:index' %}" class="btn btn-primary mt-3"><i class="feather-arrow-left me-2"></i>Administration Django</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif setup_success %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-top-0">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Initialisation terminée</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <h5 class="fw-bold mb-2">Ministère enregistré</h5>
+                    <p class="mb-0">{{ institution_racine.nom_officiel }} ({{ institution_racine.code }}) — Statut : ACTIVE, VALIDÉE.</p>
+                </div>
+                <h6 class="fw-bold mt-4 mb-3">Validation par e-mail</h6>
+                <p class="text-muted">Un e-mail de validation a été envoyé à chaque adresse ci-dessous. Les titulaires doivent cliquer sur le lien reçu pour activer leur compte et définir leur mot de passe.</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Compte</th>
+                                <th>E-mail</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Ministre</strong></td>
+                                <td><code>{{ comptes_crees.ministre.email }}</code></td>
+                                <td><span class="text-success">E-mail envoyé</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Secrétaire Général</strong> (gestionnaire de données)</td>
+                                <td><code>{{ comptes_crees.sg.email }}</code></td>
+                                <td><span class="text-success">E-mail envoyé</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mb-0">Le lien dans l'e-mail est valable 7 jours. Après activation, connexion sur <strong>/login/</strong> avec l'e-mail et le mot de passe choisi.</p>
+                <a href="{% url 'core:setup_sisep' %}" class="btn btn-primary mt-3"><i class="feather-check me-2"></i>Retour à l’initialisation</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<form method="post" action="" enctype="multipart/form-data" id="form-setup-initial">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-top-0">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Institution — Ministère des Sports</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted fs-12 mb-4">Nom, sigle, logo, adresse et contact de l’institution mère. Les autres champs du modèle Institution ne sont pas requis pour le ministère.</p>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_nom_officiel" class="form-label fw-semibold">Nom officiel</label>
+                            <input type="text" name="nom_officiel" id="id_nom_officiel" class="form-control" value="{{ form.nom_officiel.value|default:'' }}" required placeholder="Ministère des Sports et Loisirs" />
+                            {% if form.nom_officiel.errors %}<div class="invalid-feedback d-block">{{ form.nom_officiel.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_sigle" class="form-label fw-semibold">Sigle</label>
+                            <input type="text" name="sigle" id="id_sigle" class="form-control" value="{{ form.sigle.value|default:'' }}" placeholder="MSL" />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_logo" class="form-label fw-semibold">Logo</label>
+                            <input type="file" name="logo" id="id_logo" class="form-control" accept="image/*" />
+                            {% if form.logo.errors %}<div class="invalid-feedback d-block">{{ form.logo.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_adresse" class="form-label fw-semibold">Adresse</label>
+                        <textarea name="adresse" id="id_adresse" class="form-control" rows="2" placeholder="Adresse physique du ministère">{{ form.adresse.value|default:'' }}</textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_email_officiel" class="form-label fw-semibold">Contact (e-mail officiel)</label>
+                            <input type="email" name="email_officiel" id="id_email_officiel" class="form-control" value="{{ form.email_officiel.value|default:'' }}" placeholder="contact@minsports.gouv.cd" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_telephone_off" class="form-label fw-semibold">Téléphone officiel</label>
+                            <input type="text" name="telephone_off" id="id_telephone_off" class="form-control" value="{{ form.telephone_off.value|default:'' }}" placeholder="+243 ..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card border-top-0">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Comptes clés</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted fs-12 mb-4">Deux comptes seront créés (Ministre et Secrétaire Général). Un e-mail de validation sera envoyé à chaque adresse pour activer le compte et définir le mot de passe.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h6 class="fw-bold mb-3">Ministre</h6>
+                            <div class="mb-2">
+                                <label for="id_ministre_nom" class="form-label">Nom</label>
+                                <input type="text" name="ministre_nom" id="id_ministre_nom" class="form-control" value="{{ form.ministre_nom.value|default:'' }}" required placeholder="Nom complet" />
+                                {% if form.ministre_nom.errors %}<div class="invalid-feedback d-block">{{ form.ministre_nom.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div>
+                                <label for="id_ministre_email" class="form-label">E-mail</label>
+                                <input type="email" name="ministre_email" id="id_ministre_email" class="form-control" value="{{ form.ministre_email.value|default:'' }}" required placeholder="email@exemple.cd" />
+                                {% if form.ministre_email.errors %}<div class="invalid-feedback d-block">{{ form.ministre_email.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h6 class="fw-bold mb-3">Secrétaire Général</h6>
+                            <div class="mb-2">
+                                <label for="id_sg_nom" class="form-label">Nom</label>
+                                <input type="text" name="sg_nom" id="id_sg_nom" class="form-control" value="{{ form.sg_nom.value|default:'' }}" required placeholder="Nom complet" />
+                                {% if form.sg_nom.errors %}<div class="invalid-feedback d-block">{{ form.sg_nom.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="mb-2">
+                                <label for="id_sg_email" class="form-label">E-mail</label>
+                                <input type="email" name="sg_email" id="id_sg_email" class="form-control" value="{{ form.sg_email.value|default:'' }}" required placeholder="email@exemple.cd" />
+                                {% if form.sg_email.errors %}<div class="invalid-feedback d-block">{{ form.sg_email.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="sg_gestionnaire_donnees" id="id_sg_gestionnaire_donnees" class="form-check-input" checked />
+                                <label class="form-check-label" for="id_sg_gestionnaire_donnees">Droits de gestionnaire de données</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="feather-save me-2"></i>Enregistrer et envoyer les e-mails de validation
+            </button>
+        </div>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+Copier depuis template_reference/Duralux-admin/assets/ vers public/assets/ :
+
+  css/
+    bootstrap.min.css     -> public/assets/css/
+    theme.min.css          -> public/assets/css/
+  vendors/
+    css/vendors.min.css    -> public/assets/vendors/css/
+    js/vendors.min.js      -> public/assets/vendors/js/
+  images/
+    auth/auth-cover-login-bg.svg -> public/assets/images/auth/
+    favicon.ico            -> public/assets/images/ (optionnel)
+
+Logo page login : placez le logo du Ministère des Sports ici :
+  public/assets/images/logo-ministere-sports.png
+(affiché à gauche sur la page de connexion.)
+
+Le fichier theme-rdc-override.css (couleurs RDC) est déjà présent.

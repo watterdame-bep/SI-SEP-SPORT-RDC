@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion | SI-SEP Sport RDC</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/images/favicon.ico' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-blue-darker': '#001f7a',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            border-radius: 0 !important;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .pattern-grid {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .input-field {
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #0036ca;
+            box-shadow: 0 0 0 3px rgba(0, 54, 202, 0.1);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #0036ca 0%, #002a9e 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn-login:hover::before {
+            left: 100%;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, #002a9e 0%, #001f7a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0, 54, 202, 0.3);
+        }
+        .btn-login:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(0, 54, 202, 0.2);
+        }
+        .logo-glow {
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+        }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 3s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex font-sans antialiased bg-slate-50">
+    <div class="flex flex-1 flex-col lg:flex-row min-h-screen">
+        <!-- Panneau gauche : branding (60% de largeur) -->
+        <div class="relative flex flex-col justify-center px-8 py-10 lg:px-12 bg-rdc-blue pattern-grid overflow-hidden lg:w-[60%]">
+            <!-- Éléments décoratifs animés -->
+            <div class="absolute top-10 left-10 w-24 h-24 bg-white/5 animate-pulse-slow"></div>
+            <div class="absolute bottom-20 right-10 w-28 h-28 bg-white/5 animate-pulse-slow" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-1/4 w-20 h-20 bg-white/5 animate-pulse-slow" style="animation-delay: 2s;"></div>
+            
+            <div class="relative z-10 flex flex-col items-center text-center text-white animate-fade-in">
+                <div class="mb-6 logo-glow">
+                    <img src="{% static 'assets/images/logo-ministere-sports.png' %}" alt="Ministère des Sports et Loisirs" class="w-auto h-28 lg:h-32 object-contain">
+                </div>
+                <h1 class="text-xl lg:text-2xl font-bold tracking-tight text-white mb-3 leading-tight">
+                    SI-SEP Sport RDC
+                </h1>
+                <div class="w-12 h-0.5 bg-rdc-yellow mb-4"></div>
+                <p class="text-sm lg:text-base text-white/85 max-w-md leading-relaxed">
+                    Système Intégré de Suivi-Évaluation<br>et Pilotage du Sport
+                </p>
+                <p class="text-xs text-white/50 mt-6">
+                    SI-SEP SPORT-RDC © 2026<br>
+                    Ministère des Sports et Loisirs
+                </p>
+            </div>
+        </div>
+
+        <!-- Panneau droit : formulaire (40% de largeur) -->
+        <div class="flex items-center justify-center px-6 py-10 lg:px-16 bg-white lg:w-[40%]">
+            <div class="w-full max-w-md animate-slide-up">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold tracking-tight text-slate-900 mb-1.5">Connexion</h2>
+                    <p class="text-slate-500 text-sm">Accédez à votre espace de travail</p>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="flex items-start gap-2.5 bg-red-50 border-l-4 border-rdc-red px-3.5 py-3 mb-5 animate-slide-up" role="alert">
+                    <svg class="w-4 h-4 flex-shrink-0 text-rdc-red mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                    <div>
+                        <p class="text-xs font-semibold text-rdc-red mb-0.5">Erreur de connexion</p>
+                        <p class="text-xs text-red-700">Mot de passe ou adresse e-mail invalide</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'core:login' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <div>
+                        <label for="id_username" class="block text-xs font-semibold text-slate-700 mb-1.5">Adresse e-mail</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </span>
+                            <input type="email" name="username" id="id_username" value="{{ form.username.value|default:'' }}" required autofocus autocomplete="email"
+                                class="input-field block w-full border border-slate-300 bg-white pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none"
+                                placeholder="votre.email@exemple.cd">
+                        </div>
+                        {% if form.username.errors %}<p class="mt-1.5 text-xs text-rdc-red flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>{{ form.username.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_password" class="block text-xs font-semibold text-slate-700 mb-1.5">Mot de passe</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </span>
+                            <input type="password" name="password" id="id_password" required autocomplete="current-password"
+                                class="input-field block w-full border border-slate-300 bg-white pl-10 pr-10 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none"
+                                placeholder="••••••••">
+                            <button type="button" id="togglePassword" aria-label="Afficher le mot de passe"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-rdc-blue transition-colors">
+                                <svg id="eyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}<p class="mt-1.5 text-xs text-rdc-red flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>{{ form.password.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-0.5">
+                        <label class="inline-flex items-center gap-2 cursor-pointer group">
+                            <input type="checkbox" name="remember_me" id="rememberMe"
+                                class="w-3.5 h-3.5 border border-slate-300 text-rdc-blue focus:ring-2 focus:ring-rdc-blue/20 focus:ring-offset-0 transition">
+                            <span class="text-xs font-medium text-slate-600 group-hover:text-slate-900 transition">Se souvenir de moi</span>
+                        </label>
+                        <a href="{% url 'core:password_reset' %}" class="text-xs font-semibold text-rdc-blue hover:text-rdc-blue-dark transition-colors">Mot de passe oublié ?</a>
+                    </div>
+
+                    <button type="submit"
+                        class="btn-login w-full flex items-center justify-center gap-2 text-white font-semibold py-3 px-5 shadow-md focus:outline-none focus:ring-3 focus:ring-rdc-blue/30 mt-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        <span class="text-sm">Se connecter</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggle = document.getElementById('togglePassword');
+            var input = document.getElementById('id_password');
+            var icon = document.getElementById('eyeIcon');
+            if (toggle && input && icon) {
+                toggle.addEventListener('click', function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>';
+                    } else {
+                        input.type = 'password';
+                        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

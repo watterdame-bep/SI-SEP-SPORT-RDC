@@ -1,9 +1,18 @@
 """
 Institutions sportives : hiérarchie avec Institution Parente (tutelle).
 État -> Fédérations -> Ligues -> Clubs.
+Le Ministère est l'unique nœud sans parent (institution_tutelle=NULL).
 """
 import uuid
 from django.db import models
+
+NIVEAU_TERRITORIAL_CHOICES = [
+    ('NATIONAL', 'National'),           # Ministère
+    ('PROVINCIAL', 'Provincial'),      # Division Provinciale
+    ('FEDERATION', 'Fédération'),      # Fédération nationale
+    ('LIGUE', 'Ligue'),
+    ('CLUB', 'Club'),
+]
 
 
 class TypeInstitution(models.Model):
@@ -42,7 +51,7 @@ class Institution(models.Model):
     nombre_pers_tech = models.PositiveIntegerField(default=0)
     partenaire = models.CharField(max_length=255, blank=True)
 
-    # Institution parente (tutelle) — relation auto-référente pour la hiérarchie
+    # Institution parente (tutelle) — relation auto-référente. NULL uniquement pour le Ministère (racine).
     institution_tutelle = models.ForeignKey(
         'self',
         on_delete=models.SET_NULL,
@@ -50,9 +59,44 @@ class Institution(models.Model):
         blank=True,
         related_name='institutions_fille',
     )
+    # Niveau territorial (NATIONAL pour le Ministère, PROVINCIAL pour Divisions, etc.)
+    niveau_territorial = models.CharField(
+        max_length=20,
+        choices=NIVEAU_TERRITORIAL_CHOICES,
+        default='CLUB',
+        db_index=True,
+    )
 
     email_officiel = models.EmailField(blank=True)
     telephone_off = models.CharField(max_length=50, blank=True)
+
+    # Logo (optionnel ; utilisé notamment pour le Ministère)
+    logo = models.ImageField(upload_to='institutions/logos/', blank=True, null=True, max_length=500)
+
+    # Statut pour l'institution mère : ACTIVE et VALIDÉE par défaut au setup
+    statut_activation = models.CharField(
+        max_length=20,
+        choices=[('ACTIVE', 'Active'), ('INACTIF', 'Inactif')],
+        default='ACTIVE',
+        blank=True,
+        db_index=True,
+    )
+    statut_validee = models.BooleanField(default=False)
+
+    # Workflow signature Ministre : Fédérations créées par le SG apparaissent en ATTENTE_SIGNATURE
+    STATUT_SIGNATURE_CHOICES = [
+        ('', '—'),
+        ('ATTENTE_SIGNATURE', 'En attente de signature'),
+        ('SIGNE', 'Signé'),
+        ('REFUSE', 'Refusé'),
+    ]
+    statut_signature = models.CharField(
+        max_length=30,
+        choices=STATUT_SIGNATURE_CHOICES,
+        blank=True,
+        default='',
+        db_index=True,
+    )
 
     # Lien vers l'agrément administratif (validation Division Provinciale)
     etat_administrative = models.OneToOneField(
@@ -71,3 +115,8 @@ class Institution(models.Model):
 
     def __str__(self):
         return f"{self.nom_officiel} ({self.sigle or self.code})"
+
+    @property
+    def is_racine(self):
+        """True si c'est l'institution mère (Ministère), sans parent."""
+        return self.institution_tutelle_id is None

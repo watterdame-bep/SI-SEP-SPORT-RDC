@@ -1,0 +1,165 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer un compte (entités du ministère) | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="flex flex-col gap-3">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Créer un compte</h1>
+        <p class="text-sm text-slate-600 mt-1">Entités du ministère — Gestion des accès</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 px-4 py-3.5 text-sm border bg-white shadow-sm {% if message.tags == 'error' %}border-red-200 bg-red-50{% elif message.tags == 'success' %}border-emerald-200 bg-emerald-50{% else %}border-blue-200 bg-blue-50{% endif %}">
+        <i class="shrink-0 mt-0.5 {% if message.tags == 'error' %}fas fa-times-circle text-red-600{% elif message.tags == 'success' %}fas fa-check-circle text-emerald-600{% else %}fas fa-info-circle text-blue-600{% endif %}"></i>
+        <span class="flex-1 {% if message.tags == 'error' %}text-red-800{% elif message.tags == 'success' %}text-emerald-800{% else %}text-blue-800{% endif %}">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-3xl">
+    <div class="bg-white border border-slate-200 shadow-sm">
+        <!-- Header -->
+        <div class="border-b border-slate-200 px-6 py-5 bg-slate-50">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center bg-slate-200 text-slate-700">
+                    <i class="fas fa-user-plus text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-semibold text-slate-900">Nouveau compte utilisateur</h2>
+                    <p class="text-xs text-slate-600 mt-0.5">Créer un accès pour une entité du ministère</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info box -->
+        <div class="px-6 py-4 bg-blue-50 border-b border-blue-100">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-600 mt-0.5 shrink-0"></i>
+                <div class="text-sm text-blue-800">
+                    <p class="font-medium mb-1">Types de comptes disponibles</p>
+                    <p class="text-xs text-blue-700">Vous pouvez créer un compte pour : <span class="font-medium">Directeur de Cabinet</span>, <span class="font-medium">Direction provinciale</span> (avec choix de la province), ou <span class="font-medium">Inspection générale</span>. Un e-mail d'activation sera automatiquement envoyé.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" action="{% url 'core:creer_compte_entite' %}" id="form-creer-compte" class="p-6">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="creer_compte" />
+            
+            <div class="space-y-5">
+                <!-- Type d'entité -->
+                <div>
+                    <label for="id_type_entite" class="block text-sm font-medium text-slate-700 mb-2">
+                        Type d'entité <span class="text-red-500">*</span>
+                    </label>
+                    <select name="type_entite" id="id_type_entite" class="w-full border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-[#0036ca] focus:ring-2 focus:ring-[#0036ca]/20 outline-none transition" required>
+                        {% for value, label in form.type_entite.field.choices %}
+                        <option value="{{ value }}" {% if form.type_entite.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if form.type_entite.errors %}
+                    <p class="mt-1.5 text-xs text-red-600">{{ form.type_entite.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Province (conditionnel) -->
+                <div id="wrap-province" style="display: none;">
+                    <label for="id_province" class="block text-sm font-medium text-slate-700 mb-2">
+                        Division provinciale <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.province }}
+                    {% if form.province.errors %}
+                    <p class="mt-1.5 text-xs text-red-600">{{ form.province.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Nom complet -->
+                <div>
+                    <label for="id_nom" class="block text-sm font-medium text-slate-700 mb-2">
+                        Nom complet <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="nom" id="id_nom" class="w-full border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#0036ca] focus:ring-2 focus:ring-[#0036ca]/20 outline-none transition" value="{{ form.nom.value|default:'' }}" placeholder="Nom et prénom de l'utilisateur" required />
+                    {% if form.nom.errors %}
+                    <p class="mt-1.5 text-xs text-red-600">{{ form.nom.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-slate-700 mb-2">
+                        Adresse e-mail <span class="text-red-500">*</span>
+                    </label>
+                    <input type="email" name="email" id="id_email" class="w-full border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#0036ca] focus:ring-2 focus:ring-[#0036ca]/20 outline-none transition" value="{{ form.email.value|default:'' }}" placeholder="email@exemple.gouv.cd" required />
+                    {% if form.email.errors %}
+                    <p class="mt-1.5 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1.5 text-xs text-slate-500">L'e-mail d'activation sera envoyé à cette adresse</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-3 pt-4 border-t border-slate-200">
+                    <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#0036ca]/30" style="background: linear-gradient(135deg, #0036ca 0%, #002a9e 100%);">
+                        <i class="fas fa-user-plus text-sm"></i>
+                        Créer le compte
+                    </button>
+                    <a href="{% url 'core:sg_dashboard' %}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                        Annuler
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    #id_province {
+        width: 100%;
+        border: 1px solid rgb(203 213 225);
+        background-color: white;
+        padding: 0.625rem 0.75rem;
+        font-size: 0.875rem;
+        color: rgb(15 23 42);
+        outline: none;
+        transition: all 0.2s;
+    }
+    #id_province:focus {
+        border-color: #0036ca;
+        ring: 2px;
+        ring-color: rgba(0, 54, 202, 0.2);
+    }
+</style>
+
+<script>
+(function() {
+    var typeEntite = document.getElementById('id_type_entite');
+    var wrapProvince = document.getElementById('wrap-province');
+    var provinceSelect = document.getElementById('id_province');
+    
+    function toggleProvince() {
+        if (typeEntite && typeEntite.value === 'DIRECTEUR_PROVINCIAL') {
+            wrapProvince.style.display = 'block';
+            if (provinceSelect) provinceSelect.setAttribute('required', 'required');
+        } else {
+            wrapProvince.style.display = 'none';
+            if (provinceSelect) { 
+                provinceSelect.removeAttribute('required'); 
+                provinceSelect.value = ''; 
+            }
+        }
+    }
+    
+    if (typeEntite) typeEntite.addEventListener('change', toggleProvince);
+    toggleProvince();
+})();
+</script>
+{% endblock %}

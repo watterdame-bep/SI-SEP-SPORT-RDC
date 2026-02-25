@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Gestion Administrative | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10 sisep-title">Gestion Administrative</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:gestion_administrative' %}">Secrétaire Général</a></li>
+            <li class="breadcrumb-item">Gestion Administrative</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show sisep-card mb-4">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="sisep-card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <h5 class="sisep-title mb-0">Enregistrement d'une fédération</h5>
+                <button type="button" class="btn sisep-btn-primary" data-bs-toggle="collapse" data-bs-target="#form-f03" aria-expanded="false" aria-controls="form-f03">
+                    <i class="feather-plus me-2"></i>Enregistrer une Fédération
+                </button>
+            </div>
+            <div class="collapse mt-4" id="form-f03">
+                <hr class="my-4" />
+                <p class="text-muted small mb-4">Formulaire F03 — Catalogue SI-SEP. Après soumission, la fédération sera créée avec le statut « En attente de signature » et apparaîtra chez le Ministre.</p>
+                <form method="post" action="{% url 'core:gestion_administrative' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="f03" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_nom_officiel" class="form-label fw-semibold sisep-text-main">Nom officiel</label>
+                            <input type="text" name="nom_officiel" id="id_nom_officiel" class="form-control sisep-input" value="{{ form.nom_officiel.value|default:'' }}" placeholder="Ex. Fédération Congolaise de Football" required />
+                            {% if form.nom_officiel.errors %}<div class="invalid-feedback d-block">{{ form.nom_officiel.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_sigle" class="form-label fw-semibold sisep-text-main">Sigle</label>
+                            <input type="text" name="sigle" id="id_sigle" class="form-control sisep-input" value="{{ form.sigle.value|default:'' }}" placeholder="Ex. FECFOOT" required />
+                            {% if form.sigle.errors %}<div class="invalid-feedback d-block">{{ form.sigle.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label for="id_discipline_sportive" class="form-label fw-semibold sisep-text-main">Discipline sportive</label>
+                            <input type="text" name="discipline_sportive" id="id_discipline_sportive" class="form-control sisep-input" value="{{ form.discipline_sportive.value|default:'' }}" placeholder="Ex. Football" />
+                        </div>
+                        <div class="col-12">
+                            <label for="id_siege" class="form-label fw-semibold sisep-text-main">Siège / Adresse</label>
+                            <textarea name="siege" id="id_siege" class="form-control sisep-input" rows="2" placeholder="Adresse du siège">{{ form.siege.value|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_email_officiel" class="form-label fw-semibold sisep-text-main">E-mail officiel</label>
+                            <input type="email" name="email_officiel" id="id_email_officiel" class="form-control sisep-input" value="{{ form.email_officiel.value|default:'' }}" placeholder="contact@federation.cd" />
+                            {% if form.email_officiel.errors %}<div class="invalid-feedback d-block">{{ form.email_officiel.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_telephone_off" class="form-label fw-semibold sisep-text-main">Téléphone officiel</label>
+                            <input type="text" name="telephone_off" id="id_telephone_off" class="form-control sisep-input" value="{{ form.telephone_off.value|default:'' }}" placeholder="+243 ..." />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_date_creation" class="form-label fw-semibold sisep-text-main">Date de création</label>
+                            <input type="date" name="date_creation" id="id_date_creation" class="form-control sisep-input" value="{{ form.date_creation.value|default:'' }}" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_statut_juridique" class="form-label fw-semibold sisep-text-main">Statut juridique</label>
+                            <input type="text" name="statut_juridique" id="id_statut_juridique" class="form-control sisep-input" value="{{ form.statut_juridique.value|default:'' }}" placeholder="Ex. ASBL" />
+                        </div>
+                        <div class="col-12 pt-2">
+                            <button type="submit" class="btn sisep-btn-primary">
+                                <i class="feather-send me-2"></i>Soumettre pour signature du Ministre
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="sisep-card overflow-hidden">
+            <div class="p-4 border-bottom border-slate-200" style="border-color: var(--tw-slate-200, #e2e8f0); border-left: 4px solid var(--sisep-bleu-royal); background: var(--tw-slate-50, #f8fafc);">
+                <h5 class="sisep-title mb-0">Fédérations en attente de signature</h5>
+                <p class="text-muted small mb-0 mt-1">Créées par le Secrétariat Général — en attente de validation par le Ministre.</p>
+            </div>
+            <div class="p-4">
+                {% if en_attente %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="sisep-text-main">
+                                <th>Nom</th>
+                                <th>Sigle</th>
+                                <th>Contact</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in en_attente %}
+                            <tr>
+                                <td class="fw-semibold">{{ inst.nom_officiel }}</td>
+                                <td><code>{{ inst.sigle|default:inst.code }}</code></td>
+                                <td class="small">{{ inst.email_officiel|default:"—" }}</td>
+                                <td><span class="sisep-badge-attente">En attente</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">Aucune fédération en attente de signature.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,170 @@
+/*
+ * SI-SEP Sport RDC — Design "Gouvernemental Moderne"
+ * Inspiré Stripe/Linear. Classes utilitaires type Tailwind.
+ * À utiliser sur les vues Gestion Administrative (SG) et Dashboard Ministre.
+ */
+
+/* ---------- Variables ---------- */
+:root {
+  --tw-slate-50: #f8fafc;
+  --tw-slate-100: #f1f5f9;
+  --tw-slate-200: #e2e8f0;
+  --tw-slate-900: #0f172a;
+  --tw-amber-50: #fffbeb;
+  --tw-amber-100: #fef3c7;
+  --tw-amber-700: #b45309;
+  --tw-blue-100: #dbeafe;
+  --sisep-bleu-royal: #0036ca;
+  --sisep-bleu-hover: #0028a0;
+  --sisep-jaune: #FDE015;
+  --sisep-jaune-hover: #e6c912;
+}
+
+/* ---------- Page : fond légèrement grisé ---------- */
+.sisep-page-wrap,
+.sisep-page-wrap .nxl-content,
+.sisep-page-wrap .main-content {
+  background-color: var(--tw-slate-50);
+  min-height: 100vh;
+}
+
+/* ---------- Conteneurs & Cartes ---------- */
+.sisep-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 8px 30px rgb(0 0 0 / 0.04);
+  border: none;
+}
+.sisep-card-xl {
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 8px 30px rgb(0 0 0 / 0.04);
+}
+
+/* ---------- Typographie ---------- */
+.sisep-title {
+  color: var(--tw-slate-900);
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+.sisep-text-main {
+  color: var(--tw-slate-900);
+}
+
+/* ---------- Boutons principaux (Bleu Royal) ---------- */
+.sisep-btn-primary {
+  background-color: var(--sisep-bleu-royal) !important;
+  border-color: var(--sisep-bleu-royal) !important;
+  color: #fff !important;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+.sisep-btn-primary:hover {
+  background-color: var(--sisep-bleu-hover) !important;
+  border-color: var(--sisep-bleu-hover) !important;
+  color: #fff !important;
+}
+
+/* ---------- Boutons validation Ministre (Jaune — action importante) ---------- */
+.sisep-btn-validation {
+  background-color: var(--sisep-jaune) !important;
+  border-color: var(--sisep-jaune) !important;
+  color: #0f172a !important;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+.sisep-btn-validation:hover {
+  background-color: var(--sisep-jaune-hover) !important;
+  border-color: var(--sisep-jaune-hover) !important;
+  color: #0f172a !important;
+}
+
+/* ---------- Inputs (formulaires) ---------- */
+.sisep-input {
+  border: 1px solid var(--tw-slate-200);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+.sisep-input:focus {
+  border-color: var(--sisep-bleu-royal);
+  box-shadow: 0 0 0 4px rgba(0, 54, 202, 0.1);
+  outline: none;
+}
+
+/* ---------- Badges / Statuts (style pilule) ---------- */
+.sisep-badge-attente {
+  background-color: var(--tw-amber-50);
+  color: var(--tw-amber-700);
+  border: 1px solid var(--tw-amber-100);
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.sisep-badge-signe {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.sisep-badge-refuse {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---------- Navbar : effet flou (sticky) ---------- */
+.sisep-navbar-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid var(--tw-slate-100);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* ---------- Sidebar Ministre : Bleu Royal (solennel) ---------- */
+body.sisep-role-ministre .nxl-navigation,
+body.sisep-role-ministre .nxl-navigation .navbar-wrapper {
+  background-color: var(--sisep-bleu-royal) !important;
+  border-right: none;
+}
+body.sisep-role-ministre .nxl-navigation .m-header {
+  background-color: rgba(0, 0, 0, 0.15) !important;
+}
+body.sisep-role-ministre .nxl-navigation .nxl-navbar .nxl-link,
+body.sisep-role-ministre .nxl-navigation .nxl-item.nxl-caption label {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+body.sisep-role-ministre .nxl-navigation .nxl-navbar .nxl-link:hover {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+body.sisep-role-ministre .nxl-navigation .card {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+body.sisep-role-ministre .nxl-navigation .card .text-dark,
+body.sisep-role-ministre .nxl-navigation .card h6 {
+  color: #fff !important;
+}
+body.sisep-role-ministre .nxl-navigation .card p {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+body.sisep-role-ministre .nxl-navigation .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+body.sisep-role-ministre .nxl-navigation .btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+  color: #fff;
+}

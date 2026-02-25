@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" class="login-page">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Activation du compte | SI-SEP Sport RDC</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/vendors/css/vendors.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/theme.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/theme-rdc-override.css' %}">
+</head>
+<body class="login-page">
+    <main class="auth-cover-wrapper">
+        <div class="auth-cover-content-inner">
+            <div class="auth-cover-content-wrapper d-flex flex-column justify-content-center align-items-center text-center text-white p-5">
+                <div class="mb-4">
+                    <img src="{% static 'assets/images/logo-ministere-sports.png' %}" alt="Ministère des Sports et Loisirs" class="img-fluid" style="max-height: 180px;">
+                </div>
+                <p class="fs-13 fw-medium mb-3 mx-auto" style="max-width: 360px;">SI-SEP Sport RDC — Activation de votre compte</p>
+                <p class="fs-12 text-white-50 mb-0">SI-SEP SPORT-RDC © 2026 — Ministère des Sports et Loisirs</p>
+            </div>
+        </div>
+        <div class="auth-cover-sidebar-inner">
+            <div class="auth-cover-card-wrapper">
+                <div class="auth-cover-card p-sm-5 app-font-family-inter">
+                    {% if valid %}
+                    <h2 class="login-title fs-20 fw-bolder mb-2">Définir votre mot de passe</h2>
+                    <p class="fs-13 fw-normal text-muted mb-4">Compte : <strong>{{ email }}</strong></p>
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 px-3 mb-3 fs-12 border-0">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                    {% endif %}
+                    <form method="post" action="" class="w-100 mt-4 pt-2">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="feather-lock"></i></span>
+                                <input type="password" name="password" id="id_password" class="form-control" placeholder="Nouveau mot de passe" required minlength="8" autocomplete="new-password">
+                            </div>
+                            {% if form.password.errors %}<div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="feather-lock"></i></span>
+                                <input type="password" name="password_confirm" id="id_password_confirm" class="form-control" placeholder="Confirmer le mot de passe" required autocomplete="new-password">
+                            </div>
+                            {% if form.password_confirm.errors %}<div class="invalid-feedback d-block">{{ form.password_confirm.errors.0 }}</div>{% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mb-3" style="background-color: #0036ca; border-color: #0036ca;">
+                            <i class="feather-check me-2"></i>Activer mon compte
+                        </button>
+                    </form>
+                    <p class="fs-12 text-muted mb-0"><a href="{% url 'core:login' %}" style="color: #0036ca;">Retour à la connexion</a></p>
+                    {% else %}
+                    <h2 class="login-title fs-20 fw-bolder mb-2">Lien invalide</h2>
+                    <p class="fs-13 fw-normal text-muted mb-4">{{ error }}</p>
+                    <a href="{% url 'core:login' %}" class="btn btn-primary w-100" style="background-color: #0036ca; border-color: #0036ca;">Retour à la connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="{% static 'assets/vendors/js/vendors.min.js' %}"></script>
+</body>
+</html>

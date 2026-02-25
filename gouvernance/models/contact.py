@@ -17,8 +17,7 @@ class AdresseContact(models.Model):
         blank=True,
         related_name='adresses',
     )
-    gps = models.CharField(max_length=100, blank=True, help_text="Coordonnées GPS (lat, lon)")
-    telephone = models.CharField(max_length=50, blank=True)
+    gps = models.CharField(max_length=100, blank=True, help_text="Coordonnées GPS (lat, lon)")  
     institution = models.ForeignKey(
         'gouvernance.Institution',
         on_delete=models.CASCADE,

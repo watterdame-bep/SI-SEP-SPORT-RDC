@@ -1,0 +1,11 @@
+Bonjour,
+
+Un compte a été créé pour vous sur le système SI-SEP Sport RDC ({{ role_label }}).
+
+Pour activer votre compte et définir votre mot de passe, ouvrez le lien suivant dans votre navigateur :
+
+{{ verification_url }}
+
+Ce lien est valable 7 jours. Si vous n'avez pas demandé ce compte, vous pouvez ignorer ce message.
+
+— Équipe SI-SEP Sport RDC
