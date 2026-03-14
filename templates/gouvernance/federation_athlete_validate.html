@@ -1,0 +1,712 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Certification Nationale | {{ federation.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:federation_athletes_validation_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-certificate text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Certification Nationale</h1>
+                    <p class="text-sm text-white/80 mt-1">{{ athlete.personne.nom_complet }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- En-tête avec photo et identité -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-rdc-blue px-6 py-3.5 border-b-4 border-rdc-blue-dark">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-lg"></i>
+                Dossier de l'Athlète
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Photo de l'athlète -->
+                <div class="flex-shrink-0 text-center lg:text-left">
+                    {% if athlete.personne.photo %}
+                    <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.personne.nom_complet }}" class="w-28 h-28 rounded-xl object-cover border-4 border-slate-100 shadow-md mx-auto lg:mx-0">
+                    {% else %}
+                    <div class="w-28 h-28 rounded-xl bg-slate-100 flex items-center justify-center border-4 border-slate-200 shadow-md mx-auto lg:mx-0">
+                        <i class="fa-solid fa-user text-4xl text-slate-400"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Badge statut -->
+                    <div class="mt-4">
+                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border-2 border-blue-300 shadow-sm">
+                            <i class="fa-solid fa-check-circle mr-1.5"></i>
+                            {{ athlete.get_statut_certification_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Informations principales -->
+                <div class="flex-1">
+                    <div class="mb-5 pb-4 border-b-2 border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">{{ athlete.personne.nom_complet }}</h2>
+                        <div class="flex items-center gap-2 text-rdc-blue">
+                            <i class="fa-solid fa-hashtag"></i>
+                            <span class="font-mono font-bold text-base">{{ athlete.numero_sportif }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-white rounded-lg p-4 border-2 border-slate-200 hover:border-rdc-blue transition-colors">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-lg bg-rdc-blue flex items-center justify-center">
+                                    <i class="fa-solid fa-calendar text-white text-sm"></i>
+                                </div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Date de naissance</label>
+                            </div>
+                            <p class="text-lg font-bold text-slate-900">{{ athlete.personne.date_naissance|date:"d/m/Y" }}</p>
+                            <p class="text-xs text-slate-600 mt-0.5 font-semibold">({{ athlete.age }} ans)</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border-2 border-slate-200 hover:border-rdc-blue transition-colors">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-lg bg-rdc-blue flex items-center justify-center">
+                                    <i class="fa-solid fa-venus-mars text-white text-sm"></i>
+                                </div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Sexe</label>
+                            </div>
+                            <p class="text-lg font-bold text-slate-900">{{ athlete.personne.get_sexe_display }}</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border-2 border-slate-200 hover:border-rdc-blue transition-colors">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-lg bg-rdc-blue flex items-center justify-center">
+                                    <i class="fa-solid fa-layer-group text-white text-sm"></i>
+                                </div>
+                                <label class="text-xs font-bold text-slate-600 uppercase">Catégorie</label>
+                            </div>
+                            <p class="text-lg font-bold text-slate-900">{{ athlete.get_categorie_display }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Certificat médical généré (F72) — visible par le secrétaire fédération -->
+    {% if athlete.certificat_medical_enrolement %}
+    <div class="bg-white rounded-xl shadow-md border-2 border-green-200 overflow-hidden">
+        <div class="bg-green-700 px-6 py-3.5 border-b-4 border-green-800">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-file-medical text-lg"></i>
+                Certificat médical d'aptitude (F72)
+            </h3>
+            <p class="text-white/90 text-xs mt-1">Document généré après l'examen médical (F67). À consulter avant certification nationale.</p>
+        </div>
+        <div class="p-6">
+            <a href="{{ athlete.certificat_medical_enrolement.url }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm shadow-md">
+                <i class="fa-solid fa-download"></i>
+                Télécharger le certificat médical (F72)
+            </a>
+            <a href="{{ athlete.certificat_medical_enrolement.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-3 ml-3 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-200 text-sm font-medium border border-slate-300">
+                <i class="fa-solid fa-external-link-alt"></i>
+                Ouvrir
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Résumé certification médicale (F67) — avis du médecin -->
+    {% if visite_certification %}
+    <div class="bg-white rounded-xl shadow-md border-2 border-slate-200 overflow-hidden">
+        <div class="bg-slate-700 px-6 py-3 border-b-2 border-slate-800">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-lg"></i>
+                Avis médical (F67) — Résumé de certification
+            </h3>
+            <p class="text-white/80 text-xs mt-1">Informations nécessaires à la validation nationale — les détails médicaux restent confidentiels.</p>
+        </div>
+        <div class="p-6 space-y-5">
+            <div class="flex flex-wrap items-center gap-4">
+                <span class="text-slate-500 text-sm font-medium uppercase">Statut global</span>
+                <span class="text-2xl font-bold
+                    {% if visite_certification.resultat_global == 'APTE' %}text-green-700
+                    {% elif visite_certification.resultat_global == 'APTE_AVEC_RESERVE' %}text-amber-700
+                    {% else %}text-red-700{% endif %}">
+                    {{ visite_certification.get_resultat_global_display }}
+                </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase mb-1">Médecin</p>
+                    <p class="font-semibold text-slate-900">{{ visite_certification.medecin_nom }}</p>
+                    {% if visite_certification.medecin_numero_ordre %}
+                    <p class="text-sm text-slate-600">N° Ordre : {{ visite_certification.medecin_numero_ordre }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-slate-500 uppercase mb-1">Date de l'examen</p>
+                    <p class="font-semibold text-slate-900">{{ visite_certification.date_visite|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+            <div class="pt-4 border-t border-slate-200">
+                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Avis technique du médecin</p>
+                <p class="text-slate-800 font-medium">
+                    {% if visite_certification.resultat_global == 'APTE' %}
+                    Apte à la pratique du {{ athlete.discipline.designation|default:"sport" }} en compétition.
+                    {% elif visite_certification.resultat_global == 'APTE_AVEC_RESERVE' %}
+                    Apte à la pratique du {{ athlete.discipline.designation|default:"sport" }} en compétition, avec réserve.
+                    {% else %}
+                    Inapte à la pratique en compétition.
+                    {% endif %}
+                </p>
+            </div>
+            {% if visite_certification.recommandations_securite %}
+            <div class="pt-4 border-t border-slate-200 rounded-lg bg-amber-50/50 p-4 border border-amber-200">
+                <p class="text-xs font-bold text-amber-800 uppercase mb-1 flex items-center gap-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Recommandations (sécurité / équipement)
+                </p>
+                <p class="text-slate-800 text-sm whitespace-pre-wrap">{{ visite_certification.recommandations_securite }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-amber-50 rounded-xl border-2 border-amber-200 p-5">
+        <p class="text-amber-800 font-medium flex items-center gap-2">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Aucune visite médicale (F67) enregistrée pour cet athlète. La certification nationale requiert un examen médical préalable.
+        </p>
+    </div>
+    {% endif %}
+    
+    <!-- Informations sportives et physiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Club et Discipline -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-rdc-blue px-6 py-3 border-b-4 border-rdc-blue-dark">
+                <h4 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Affiliation Sportive
+                </h4>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-building text-rdc-blue"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Club</label>
+                        <p class="text-base font-bold text-slate-900">{{ athlete.club.nom_officiel }}</p>
+                        <p class="text-sm text-slate-600 mt-0.5 font-medium">{{ athlete.club.sigle }}</p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-4 flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-map-marker-alt text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Ligue Provinciale</label>
+                        <p class="text-base font-bold text-slate-900">{{ athlete.club.institution_tutelle.nom_officiel }}</p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-4 flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-futbol text-green-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Discipline</label>
+                        <p class="text-base font-bold text-slate-900">{{ athlete.discipline.designation }}</p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-200 pt-4 flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-star text-orange-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Poste / Spécialité</label>
+                        <p class="text-base font-bold text-slate-900">{{ athlete.poste|default:"Non spécifié" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations physiques -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-rdc-blue px-6 py-3 border-b-4 border-rdc-blue-dark">
+                <h4 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-ruler-vertical"></i>
+                    Caractéristiques Physiques
+                </h4>
+            </div>
+            <div class="p-5">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-arrows-up-down text-rdc-blue"></i>
+                        </div>
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Taille</label>
+                        <p class="text-2xl font-bold text-slate-900">
+                            {% if athlete.taille %}{{ athlete.taille }}{% else %}—{% endif %}
+                        </p>
+                        {% if athlete.taille %}<p class="text-xs text-slate-600 mt-0.5">centimètres</p>{% endif %}
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center">
+                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-weight-scale text-green-600"></i>
+                        </div>
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Poids</label>
+                        <p class="text-2xl font-bold text-slate-900">
+                            {% if athlete.poids %}{{ athlete.poids }}{% else %}—{% endif %}
+                        </p>
+                        {% if athlete.poids %}<p class="text-xs text-slate-600 mt-0.5">kilogrammes</p>{% endif %}
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center">
+                        <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-droplet text-red-600"></i>
+                        </div>
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Groupe sanguin</label>
+                        <p class="text-2xl font-bold text-red-600">{{ athlete.groupe_sanguin|default:"—" }}</p>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-shirt text-yellow-600"></i>
+                        </div>
+                        <label class="text-xs font-bold text-slate-500 uppercase block mb-1">N° Maillot</label>
+                        <p class="text-2xl font-bold text-slate-900">
+                            {% if athlete.numero_maillot %}{{ athlete.numero_maillot }}{% else %}—{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Adresse -->
+    {% if athlete.adresse %}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-rdc-blue px-6 py-3 border-b-4 border-rdc-blue-dark">
+            <h4 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                <i class="fa-solid fa-map-marker-alt"></i>
+                Adresse de Résidence
+            </h4>
+        </div>
+        <div class="p-5">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-map text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Province</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.province.designation|default:"—" }}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-city text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Territoire/Ville</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.territoire.designation|default:"—" }}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-location-dot text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Secteur/Commune</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.secteur.designation|default:"—" }}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-house text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Groupement/Quartier</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.groupement_quartier.designation|default:"—" }}</p>
+                </div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-3">
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-road text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Avenue</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.avenue|default:"—" }}</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <i class="fa-solid fa-hashtag text-rdc-blue text-sm"></i>
+                        <label class="text-xs font-bold text-slate-600 uppercase">Numéro</label>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">{{ athlete.adresse.numero|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Historique de validation provinciale -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-green-600 px-6 py-3 border-b-4 border-green-700">
+            <h4 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+                <i class="fa-solid fa-check-circle"></i>
+                Certification Provinciale Validée
+            </h4>
+        </div>
+        <div class="p-5 bg-green-50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-check text-green-600"></i>
+                        </div>
+                        <label class="text-xs font-bold text-green-700 uppercase">Date de validation</label>
+                    </div>
+                    <p class="text-base font-bold text-green-900">{{ athlete.date_validation_ligue|date:"d/m/Y à H:i" }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border-2 border-green-200">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fa-solid fa-user-check text-green-600"></i>
+                        </div>
+                        <label class="text-xs font-bold text-green-700 uppercase">Validé par</label>
+                    </div>
+                    <p class="text-base font-bold text-green-900">{% if athlete.validateur_ligue %}{% if athlete.validateur_ligue.agent and athlete.validateur_ligue.agent.personne %}{{ athlete.validateur_ligue.agent.personne.nom_complet }}{% elif athlete.validateur_ligue.user %}{{ athlete.validateur_ligue.user.get_full_name|default:athlete.validateur_ligue.user.username }}{% else %}—{% endif %}{% else %}—{% endif %}</p>
+                    <p class="text-xs text-green-700 mt-1">{{ athlete.club.institution_tutelle.nom_officiel }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bouton de vérification des doublons -->
+    <div class="bg-blue-50 rounded-xl border-2 border-blue-200 p-5">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-rdc-blue text-xl"></i>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-base font-bold text-slate-900 mb-2">Vérification Anti-Fraude Nationale</h4>
+                <p class="text-sm text-slate-700 mb-3">
+                    Lancez une vérification complète au niveau national pour détecter les doublons par reconnaissance faciale et données d'état civil (nom, prénom, date de naissance) dans toute la RDC.
+                </p>
+                <button type="button" id="btn-verify-duplicates" onclick="verifyDuplicatesNational()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors font-semibold text-sm shadow-sm">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    Lancer la Vérification Nationale
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Résultats de vérification -->
+    <div id="verification-results" class="hidden">
+        <!-- Les résultats seront affichés ici -->
+    </div>
+    
+    <!-- Vérification des doublons -->
+    {% if doublons_potentiels %}
+    <div class="bg-white rounded-xl border-2 border-yellow-400 overflow-hidden shadow-md">
+        <div class="bg-rdc-yellow px-6 py-3 border-b-4 border-yellow-600">
+            <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-exclamation-triangle text-lg"></i>
+                Attention : Doublons Potentiels Détectés au Niveau National
+            </h4>
+        </div>
+        <div class="p-5 bg-yellow-50">
+            <p class="text-sm text-slate-800 mb-4 font-medium flex items-start gap-2">
+                <i class="fa-solid fa-info-circle text-yellow-700 mt-0.5"></i>
+                <span>Les athlètes suivants ont un nom similaire ou une date de naissance identique au niveau national. Vérifiez qu'il ne s'agit pas de la même personne avant de certifier.</span>
+            </p>
+            
+            <div class="space-y-3">
+                {% for doublon in doublons_potentiels %}
+                <div class="bg-white rounded-lg p-4 border-2 border-yellow-300 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            {% if doublon.personne.photo %}
+                            <img src="{{ doublon.personne.photo.url }}" alt="{{ doublon.personne.nom_complet }}" class="w-16 h-16 rounded-lg object-cover border-2 border-slate-200">
+                            {% else %}
+                            <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                                <i class="fa-solid fa-user text-2xl text-slate-400"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <div>
+                                    <p class="font-bold text-slate-900 text-base">{{ doublon.personne.nom_complet }}</p>
+                                    <p class="text-sm text-slate-700 mt-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-shield-halved text-rdc-blue"></i>
+                                        {{ doublon.club.nom_officiel }} ({{ doublon.club.institution_tutelle.nom_officiel }})
+                                    </p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold 
+                                    {% if doublon.statut_certification == 'CERTIFIE_PROVINCIAL' %}bg-blue-100 text-blue-800 border-2 border-blue-300
+                                    {% elif doublon.statut_certification == 'CERTIFIE_NATIONAL' %}bg-green-100 text-green-800 border-2 border-green-300
+                                    {% else %}bg-slate-100 text-slate-800 border-2 border-slate-300{% endif %}">
+                                    {{ doublon.get_statut_certification_display }}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-4 text-xs text-slate-600">
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-solid fa-calendar text-rdc-blue"></i>
+                                    Né(e) le {{ doublon.personne.date_naissance|date:"d/m/Y" }}
+                                </span>
+                                <span class="flex items-center gap-1 font-mono">
+                                    <i class="fa-solid fa-hashtag text-rdc-blue"></i>
+                                    {{ doublon.numero_sportif }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Actions de validation -->
+    <div class="bg-white rounded-xl shadow-md border-2 border-slate-200 overflow-hidden">
+        <div class="bg-rdc-blue px-6 py-4 border-b-4 border-rdc-blue-dark">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-gavel text-lg"></i>
+                Décision de Certification Nationale
+            </h3>
+        </div>
+        <div class="p-6">
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+                
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-blue-900 flex items-start gap-2 font-medium">
+                        <i class="fa-solid fa-info-circle text-blue-600 text-base mt-0.5"></i>
+                        <span>
+                            En certifiant cet athlète au niveau national, vous confirmez avoir vérifié qu'il n'existe pas de doublon dans toute la RDC et que toutes les informations sont correctes. L'athlète recevra son numéro sportif national définitif.
+                        </span>
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button type="submit" name="action" value="valider" class="group relative px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-bold text-base border-2 border-green-700">
+                        <span class="flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-certificate text-xl"></i>
+                            Certifier au Niveau National
+                        </span>
+                    </button>
+                    
+                    <button type="button" onclick="document.getElementById('reject-modal').classList.remove('hidden')" class="group relative px-6 py-4 bg-rdc-red text-white rounded-lg hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-bold text-base border-2 border-red-700">
+                        <span class="flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-times-circle text-xl"></i>
+                            Rejeter la Demande
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modale de rejet -->
+<div id="reject-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all border-2 border-slate-200">
+        <div class="bg-red-600 px-6 py-4 rounded-t-xl border-b-4 border-red-700">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-exclamation-triangle text-xl"></i>
+                Rejeter l'Athlète
+            </h3>
+        </div>
+        <form method="post" class="p-6 bg-white">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="rejeter">
+            
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-slate-900 mb-2">
+                    Motif du rejet <span class="text-red-600">*</span>
+                </label>
+                <textarea name="motif_rejet" rows="5" required style="color: #1e293b !important; background-color: #ffffff !important; border: 2px solid #cbd5e1 !important;" class="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors text-sm" placeholder="Expliquez en détail pourquoi cet athlète est rejeté (doublon détecté au niveau national, informations incorrectes, etc.)"></textarea>
+                <p class="text-xs text-slate-600 mt-2 flex items-start gap-1.5">
+                    <i class="fa-solid fa-info-circle mt-0.5"></i>
+                    <span>Ce motif sera communiqué à la ligue provinciale et au club.</span>
+                </p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')" class="flex-1 px-5 py-3 border-2 border-slate-300 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors font-bold text-sm">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>
+                    Annuler
+                </button>
+                <button type="submit" style="background-color: #dc2626 !important; color: #ffffff !important;" class="flex-1 px-5 py-3 rounded-lg hover:bg-red-700 transition-all shadow-md font-bold text-sm">
+                    <i class="fa-solid fa-ban mr-2"></i>
+                    Confirmer le Rejet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+<script>
+function verifyDuplicatesNational() {
+    const btn = document.getElementById('btn-verify-duplicates');
+    const resultsDiv = document.getElementById('verification-results');
+    
+    // Désactiver le bouton et afficher le chargement
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Vérification en cours...';
+    
+    // Appel AJAX pour vérifier les doublons au niveau national
+    fetch('{% url "gouvernance:federation_athlete_verify_duplicates" athlete.uid %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Réactiver le bouton
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-chart mr-2"></i>Lancer la Vérification Nationale';
+        
+        // Afficher les résultats
+        displayResults(data);
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-chart mr-2"></i>Lancer la Vérification Nationale';
+        
+        resultsDiv.innerHTML = `
+            <div class="bg-red-50 rounded-xl border-2 border-red-200 p-5">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-exclamation-circle text-red-600 text-2xl"></i>
+                    <div>
+                        <h4 class="text-base font-bold text-red-900 mb-1">Erreur de vérification</h4>
+                        <p class="text-sm text-red-800">Une erreur s'est produite lors de la vérification. Veuillez réessayer.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        resultsDiv.classList.remove('hidden');
+    });
+}
+
+function displayResults(data) {
+    const resultsDiv = document.getElementById('verification-results');
+    
+    let html = '';
+    
+    // Résultat de la vérification biométrique
+    if (data.biometric_check) {
+        const biometric = data.biometric_check;
+        const bgColor = biometric.status === 'clear' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+        const iconColor = biometric.status === 'clear' ? 'text-green-600' : 'text-red-600';
+        const icon = biometric.status === 'clear' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+        
+        html += `
+            <div class="${bgColor} rounded-xl border-2 p-5 mb-4">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-lg ${biometric.status === 'clear' ? 'bg-green-100' : 'bg-red-100'} flex items-center justify-center">
+                            <i class="fa-solid ${icon} ${iconColor} text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-base font-bold ${biometric.status === 'clear' ? 'text-green-900' : 'text-red-900'} mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-face-smile"></i>
+                            Vérification Biométrique Nationale (Reconnaissance Faciale)
+                        </h4>
+                        <p class="text-sm ${biometric.status === 'clear' ? 'text-green-800' : 'text-red-800'} mb-3">
+                            ${biometric.message}
+                        </p>
+                        ${biometric.matches && biometric.matches.length > 0 ? `
+                            <div class="space-y-2 mt-3">
+                                ${biometric.matches.map(match => `
+                                    <div class="bg-white rounded-lg p-3 border-2 border-red-300">
+                                        <div class="flex items-center gap-3">
+                                            <img src="${match.photo}" class="w-12 h-12 rounded-lg object-cover border-2 border-slate-200">
+                                            <div class="flex-1">
+                                                <p class="font-bold text-slate-900 text-sm">${match.nom}</p>
+                                                <p class="text-xs text-slate-600">${match.club} (${match.province}) • Similarité: ${match.similarity}%</p>
+                                            </div>
+                                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-bold rounded">ALERTE</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Résultat de la vérification état civil
+    if (data.civil_check) {
+        const civil = data.civil_check;
+        const bgColor = civil.status === 'clear' ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200';
+        const iconColor = civil.status === 'clear' ? 'text-green-600' : 'text-orange-600';
+        const icon = civil.status === 'clear' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+        
+        html += `
+            <div class="${bgColor} rounded-xl border-2 p-5">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 rounded-lg ${civil.status === 'clear' ? 'bg-green-100' : 'bg-orange-100'} flex items-center justify-center">
+                            <i class="fa-solid ${icon} ${iconColor} text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-base font-bold ${civil.status === 'clear' ? 'text-green-900' : 'text-orange-900'} mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-id-card"></i>
+                            Vérification État Civil National (Nom + Date de naissance)
+                        </h4>
+                        <p class="text-sm ${civil.status === 'clear' ? 'text-green-800' : 'text-orange-800'} mb-3">
+                            ${civil.message}
+                        </p>
+                        ${civil.matches && civil.matches.length > 0 ? `
+                            <div class="space-y-2 mt-3">
+                                ${civil.matches.map(match => `
+                                    <div class="bg-white rounded-lg p-3 border-2 border-orange-300">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-bold text-slate-900 text-sm">${match.nom}</p>
+                                                <p class="text-xs text-slate-600">${match.club} (${match.province}) • Né(e) le ${match.date_naissance}</p>
+                                                <p class="text-xs text-slate-500 mt-1">${match.numero_sportif}</p>
+                                            </div>
+                                            <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded">HOMONYME</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    resultsDiv.innerHTML = html;
+    resultsDiv.classList.remove('hidden');
+    
+    // Scroll vers les résultats
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>

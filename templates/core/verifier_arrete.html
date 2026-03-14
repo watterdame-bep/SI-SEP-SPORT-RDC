@@ -1,0 +1,191 @@
+{% load static %}
+{% load arrete_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification d'Arrêté Ministériel | SI-SEP Sport RDC</title>
+    <link rel="stylesheet" href="{% static 'assets/css/output.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0036ca 0%, #002080 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Logo et En-tête -->
+        <div class="text-center mb-8">
+            <img src="{% static 'assets/images/logo-rdc.png' %}" alt="RDC" class="h-20 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-white mb-2">Vérification d'Arrêté Ministériel</h1>
+            <p class="text-white/80">Ministère des Sports et Loisirs - République Démocratique du Congo</p>
+        </div>
+
+        <!-- Card de vérification -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {% if institution %}
+            <!-- Arrêté Valide -->
+            <div class="bg-green-50 border-b-4 border-green-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-check text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-green-800">Arrêté Authentique</h2>
+                        <p class="text-green-700">Ce document est officiellement enregistré dans le SI-SEP</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <!-- Informations de l'arrêté -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Numéro d'Arrêté</p>
+                        <p class="text-lg font-bold text-slate-900">{{ institution.numero_arrete }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Date de Signature</p>
+                        <p class="text-lg font-bold text-slate-900">
+                            {% if institution.date_signature_arrete %}
+                                {{ institution.date_signature_arrete|date:"d/m/Y à H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4">Informations de la Fédération</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Nom Officiel</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.nom_officiel }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Sigle</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.sigle }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Code</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.code }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Discipline(s) Sportive(s)</p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                {% for discipline in institution.disciplines.all %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">
+                                    <i class="fa-solid fa-futbol mr-2"></i>
+                                    {{ discipline.designation }}
+                                </span>
+                                {% empty %}
+                                <span class="text-slate-400">—</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Type d'Agrément</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.get_type_agrement_sollicite_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Durée de Validité</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.duree_sollicitee }} ans</p>
+                        </div>
+                        {% if institution.date_signature_arrete %}
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Valide jusqu'au</p>
+                            <p class="text-base font-semibold text-green-700">
+                                {{ institution.date_signature_arrete|date:"d/m/Y"|add_years:institution.duree_sollicitee }}
+                            </p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Statut</p>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Agréée et Active
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if institution.document_arrete %}
+                <div class="border-t border-slate-200 pt-6">
+                    <a href="{{ institution.document_arrete.url }}" target="_blank" 
+                       class="flex items-center justify-center gap-3 w-full px-6 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors">
+                        <i class="fa-solid fa-file-pdf text-xl"></i>
+                        <span>Télécharger l'Arrêté Ministériel (PDF)</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-blue-600 text-xl mt-0.5"></i>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-semibold mb-1">Vérification Officielle</p>
+                            <p>Ce document a été généré et signé électroniquement par le Cabinet du Ministre des Sports et Loisirs. Il a la même valeur juridique qu'un document papier signé.</p>
+                            {% if institution.date_signature_arrete %}
+                            <p class="mt-2 font-semibold">
+                                <i class="fa-solid fa-calendar-check mr-1"></i>
+                                Cet agrément est valide jusqu'au {{ institution.date_signature_arrete|add_years:institution.duree_sollicitee }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Arrêté Non Trouvé -->
+            <div class="bg-red-50 border-b-4 border-red-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-times text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-red-800">Arrêté Non Trouvé</h2>
+                        <p class="text-red-700">Ce code de vérification n'existe pas dans notre système</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-exclamation-triangle text-yellow-600 text-xl mt-0.5"></i>
+                        <div class="text-sm text-yellow-800">
+                            <p class="font-semibold mb-1">Attention</p>
+                            <p>Si vous avez scanné un QR Code sur un document prétendant être un arrêté ministériel officiel, ce document pourrait être un faux. Veuillez contacter le Ministère des Sports et Loisirs pour vérification.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-slate-600 mb-4">Contact du Ministère:</p>
+                    <p class="text-sm font-semibold text-slate-900">
+                        <i class="fa-solid fa-envelope mr-2"></i>
+                        info@sports.gouv.cd
+                    </p>
+                    <p class="text-sm font-semibold text-slate-900 mt-2">
+                        <i class="fa-solid fa-phone mr-2"></i>
+                        +243 XX XXX XXXX
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white/70 text-sm">
+            <p>&copy; {{ current_year }} Ministère des Sports et Loisirs - RDC</p>
+            <p class="mt-1">Système Intégré de Suivi-Évaluation et Pilotage du Sport (SI-SEP)</p>
+        </div>
+    </div>
+</body>
+</html>

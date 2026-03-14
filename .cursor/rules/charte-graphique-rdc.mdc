@@ -1,0 +1,28 @@
+---
+description: Charte graphique officielle "RDC Royale" du SI-SEP SPORT. À appliquer à toute nouvelle interface.
+globs: 
+  - "**/*.html"
+  - "**/*.css"
+  - "**/templates/**"
+  - "**/public/**"
+---
+
+# Charte Graphique SI-SEP Sport "RDC Royale"
+
+Toute l'interface du SI-SEP SPORT doit respecter strictement cette charte (couleurs du drapeau RDC).
+
+## Couleurs officielles
+
+| Usage | Nom | Code | Utilisation |
+|-------|-----|------|-------------|
+| **Principal** | Bleu Royal | `#0036ca` | Sidebar, Navbar, boutons primaires, en-têtes de cartes (dégradé) |
+| **Accent** | Jaune Drapeau | `#FDE015` | Icônes actives, alertes importantes, mise en évidence — **avec parcimonie** |
+| **Danger** | Rouge Drapeau | `#ED1C24` | Erreurs, suppressions, notifications critiques |
+| **Fond** | Gris clair | `#f8f9fa` | Fond des pages (faire ressortir le bleu) |
+
+## Règles d'application
+
+1. **Variables CSS** : utiliser `--bs-primary`, `--bs-warning`, `--bs-danger` ou les variables `--sisep-bleu-royal`, `--sisep-jaune-drapeau`, `--sisep-rouge-drapeau` définies dans `public/assets/css/theme-rdc-override.css`.
+2. **En-têtes de cartes** : appliquer un léger dégradé avec le bleu `#0036ca` (déjà défini sur `.card-header`).
+3. **Jaune** : l'utiliser par petites touches uniquement pour les éléments nécessitant l'attention du Ministre.
+4. **Ne pas créer de nouveaux fichiers CSS** pour ces couleurs : tout est centralisé dans `theme-rdc-override.css`.

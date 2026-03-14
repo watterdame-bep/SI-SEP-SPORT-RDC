@@ -1,0 +1,320 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}{{ agent.nom_complet }} | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.mandat-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.mandat-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mandat-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.mandat-date {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.mandat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: #0036ca/10;
+    color: #0036ca;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    color: #cbd5e1;
+    margin-bottom: 0.75rem;
+}
+
+.empty-text {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.status-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.btn-action {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.btn-primary {
+    background: #0036ca;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #002a9f;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-success {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'gouvernance:personnel_ministere' %}" 
+                   class="flex h-12 w-12 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all">
+                    <i class="fa-solid fa-arrow-left text-xl text-white"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">{{ agent.nom_complet }}</h1>
+                    <p class="text-sm text-white/80 mt-1">Matricule: <span class="font-semibold">{{ agent.matricule }}</span></p>
+                </div>
+            </div>
+            <a href="{% url 'gouvernance:modifier_agent' agent.uid %}" 
+               class="flex h-12 w-12 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all"
+               title="Modifier l'agent">
+                <i class="fa-solid fa-pen text-xl text-white"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Informations personnelles -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user text-rdc-blue"></i>
+            Informations personnelles
+        </h2>
+        
+        <div class="info-grid">
+            <div class="info-field">
+                <span class="info-label">Nom</span>
+                <span class="info-value">{{ agent.personne.nom }}</span>
+            </div>
+            <div class="info-field">
+                <span class="info-label">Postnom</span>
+                <span class="info-value">{{ agent.personne.postnom|default:"—" }}</span>
+            </div>
+            <div class="info-field">
+                <span class="info-label">Prénom</span>
+                <span class="info-value">{{ agent.personne.prenom|default:"—" }}</span>
+            </div>
+            <div class="info-field">
+                <span class="info-label">Sexe</span>
+                <span class="info-value">{{ agent.personne.get_sexe_display|default:"—" }}</span>
+            </div>
+            <div class="info-field">
+                <span class="info-label">Email</span>
+                <span class="info-value">{{ agent.email|default:"—" }}</span>
+            </div>
+            <div class="info-field">
+                <span class="info-label">Téléphone</span>
+                <span class="info-value">{{ agent.telephone|default:"—" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mandats -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-briefcase text-rdc-blue"></i>
+            Mandats
+        </h2>
+        
+        {% if mandats %}
+            <div class="space-y-3">
+                {% for mandat in mandats %}
+                    <div class="mandat-card">
+                        <div class="mandat-title">{{ mandat.fonction.designation }}</div>
+                        <div class="mandat-date">
+                            <i class="fa-solid fa-calendar"></i>
+                            {{ mandat.date_debut|date:"d/m/Y" }} 
+                            {% if mandat.date_fin %}
+                                - {{ mandat.date_fin|date:"d/m/Y" }}
+                            {% else %}
+                                - En cours
+                            {% endif %}
+                        </div>
+                        <span class="mandat-status">
+                            <i class="fa-solid fa-circle-check"></i>{{ mandat.statut_mandat }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fa-solid fa-inbox"></i>
+                </div>
+                <p class="empty-text">Aucun mandat enregistré</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Gestion des Accès -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-lock text-rdc-blue"></i>
+            Accès Système
+        </h2>
+        
+        {% if profil %}
+            <!-- Compte existant -->
+            {% if profil.actif %}
+                <div class="status-badge status-active mb-4">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <div>
+                        <div>Actif</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">{{ profil.get_role_display }}</div>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'gouvernance:desactiver_compte' agent.uid %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-action btn-danger">
+                        <i class="fa-solid fa-ban"></i>Désactiver le compte
+                    </button>
+                </form>
+            {% else %}
+                <div class="status-badge status-inactive mb-4">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <div>
+                        <div>Inactif</div>
+                        <div style="font-size: 0.75rem; opacity: 0.8;">{{ profil.get_role_display }}</div>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'gouvernance:reactiver_compte' agent.uid %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-action btn-success">
+                        <i class="fa-solid fa-check"></i>Réactiver le compte
+                    </button>
+                </form>
+            {% endif %}
+        {% else %}
+            <!-- Pas de compte -->
+            <div class="status-badge status-warning mb-4">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                <div>
+                    <div>Aucun compte</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">À créer</div>
+                </div>
+            </div>
+            
+            <a href="{% url 'core:gerer_comptes' %}?agent={{ agent.uid }}" class="btn-action btn-primary">
+                <i class="fa-solid fa-user-check"></i>Créer un accès système
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Aucun script nécessaire pour cette interface
+</script>
+{% endblock %}

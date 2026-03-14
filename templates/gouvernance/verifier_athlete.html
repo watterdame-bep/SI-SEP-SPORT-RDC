@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification Licence Athlète — SI-SEP Sport RDC</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 2rem auto; padding: 1rem; text-align: center; }
+        .ok { color: #059669; font-weight: bold; }
+        .ko { color: #dc2626; }
+        .card { border: 2px solid #0036ca; border-radius: 8px; padding: 1.5rem; background: #f8fafc; }
+        h1 { font-size: 1.1rem; color: #0036ca; }
+        p { margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Vérification Licence Sportive</h1>
+        {% if athlete and valide %}
+            <p class="ok">✓ Licence valide — Athlète certifié national</p>
+            <p><strong>{{ athlete.personne.nom_complet }}</strong></p>
+            <p>N° national sportif : <strong>{{ athlete.numero_sportif|default:athlete.numero_licence }}</strong></p>
+            {% if athlete.discipline %}<p>Discipline : {{ athlete.discipline.designation }}</p>{% endif %}
+            {% if athlete.date_expiration_licence %}
+                <p>Valide jusqu'au {{ athlete.date_expiration_licence|date:"d/m/Y" }}</p>
+            {% endif %}
+        {% elif athlete %}
+            <p class="ko">Statut : {{ athlete.get_statut_certification_display }}</p>
+            <p>Cet athlète n'est pas en licence « Certifié national ».</p>
+        {% else %}
+            <p class="ko">Athlète introuvable ou licence invalide.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

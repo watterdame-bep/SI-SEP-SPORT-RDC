@@ -1,0 +1,265 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Clubs Affiliés - {{ federation.sigle }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-building text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Clubs Affiliés</h1>
+                <p class="text-sm text-white/80 mt-1">{{ federation.nom_officiel }} — Gestion des clubs affiliés</p>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-building text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Clubs</p>
+                        <p class="text-2xl font-bold text-white">{{ clubs.count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Actifs</p>
+                        <p class="text-2xl font-bold text-white">{{ clubs_actifs }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-map-location-dot text-2xl text-orange-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Provinces</p>
+                        <p class="text-2xl font-bold text-white">{{ provinces_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher un club..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Province -->
+        <select id="filter-province" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Toutes les provinces</option>
+            {% for province in provinces %}
+            <option value="{{ province }}">{{ province }}</option>
+            {% endfor %}
+        </select>
+        
+        <!-- Filtre Statut -->
+        <select id="filter-statut" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="ACTIVE">Actif</option>
+            <option value="INACTIVE">Inactif</option>
+        </select>
+        
+        <!-- Bouton Créer Club -->
+        <a href="#" class="md:w-auto px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg whitespace-nowrap flex items-center justify-center gap-2 transition-colors">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nouveau Club</span>
+        </a>
+    </div>
+</div>
+
+<!-- Vue Table -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    {% if clubs %}
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100" onclick="sortTable('nom')">
+                    Club <i class="fa-solid fa-sort text-slate-400 ml-1"></i>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Contact</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Responsable</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for club in clubs %}
+            <tr class="hover:bg-slate-50 transition-colors" 
+                data-nom="{{ club.nom_officiel|lower }}" 
+                data-sigle="{{ club.sigle|lower }}"
+                data-province="{% if club.province_admin %}{{ club.province_admin.designation }}{% endif %}"
+                data-statut="{{ club.statut_activation }}">
+                
+                <!-- Club -->
+                <td class="px-6 py-4">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-900">{{ club.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500 font-bold">{{ club.sigle }}</div>
+                    </div>
+                </td>
+                
+                <!-- Province -->
+                <td class="px-6 py-4">
+                    {% if club.province_admin %}
+                    <div class="text-sm text-slate-700">
+                        <i class="fa-solid fa-map-location-dot text-rdc-blue mr-2"></i>
+                        {{ club.province_admin.designation }}
+                    </div>
+                    {% else %}
+                    <span class="text-xs text-slate-400">Non renseignée</span>
+                    {% endif %}
+                </td>
+                
+                <!-- Contact -->
+                <td class="px-6 py-4">
+                    {% if club.email_officiel %}
+                    <div class="text-sm text-slate-700">
+                        <a href="mailto:{{ club.email_officiel }}" class="text-rdc-blue hover:underline">
+                            {{ club.email_officiel }}
+                        </a>
+                    </div>
+                    {% else %}
+                    <span class="text-xs text-slate-400">Non renseigné</span>
+                    {% endif %}
+                </td>
+                
+                <!-- Responsable -->
+                <td class="px-6 py-4">
+                    <div class="text-sm text-slate-700">
+                        {% if club.nom_president %}
+                        <i class="fa-solid fa-user text-slate-400 mr-2"></i>
+                        {{ club.nom_president }}
+                        {% else %}
+                        <span class="text-xs text-slate-400">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </td>
+                
+                <!-- Statut -->
+                <td class="px-6 py-4 text-center">
+                    {% if club.statut_activation == 'ACTIVE' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Actif
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        Inactif
+                    </span>
+                    {% endif %}
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Bouton Voir -->
+                        <a href="#" 
+                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           title="Voir détails">
+                            <i class="fa-solid fa-eye text-base"></i>
+                        </a>
+                        
+                        <!-- Bouton Modifier -->
+                        <button onclick="editClub('{{ club.uid }}')" 
+                                class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                                title="Modifier">
+                            <i class="fa-solid fa-edit text-base"></i>
+                        </button>
+                        
+                        <!-- Bouton Supprimer -->
+                        <button onclick="deleteClub('{{ club.uid }}', '{{ club.nom_officiel }}')" 
+                                class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-all" 
+                                title="Supprimer">
+                            <i class="fa-solid fa-trash text-base"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="px-6 py-16 text-center">
+        <i class="fa-solid fa-building text-4xl text-slate-300 mb-4"></i>
+        <p class="text-base font-bold text-slate-900">Aucun club affilié enregistré</p>
+        <p class="text-sm text-slate-600 mt-2">Les clubs affiliés à votre fédération apparaîtront ici</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Recherche et filtrage en temps réel
+const searchInput = document.getElementById('search-input');
+const filterProvince = document.getElementById('filter-province');
+const filterStatut = document.getElementById('filter-statut');
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (filterProvince) filterProvince.addEventListener('change', filterTable);
+if (filterStatut) filterStatut.addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const provinceFilter = filterProvince ? filterProvince.value : '';
+    const statutFilter = filterStatut ? filterStatut.value : '';
+    
+    document.querySelectorAll('#table-body tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const province = row.dataset.province || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
+        const matchProvince = !provinceFilter || province === provinceFilter;
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchProvince && matchStatut) ? '' : 'none';
+    });
+}
+
+function sortTable(column) {
+    console.log('Tri par:', column);
+}
+
+function editClub(id) {
+    alert('Édition du club: ' + id);
+}
+
+function deleteClub(id, nom) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le club "${nom}" ?`)) {
+        // Implémentation de la suppression
+        console.log('Suppression de:', id);
+    }
+}
+</script>
+{% endblock %}

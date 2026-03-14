@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification de Certificat d'Homologation | SI-SEP Sport RDC</title>
+    <link rel="stylesheet" href="{% static 'assets/css/output.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0036ca 0%, #002080 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Logo et En-tête -->
+        <div class="text-center mb-8">
+            <img src="{% static 'assets/images/logo-rdc.png' %}" alt="RDC" class="h-20 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-white mb-2">Vérification de Certificat d'Homologation</h1>
+            <p class="text-white/80">Ministère des Sports et Loisirs - République Démocratique du Congo</p>
+        </div>
+
+        <!-- Card de vérification -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {% if valide and institution %}
+            <!-- Certificat Valide -->
+            <div class="bg-green-50 border-b-4 border-green-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-check-circle text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-green-800">Certificat Authentique</h2>
+                        <p class="text-green-700">Ce document est officiellement enregistré dans le SI-SEP</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <!-- Informations du certificat -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Numéro d'Homologation</p>
+                        <p class="text-lg font-bold text-slate-900">{{ institution.numero_homologation }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Date d'Agrément</p>
+                        <p class="text-lg font-bold text-slate-900">{{ institution.date_signature_arrete|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+
+                <!-- Informations de la fédération -->
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Fédération agréée</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Nom officiel</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.nom_officiel }}</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Sigle</p>
+                                <p class="text-base font-semibold text-slate-900">{{ institution.sigle }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Code</p>
+                                <p class="text-base font-mono text-slate-900">{{ institution.code }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disciplines -->
+                {% if institution.disciplines.all %}
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Disciplines sportives</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for discipline in institution.disciplines.all %}
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold">
+                            {{ discipline.designation }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Provinces d'implantation -->
+                {% if institution.provinces_implantation.all %}
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Provinces d'implantation</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for province in institution.provinces_implantation.all %}
+                        <span class="bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
+                            {{ province.designation }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Statut et Validité -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <p class="text-sm text-green-700">
+                            <i class="fa-solid fa-check-circle mr-2"></i>
+                            <strong>Statut:</strong> Actif
+                        </p>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-700">
+                            <i class="fa-solid fa-calendar mr-2"></i>
+                            <strong>Durée:</strong> {{ institution.duree_sollicitee }} ans
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Responsable -->
+                {% if institution.nom_president %}
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Responsable</h3>
+                    <div class="space-y-2">
+                        <p class="text-base font-semibold text-slate-900">{{ institution.nom_president }}</p>
+                        {% if institution.telephone_president %}
+                        <p class="text-sm text-slate-600">
+                            <i class="fa-solid fa-phone mr-2"></i>{{ institution.telephone_president }}
+                        </p>
+                        {% endif %}
+                        {% if institution.email_officiel %}
+                        <p class="text-sm text-slate-600">
+                            <i class="fa-solid fa-envelope mr-2"></i>{{ institution.email_officiel }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% else %}
+            <!-- Certificat Invalide -->
+            <div class="bg-red-50 border-b-4 border-red-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-times text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-red-800">Certificat Non Trouvé</h2>
+                        <p class="text-red-700">{{ message|default:"Ce numéro de certificat n'existe pas ou n'est pas valide" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <p class="text-red-700 text-sm">
+                        <i class="fa-solid fa-exclamation-triangle mr-2"></i>
+                        Veuillez vérifier le numéro de certificat et réessayer.
+                    </p>
+                </div>
+                <p class="text-slate-600 text-center text-sm">
+                    Si vous pensez qu'il y a une erreur, veuillez contacter le Ministère des Sports et Loisirs.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="bg-slate-50 border-t border-slate-200 px-8 py-4 text-center">
+                <p class="text-xs text-slate-500">
+                    SI-SEP Sport RDC © 2026 — Système Intégré de Suivi-Évaluation et Pilotage du Sport
+                </p>
+            </div>
+        </div>
+
+        <!-- Lien retour -->
+        <div class="text-center mt-6">
+            <a href="/" class="text-white hover:text-white/80 transition-colors">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1201 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer un Club | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none !important;
+}
+.section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* Upload Zones */
+.upload-wrapper {
+    position: relative;
+}
+.upload-box {
+    position: relative;
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #fafafa 0%, #f8f9fa 100%);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    min-height: 2.75rem;
+}
+.upload-box:hover {
+    border-color: #0036ca;
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+    box-shadow: 0 2px 8px rgba(0, 54, 202, 0.1);
+}
+.upload-optional {
+    border-style: dotted;
+    opacity: 0.9;
+}
+.upload-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+.upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    gap: 0.5rem;
+    flex-direction: row;
+    text-align: center;
+    min-height: 2.75rem;
+}
+.upload-icon {
+    font-size: 1rem;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+.upload-box:hover .upload-icon {
+    color: #0036ca;
+}
+.upload-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    line-height: 1.2;
+}
+.upload-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+.upload-subtitle {
+    font-size: 0.6875rem;
+    color: #64748b;
+}
+.upload-files {
+    padding: 0.5rem 1rem;
+    display: none;
+}
+.upload-files.has-files {
+    display: block;
+}
+.upload-box.has-files .upload-label {
+    display: none;
+}
+.file-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    gap: 0.5rem;
+}
+.file-badge:last-child {
+    margin-bottom: 0;
+}
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+.file-name {
+    font-weight: 500;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.file-size {
+    font-size: 0.75rem;
+    color: #64748b;
+    flex-shrink: 0;
+}
+.file-remove {
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+    border-radius: 0.25rem;
+    transition: background 0.2s;
+}
+.file-remove:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Multi-step styles */
+.form-step {
+    display: none;
+}
+.form-step.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.step-indicator {
+    position: relative;
+}
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 0;
+}
+.step-item {
+    position: relative;
+    z-index: 1;
+}
+.step-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+.step-item.completed .step-circle {
+    background: #10b981;
+    color: white;
+    border: 2px solid #10b981;
+}
+.step-item.active .step-circle {
+    background: #0036ca;
+    color: white;
+    border: 2px solid #0036ca;
+    box-shadow: 0 0 0 4px rgba(0, 54, 202, 0.1);
+}
+.step-item.pending .step-circle {
+    background: white;
+    color: #94a3b8;
+    border: 2px solid #e2e8f0;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-2 lg:px-4 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:ligue_clubs_affiliation' %}" 
+               class="flex h-12 w-12 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all">
+                <i class="fa-solid fa-arrow-left text-xl text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Créer un Nouveau Club</h1>
+                <p class="text-sm text-white/80 mt-1">Enregistrement d'un club affilié à la ligue</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-2 lg:px-4 pt-2 pb-8">
+    <div id="message-container" class="mb-3 space-y-3"></div>
+
+    <!-- Conteneur pleine largeur : indicateur + formulaire -->
+    <div class="w-full min-w-0">
+        <!-- Indicateur d'étapes -->
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-3">
+            <div class="step-indicator flex justify-between items-start relative">
+                <div class="step-item active flex flex-col items-center flex-1" data-step="1">
+                    <div class="step-circle">1</div>
+                    <span class="text-xs font-semibold text-slate-700 mt-2 text-center">Identité</span>
+                </div>
+                <div class="step-item pending flex flex-col items-center flex-1" data-step="2">
+                    <div class="step-circle">2</div>
+                    <span class="text-xs font-semibold text-slate-500 mt-2 text-center">Adresse</span>
+                </div>
+                <div class="step-item pending flex flex-col items-center flex-1" data-step="3">
+                    <div class="step-circle">3</div>
+                    <span class="text-xs font-semibold text-slate-500 mt-2 text-center">Documents</span>
+                </div>
+            </div>
+        </div>
+
+        <form id="form-club" method="POST" class="block w-full">
+    {% csrf_token %}
+    
+    <!-- Étape 1: Identité -->
+    <div class="form-step {% if step|default:1 == 1 %}active{% endif %}" data-step="1">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 w-full">
+            <h2 class="section-title">1. Informations du Club</h2>
+            
+            <!-- Section 1: Identité du Club -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-building text-rdc-blue"></i>
+                    Identité du Club
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nom officiel <span class="text-rdc-red">*</span></label>
+                        <input type="text" name="nom_officiel" required
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Club Sportif de Kinshasa">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Sigle <span class="text-rdc-red">*</span></label>
+                        <input type="text" name="sigle" required
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm uppercase"
+                               placeholder="Ex: CSK">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Code unique <span class="text-rdc-red">*</span></label>
+                        <input type="text" name="code" id="code-field" required readonly
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-slate-100 cursor-not-allowed text-sm"
+                               placeholder="Généré automatiquement"
+                               value="{{ initial_code }}">
+                        <p class="text-xs text-slate-500 mt-1">Code généré automatiquement par le système</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: Informations Juridiques -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract text-rdc-blue"></i>
+                    Informations Juridiques
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Statut juridique</label>
+                        <input type="text" name="statut_juridique"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Association sans but lucratif">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Date de création</label>
+                        <input type="date" name="date_creation"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-image text-rdc-blue"></i>
+                            Logo du club <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="logo" id="doc-logo" accept="image/*" class="upload-input">
+                            <label for="doc-logo" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">JPG, PNG • Max 2MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-logo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 3: Coordonnées -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-phone text-rdc-blue"></i>
+                    Coordonnées
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email officiel</label>
+                        <input type="email" name="email_officiel"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: contact@club.cd">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Téléphone officiel</label>
+                        <input type="tel" name="telephone_off"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: +243 123 456 789">
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Site web</label>
+                        <input type="url" name="site_web"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: https://www.club.cd">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 4: Ressources Humaines -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-people-group text-rdc-blue"></i>
+                    Ressources Humaines
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre de personnel administratif</label>
+                        <input type="number" name="nombre_pers_admin" min="0" value="0"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: 5">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre de personnel technique</label>
+                        <input type="number" name="nombre_pers_tech" min="0" value="0"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: 10">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre d'athlètes hommes</label>
+                        <input type="number" name="nombre_athletes_hommes" min="0" value="0"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: 50">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre d'athlètes femmes</label>
+                        <input type="number" name="nombre_athletes_femmes" min="0" value="0"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: 30">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 5: Discipline et Partenaires -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-futbol text-rdc-blue"></i>
+                    Discipline et Partenaires
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Discipline sportive</label>
+                        <input type="text" name="disciplines" value="{{ ligue_disciplines }}" readonly
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-slate-100 cursor-not-allowed text-sm"
+                               placeholder="Discipline de la ligue">
+                        <p class="text-xs text-slate-500 mt-1">Discipline de la ligue (non modifiable)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Partenaires</label>
+                        <input type="text" name="partenaire"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Sponsors, Partenaires...">
+                    </div>
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="mt-6 flex justify-end">
+            <button type="button" class="btn-next px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                <span>Suivant</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Étape 2: Adresse -->
+    <div class="form-step {% if step|default:1 == 2 %}active{% endif %}" data-step="2">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 w-full">
+            <h2 class="section-title">2. Adresse, Responsables et Agrément</h2>
+            
+            <!-- Localisation -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-rdc-blue"></i>
+                    Localisation
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Province <span class="text-rdc-red">*</span></label>
+                        <select id="province-select" name="province" required disabled
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm bg-slate-100 cursor-not-allowed">
+                            <option value="">Chargement de la province...</option>
+                        </select>
+                        <!-- Hidden input to submit province value since disabled fields don't submit -->
+                        <input type="hidden" id="province-hidden" name="province">
+                        <p class="text-xs text-slate-500 mt-1">Province de la ligue (non modifiable)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Territoire/Ville</label>
+                        <select id="territoire-select" name="territoire"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm" disabled>
+                            <option value="">Sélectionner d'abord une province</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Secteur/Commune</label>
+                        <select id="secteur-select" name="secteur"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm" disabled>
+                            <option value="">Sélectionner d'abord un territoire</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Groupement/Quartier</label>
+                        <select id="groupement-select" name="groupement_quartier"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm" disabled>
+                            <option value="">Sélectionner d'abord un secteur</option>
+                        </select>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Avenue/Rue <span class="text-rdc-red">*</span></label>
+                        <input type="text" name="avenue" required
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Avenue de la Paix">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Numéro</label>
+                        <input type="text" name="numero"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: 123">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Responsables -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-tie text-rdc-blue"></i>
+                    Responsables
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nom du Président <span class="text-rdc-red">*</span></label>
+                        <input type="text" name="nom_president" required
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Jean KABILA">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Téléphone du Président</label>
+                        <input type="tel" name="telephone_president"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: +243 123 456 789">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nationalité du Président</label>
+                        <input type="text" name="nationalite_president"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                               placeholder="Ex: Congolaise">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Agrément -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-certificate text-rdc-blue"></i>
+                    Demande d'Agrément
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Type d'agrément sollicité</label>
+                        <select name="type_agrement_sollicite"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+                            <option value="">Sélectionner un type</option>
+                            <option value="PROVISOIRE">Agrément provisoire</option>
+                            <option value="DEFINITIF">Agrément définitif</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Date de demande d'agrément</label>
+                        <input type="date" name="date_demande_agrement"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Durée sollicitée (années)</label>
+                        <select name="duree_sollicitee"
+                                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+                            <option value="2">2 ans</option>
+                            <option value="4" selected>4 ans</option>
+                            <option value="6">6 ans</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="mt-6 flex justify-between">
+            <button type="button" class="btn-prev px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Précédent</span>
+            </button>
+            <button type="button" class="btn-next px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                <span>Suivant</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Étape 3: Documents -->
+    <div class="form-step {% if step|default:1 == 3 %}active{% endif %}" data-step="3">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 w-full">
+            <h2 class="section-title">3. Pièces Jointes</h2>
+            
+            <!-- Documents -->
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-rdc-blue"></i>
+                    Documents du Club
+                </h3>
+                <p class="text-xs text-slate-600 mb-6">
+                    Téléchargez les documents requis pour l'enregistrement du club (fichiers PDF, max 10MB chacun).
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Statut du club <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="statut_club" id="doc-statut" accept=".pdf" class="upload-input">
+                            <label for="doc-statut" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-statut"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Règlement intérieur <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="reglement_interieur" id="doc-reglement" accept=".pdf" class="upload-input">
+                            <label for="doc-reglement" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-reglement"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            PV de l'Assemblée Générale <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="pv_assemblee_generale" id="doc-pv" accept=".pdf" class="upload-input">
+                            <label for="doc-pv" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-pv"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Contrat de bail <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="contrat_bail" id="doc-bail" accept=".pdf" class="upload-input">
+                            <label for="doc-bail" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-bail"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Liste des membres fondateurs <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="liste_membres_fondateurs" id="doc-membres" accept=".pdf" class="upload-input">
+                            <label for="doc-membres" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-membres"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Certificat de nationalité <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="certificat_nationalite" id="doc-nationalite" accept=".pdf" class="upload-input">
+                            <label for="doc-nationalite" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-nationalite"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            Liste des athlètes <span class="text-xs text-slate-500">(optionnel)</span>
+                        </label>
+                        <div class="upload-box upload-optional">
+                            <input type="file" name="liste_athletes" id="doc-athletes" accept=".pdf" class="upload-input">
+                            <label for="doc-athletes" class="upload-label">
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">Cliquez pour parcourir</span>
+                                    <span class="upload-subtitle">PDF • Max 10MB</span>
+                                </div>
+                            </label>
+                            <div class="upload-files" id="files-athletes"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation et soumission -->
+        <div class="mt-6 flex justify-between">
+            <button type="button" class="btn-prev px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Précédent</span>
+            </button>
+            <button type="submit" id="btn-submit"
+                    class="px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-save"></i>
+                <span>Créer le Club</span>
+            </button>
+        </div>
+    </div>
+</form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = {{ step|default:1 }};
+    const totalSteps = 3;
+    
+    // ===== CODE GENERATION =====
+    function generateClubCode() {
+        const sigleField = document.querySelector('input[name="sigle"]');
+        const codeField = document.getElementById('code-field');
+        
+        if (sigleField && codeField) {
+            const sigle = sigleField.value.trim().toUpperCase();
+            if (sigle) {
+                // Format: SIGLE-TIMESTAMP
+                const timestamp = Date.now().toString().slice(-6);
+                const code = `${sigle}-${timestamp}`;
+                codeField.value = code;
+            }
+        }
+    }
+    
+    // Generate code when sigle changes
+    const sigleField = document.querySelector('input[name="sigle"]');
+    if (sigleField) {
+        sigleField.addEventListener('change', generateClubCode);
+        sigleField.addEventListener('blur', generateClubCode);
+    }
+    
+    function showStep(step) {
+        document.querySelectorAll('.form-step').forEach(el => {
+            el.classList.remove('active');
+        });
+        
+        const currentStepEl = document.querySelector(`.form-step[data-step="${step}"]`);
+        if (currentStepEl) {
+            currentStepEl.classList.add('active');
+        }
+        
+        document.querySelectorAll('.step-item').forEach((item, index) => {
+            const stepNum = index + 1;
+            item.classList.remove('active', 'completed', 'pending');
+            
+            if (stepNum < step) {
+                item.classList.add('completed');
+                item.querySelector('.step-circle').innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else if (stepNum === step) {
+                item.classList.add('active');
+                item.querySelector('.step-circle').textContent = stepNum;
+            } else {
+                item.classList.add('pending');
+                item.querySelector('.step-circle').textContent = stepNum;
+            }
+        });
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    showStep(currentStep);
+    
+    function validateCurrentStep() {
+        const requiredFields = {
+            1: ['nom_officiel', 'sigle', 'code'],
+            2: ['province', 'avenue', 'nom_president'],
+            3: []
+        };
+        
+        const fields = requiredFields[currentStep] || [];
+        let isValid = true;
+        let emptyFields = [];
+        
+        fields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (!field) return;
+            
+            field.classList.remove('border-rdc-red', 'border-2');
+            
+            if (!field.value || field.value.trim() === '') {
+                isValid = false;
+                field.classList.add('border-rdc-red', 'border-2');
+                emptyFields.push(field.previousElementSibling?.textContent || fieldName);
+            }
+        });
+        
+        if (!isValid) {
+            showMessage(`Veuillez remplir tous les champs obligatoires: ${emptyFields.join(', ')}`, 'error');
+        }
+        
+        return isValid;
+    }
+    
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (validateCurrentStep()) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        });
+    });
+    
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+    });
+    
+    document.querySelectorAll('[required]').forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value && this.value.trim() !== '') {
+                this.classList.remove('border-rdc-red', 'border-2');
+            }
+        });
+    });
+    
+    // ===== AFFICHAGE FICHIERS UPLOADÉS (comme formulaire création fédération) =====
+    function displayUploadedFiles(inputEl, files, filesDiv, uploadBox) {
+        if (!files || files.length === 0) {
+            uploadBox.classList.remove('has-files');
+            filesDiv.classList.remove('has-files');
+            filesDiv.innerHTML = '';
+            return;
+        }
+        uploadBox.classList.add('has-files');
+        filesDiv.classList.add('has-files');
+        filesDiv.innerHTML = '';
+        const inputId = inputEl.id;
+        Array.from(files).forEach((file, index) => {
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            const isPdf = ext === 'pdf';
+            const iconClass = isPdf ? 'fa-file-pdf text-red-500' : 'fa-file-image text-rdc-blue';
+            const sizeStr = file.size < 1024 ? file.size + ' o' : (file.size / 1024).toFixed(1) + ' Ko';
+            const badge = document.createElement('div');
+            badge.className = 'file-badge';
+            badge.innerHTML = `
+                <div class="file-info">
+                    <i class="fa-solid ${iconClass}"></i>
+                    <span class="file-name" title="${file.name.replace(/"/g, '&quot;')}">${file.name}</span>
+                    <span class="file-size">${sizeStr}</span>
+                </div>
+                <button type="button" class="file-remove" data-input-id="${inputId}" data-index="${index}" title="Retirer">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            `;
+            const removeBtn = badge.querySelector('.file-remove');
+            removeBtn.addEventListener('click', function() {
+                removeUploadedFile(inputId, parseInt(this.getAttribute('data-index'), 10));
+            });
+            filesDiv.appendChild(badge);
+        });
+    }
+    
+    function removeUploadedFile(inputId, index) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const uploadBox = input.closest('.upload-box');
+        const filesDiv = uploadBox ? uploadBox.querySelector('.upload-files') : null;
+        const dt = new DataTransfer();
+        const files = Array.from(input.files);
+        files.splice(index, 1);
+        files.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+        if (filesDiv) {
+            displayUploadedFiles(input, input.files, filesDiv, uploadBox);
+        }
+    }
+    
+    document.querySelectorAll('.upload-input').forEach(input => {
+        const uploadBox = input.closest('.upload-box');
+        const filesDiv = uploadBox ? uploadBox.querySelector('.upload-files') : null;
+        if (!filesDiv) return;
+        
+        input.addEventListener('change', function() {
+            displayUploadedFiles(this, this.files, filesDiv, uploadBox);
+        });
+        
+        // Afficher les fichiers déjà présents (ex: après validation partielle)
+        if (input.files && input.files.length > 0) {
+            displayUploadedFiles(input, input.files, filesDiv, uploadBox);
+        }
+    });
+    
+    const form = document.getElementById('form-club');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateCurrentStep()) return;
+            
+            const btnSubmit = document.getElementById('btn-submit');
+            const originalText = btnSubmit.innerHTML;
+            
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Création en cours...</span>';
+            
+            try {
+                const formData = new FormData(this);
+                // Toujours envoyer le POST vers l'étape 3 pour créer le club (évite session vide)
+                const submitUrl = '{% url "gouvernance:ligue_club_create_step3" %}';
+                const response = await fetch(submitUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    }
+                });
+                
+                if (response.ok) {
+                    showMessage('✓ Club créé avec succès!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '{% url "gouvernance:ligue_clubs_affiliation" %}';
+                    }, 1500);
+                } else {
+                    showMessage('Erreur lors de la création du club', 'error');
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Une erreur est survenue', 'error');
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = originalText;
+            }
+        });
+    }
+    
+    window.showMessage = function(message, type = 'success') {
+        const container = document.getElementById('message-container');
+        const alertClass = type === 'success' ? 'bg-green-50 border-green-400 text-green-800' : 'bg-red-50 border-red-400 text-red-800';
+        const iconClass = type === 'success' ? 'fa-check-circle text-green-400' : 'fa-exclamation-circle text-red-400';
+        
+        const alert = document.createElement('div');
+        alert.className = `${alertClass} border-l-4 p-4 rounded-lg flex items-start gap-3`;
+        alert.innerHTML = `
+            <i class="fa-solid ${iconClass} text-xl mt-0.5"></i>
+            <div class="flex-1">
+                <p class="text-sm font-semibold">${message}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-current opacity-50 hover:opacity-100">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(alert);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => alert.remove(), 8000);
+    };
+    
+    // ===== CASCADING GEOGRAPHIC SELECTS =====
+    const provinceSelect = document.getElementById('province-select');
+    const provinceHidden = document.getElementById('province-hidden');
+    const territoireSelect = document.getElementById('territoire-select');
+    const secteurSelect = document.getElementById('secteur-select');
+    const groupementSelect = document.getElementById('groupement-select');
+    
+    // Initialize province on page load
+    if (provinceSelect) {
+        console.log('Initializing geographic cascades...');
+        const liueProvinceId = '{{ province_id }}';
+        const liueProvinceName = '{{ province_name }}';
+        console.log('Ligue Province ID:', liueProvinceId);
+        console.log('Ligue Province Name:', liueProvinceName);
+        
+        if (liueProvinceId && liueProvinceId.trim() !== '') {
+            console.log('Pre-filling province:', liueProvinceId, liueProvinceName);
+            
+            // Create option for province
+            provinceSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = liueProvinceId;
+            option.textContent = liueProvinceName;
+            option.selected = true;
+            provinceSelect.appendChild(option);
+            
+            // Fill hidden input for form submission
+            if (provinceHidden) {
+                provinceHidden.value = liueProvinceId;
+            }
+            
+            // Trigger territories loading immediately
+            setTimeout(() => {
+                console.log('Triggering territories load');
+                loadTerritoires(liueProvinceId);
+            }, 100);
+        } else {
+            provinceSelect.innerHTML = '<option value="">Province not available</option>';
+        }
+    }
+    
+    // Load territories for a province
+    async function loadTerritoires(provinceId) {
+        if (!territoireSelect) return;
+        
+        console.log('Loading territories for province:', provinceId);
+        territoireSelect.innerHTML = '<option value="">Loading...</option>';
+        secteurSelect.innerHTML = '<option value="">Select territory first</option>';
+        groupementSelect.innerHTML = '<option value="">Select sector first</option>';
+        secteurSelect.disabled = true;
+        groupementSelect.disabled = true;
+        
+        try {
+            const url = `/parametres-geographiques/api/territoires/?province=${provinceId}`;
+            console.log('Calling API:', url);
+            
+            const response = await fetch(url);
+            console.log('API response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Territories loaded:', data);
+            
+            territoireSelect.innerHTML = '<option value="">Select a territory</option>';
+            
+            // Handle both array and object responses
+            const territoires = Array.isArray(data) ? data : (data.territoires || []);
+            console.log('Territories to display:', territoires);
+            
+            if (territoires.length > 0) {
+                territoires.forEach(territoire => {
+                    const option = document.createElement('option');
+                    option.value = territoire.uid;
+                    option.textContent = territoire.designation;
+                    territoireSelect.appendChild(option);
+                });
+                console.log('Territories added:', territoires.length);
+            } else {
+                territoireSelect.innerHTML = '<option value="">No territories found</option>';
+            }
+            
+            territoireSelect.disabled = false;
+        } catch (error) {
+            console.error('Error:', error);
+            territoireSelect.innerHTML = '<option value="">Loading error</option>';
+        }
+    }
+    
+    // Territory change event
+    if (territoireSelect) {
+        territoireSelect.addEventListener('change', async function() {
+            const territoireId = this.value;
+            console.log('Territory selected:', territoireId);
+            
+            secteurSelect.innerHTML = '<option value="">Loading...</option>';
+            groupementSelect.innerHTML = '<option value="">Select sector first</option>';
+            groupementSelect.disabled = true;
+            
+            if (!territoireId) {
+                secteurSelect.innerHTML = '<option value="">Select territory first</option>';
+                secteurSelect.disabled = true;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/parametres-geographiques/api/secteurs/?territoire=${territoireId}`);
+                console.log('Sectors response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Sectors loaded:', data);
+                
+                secteurSelect.innerHTML = '<option value="">Select a sector</option>';
+                
+                if (data.secteurs && Array.isArray(data.secteurs)) {
+                    data.secteurs.forEach(secteur => {
+                        const option = document.createElement('option');
+                        option.value = secteur.uid;
+                        option.textContent = secteur.designation;
+                        secteurSelect.appendChild(option);
+                    });
+                } else if (Array.isArray(data)) {
+                    data.forEach(secteur => {
+                        const option = document.createElement('option');
+                        option.value = secteur.uid;
+                        option.textContent = secteur.designation;
+                        secteurSelect.appendChild(option);
+                    });
+                }
+                
+                secteurSelect.disabled = false;
+            } catch (error) {
+                console.error('Error:', error);
+                secteurSelect.innerHTML = '<option value="">Loading error</option>';
+            }
+        });
+    }
+    
+    // Sector change event
+    if (secteurSelect) {
+        secteurSelect.addEventListener('change', async function() {
+            const secteurId = this.value;
+            console.log('Sector selected:', secteurId);
+            
+            groupementSelect.innerHTML = '<option value="">Loading...</option>';
+            
+            if (!secteurId) {
+                groupementSelect.innerHTML = '<option value="">Select sector first</option>';
+                groupementSelect.disabled = true;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/parametres-geographiques/api/groupements/?secteur=${secteurId}`);
+                console.log('Groupements response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Groupements loaded:', data);
+                
+                groupementSelect.innerHTML = '<option value="">Select a groupement</option>';
+                
+                if (data.groupements && Array.isArray(data.groupements)) {
+                    data.groupements.forEach(groupement => {
+                        const option = document.createElement('option');
+                        option.value = groupement.uid;
+                        option.textContent = groupement.designation;
+                        groupementSelect.appendChild(option);
+                    });
+                } else if (Array.isArray(data)) {
+                    data.forEach(groupement => {
+                        const option = document.createElement('option');
+                        option.value = groupement.uid;
+                        option.textContent = groupement.designation;
+                        groupementSelect.appendChild(option);
+                    });
+                }
+                
+                groupementSelect.disabled = false;
+            } catch (error) {
+                console.error('Error:', error);
+                groupementSelect.innerHTML = '<option value="">Loading error</option>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

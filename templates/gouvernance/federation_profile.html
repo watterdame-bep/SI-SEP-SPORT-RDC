@@ -1,0 +1,291 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Mon Profil — {{ federation.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+input[type="file"] { display: none !important; }
+.upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #fafafa 0%, #f8f9fa 100%);
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.upload-box:hover { border-color: #0036ca; background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%); }
+.upload-label { display: flex; align-items: center; justify-content: center; padding: 1rem; cursor: pointer; gap: 0.5rem; flex-direction: column; width: 100%; height: 100%; }
+.upload-icon { font-size: 1.25rem; color: #94a3b8; }
+.upload-box:hover .upload-icon { color: #0036ca; }
+.upload-title { font-size: 0.75rem; font-weight: 600; color: #1e293b; }
+.upload-subtitle { font-size: 0.65rem; color: #64748b; }
+.current-file { padding: 1rem; background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%); border: 1px solid #bfdbfe; border-radius: 0.75rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; }
+.current-file-image { flex-shrink: 0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.current-file-image img { max-height: 80px; max-width: 80px; border-radius: 0.5rem; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.current-file-label { font-size: 0.75rem; font-weight: 600; color: #0369a1; text-transform: uppercase; margin-bottom: 0.25rem; }
+.current-file-name { font-size: 0.875rem; font-weight: 600; color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-user-tie text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Mon Profil</h1>
+                <p class="text-sm text-white/80 mt-1">{{ federation.nom_officiel }} — Logo, signature et cachet</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg">
+        <p class="text-sm font-semibold">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Overlay et modales (signature / cachet) -->
+<div id="passwordOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"></div>
+<dialog id="errorModal" class="rounded-lg shadow-2xl w-full max-w-md p-0 z-50">
+    <form class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-exclamation-circle text-red-600 text-lg"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Attention</h2>
+        </div>
+        <p id="errorMessage" class="text-sm text-slate-600 mb-4"></p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeErrorModal()" class="w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors">Fermer</button>
+        </div>
+    </form>
+</dialog>
+<dialog id="passwordModal" class="rounded-lg shadow-2xl w-full max-w-md p-0 z-50">
+    <form id="passwordForm" method="post" class="p-6">
+        {% csrf_token %}
+        <input type="hidden" id="formType" name="form_type" value="">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-lock text-red-600 text-lg"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Confirmation de sécurité</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-4">Entrez votre mot de passe pour modifier la signature ou le cachet de la fédération.</p>
+        <div class="mb-4">
+            <label for="modalPassword" class="block text-sm font-semibold text-slate-700 mb-2">Mot de passe</label>
+            <input type="password" id="modalPassword" name="password" placeholder="Entrez votre mot de passe"
+                   class="block w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm transition-colors" required autofocus>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" onclick="closePasswordModal()" class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">Annuler</button>
+            <button type="submit" class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors">Confirmer</button>
+        </div>
+    </form>
+</dialog>
+
+<div class="max-w-4xl mx-auto">
+    <!-- Informations de la fédération -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-info-circle text-rdc-blue"></i>
+            Informations de la Fédération
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Nom officiel</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ federation.nom_officiel }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sigle</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ federation.sigle }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Email</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">
+                    {% if federation.email_officiel %}<a href="mailto:{{ federation.email_officiel }}" class="text-rdc-blue hover:underline">{{ federation.email_officiel }}</a>{% else %}<span class="text-slate-500">Non renseigné</span>{% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Téléphone</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{% if federation.telephone_off %}{{ federation.telephone_off }}{% else %}<span class="text-slate-500">Non renseigné</span>{% endif %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo de la fédération -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-image text-rdc-blue"></i>
+            Logo de la fédération
+        </h2>
+        <p class="text-sm text-slate-600 mb-4">Ce logo peut apparaître sur les licences et documents officiels. Format recommandé : PNG ou JPG, max 5 Mo.</p>
+        {% if federation.logo %}
+        <div class="current-file mb-4">
+            <div class="current-file-image">
+                <img src="{{ federation.logo.url }}" alt="Logo actuel de la fédération">
+            </div>
+            <div class="flex-1">
+                <div class="current-file-label">Logo actuel</div>
+                <div class="current-file-name">{{ federation.logo.name|truncatechars:40 }}</div>
+            </div>
+        </div>
+        {% endif %}
+        <form method="POST" enctype="multipart/form-data" class="space-y-3">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="logo">
+            <div class="upload-box">
+                <label class="upload-label" for="logo_image">
+                    <i class="upload-icon fa-solid fa-cloud-arrow-up"></i>
+                    <div>
+                        <span class="upload-title block">Cliquez pour télécharger le logo</span>
+                        <span class="upload-subtitle">PNG, JPG • Max 5 Mo</span>
+                    </div>
+                </label>
+                <input type="file" id="logo_image" name="logo_image" accept="image/*">
+            </div>
+            <button type="submit" class="w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold rounded-lg transition-colors">
+                Mettre à jour le logo
+            </button>
+        </form>
+    </div>
+
+    <!-- Signature et cachet de la fédération -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Signature -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-pen-fancy text-rdc-blue"></i>
+                Signature de la fédération
+            </h2>
+            {% if federation.signature_image %}
+            <div class="current-file mb-4">
+                <div class="current-file-image">
+                    <img src="{{ federation.signature_image.url }}" alt="Signature actuelle">
+                </div>
+                <div class="flex-1">
+                    <div class="current-file-label">Signature actuelle</div>
+                    <div class="current-file-name">{{ federation.signature_image.name|truncatechars:30 }}</div>
+                </div>
+            </div>
+            {% endif %}
+            <form id="signatureForm" method="POST" enctype="multipart/form-data" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="signature">
+                <div class="upload-box">
+                    <label class="upload-label" for="signature_image">
+                        <i class="upload-icon fa-solid fa-cloud-arrow-up"></i>
+                        <div>
+                            <span class="upload-title block">Cliquez pour télécharger</span>
+                            <span class="upload-subtitle">PNG transparent • Max 5 Mo</span>
+                        </div>
+                    </label>
+                    <div id="signature-preview"></div>
+                    <input type="file" id="signature_image" name="signature_image" accept=".png,image/png">
+                </div>
+                <button type="button" onclick="openPasswordModal('signature')" class="w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold rounded-lg transition-colors">
+                    Mettre à jour la signature
+                </button>
+            </form>
+        </div>
+        <!-- Cachet -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-stamp text-rdc-blue"></i>
+                Cachet de la fédération
+            </h2>
+            {% if federation.sceau_image %}
+            <div class="current-file mb-4">
+                <div class="current-file-image">
+                    <img src="{{ federation.sceau_image.url }}" alt="Cachet actuel" style="border-radius: 50%;">
+                </div>
+                <div class="flex-1">
+                    <div class="current-file-label">Cachet actuel</div>
+                    <div class="current-file-name">{{ federation.sceau_image.name|truncatechars:30 }}</div>
+                </div>
+            </div>
+            {% endif %}
+            <form id="sceauForm" method="POST" enctype="multipart/form-data" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="sceau">
+                <div class="upload-box">
+                    <label class="upload-label" for="sceau_image">
+                        <i class="upload-icon fa-solid fa-cloud-arrow-up"></i>
+                        <div>
+                            <span class="upload-title block">Cliquez pour télécharger</span>
+                            <span class="upload-subtitle">PNG transparent • Max 5 Mo</span>
+                        </div>
+                    </label>
+                    <div id="sceau-preview"></div>
+                    <input type="file" id="sceau_image" name="sceau_image" accept=".png,image/png">
+                </div>
+                <button type="button" onclick="openPasswordModal('sceau')" class="w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold rounded-lg transition-colors">
+                    Mettre à jour le cachet
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function showErrorModal(message) {
+    document.getElementById('errorMessage').textContent = message;
+    document.getElementById('passwordOverlay').classList.remove('hidden');
+    document.getElementById('errorModal').showModal();
+}
+function closeErrorModal() {
+    document.getElementById('errorModal').close();
+    document.getElementById('passwordOverlay').classList.add('hidden');
+}
+function openPasswordModal(formType) {
+    var fileInput = formType === 'signature' ? document.getElementById('signature_image') : document.getElementById('sceau_image');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showErrorModal('Veuillez sélectionner un fichier d\'abord.');
+        return;
+    }
+    if (fileInput.files[0].type !== 'image/png' && !fileInput.files[0].name.toLowerCase().endsWith('.png')) {
+        showErrorModal('Seuls les fichiers PNG sont acceptés. Veuillez sélectionner un fichier PNG transparent.');
+        return;
+    }
+    if (fileInput.files[0].size > 5 * 1024 * 1024) {
+        showErrorModal('Le fichier est trop volumineux. Taille maximale : 5 Mo.');
+        return;
+    }
+    document.getElementById('formType').value = formType;
+    document.getElementById('passwordOverlay').classList.remove('hidden');
+    document.getElementById('passwordModal').showModal();
+}
+function closePasswordModal() {
+    document.getElementById('passwordModal').close();
+    document.getElementById('passwordOverlay').classList.add('hidden');
+    document.getElementById('modalPassword').value = '';
+}
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var formType = document.getElementById('formType').value;
+    var password = document.getElementById('modalPassword').value;
+    var form = formType === 'signature' ? document.getElementById('signatureForm') : document.getElementById('sceauForm');
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'password';
+    input.value = password;
+    form.appendChild(input);
+    form.submit();
+    closePasswordModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closePasswordModal(); closeErrorModal(); }
+});
+</script>
+{% endblock %}

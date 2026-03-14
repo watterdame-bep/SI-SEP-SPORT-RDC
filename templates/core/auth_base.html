@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SI-SEP Sport RDC{% endblock %}</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/images/favicon.ico' %}">
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/output.css' %}">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        /* Pattern de fond ondulé */
+        .wave-pattern {
+            background-color: #0036ca;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+        }
+        
+        /* Animation subtile pour le logo */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .logo-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Style du bouton */
+        .btn-submit {
+            background-color: #0036ca;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            background-color: #002a9e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 54, 202, 0.3);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        /* Input focus */
+        .input-field:focus {
+            outline: none;
+            border-color: #0036ca;
+            box-shadow: 0 0 0 3px rgba(0, 54, 202, 0.1);
+        }
+        
+        /* Checkbox personnalisé */
+        .custom-checkbox:checked {
+            background-color: #0036ca;
+            border-color: #0036ca;
+        }
+        
+        /* Panneau gauche visible uniquement sur desktop */
+        .left-panel {
+            display: none;
+        }
+        
+        @media (min-width: 1024px) {
+            .left-panel {
+                display: flex;
+            }
+        }
+        
+        /* Logo RDC visible uniquement sur desktop */
+        .logo-rdc-desktop {
+            display: none;
+        }
+        
+        @media (min-width: 1024px) {
+            .logo-rdc-desktop {
+                display: flex;
+            }
+        }
+        
+        /* Logo mobile visible uniquement sur mobile */
+        .logo-mobile {
+            display: flex;
+        }
+        
+        @media (min-width: 1024px) {
+            .logo-mobile {
+                display: none;
+            }
+        }
+        
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="min-h-screen flex">
+        <!-- Panneau gauche - Branding (60% sur desktop, caché sur mobile) -->
+        <div class="left-panel w-3/5 wave-pattern relative overflow-hidden">
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white px-12">
+                <!-- Logo avec animation -->
+                <div class="logo-float mb-8">
+                    <img src="{% static 'assets/images/logo-ministere-sports.png' %}" 
+                         alt="Ministère des Sports et Loisirs" 
+                         class="h-40 w-auto object-contain filter drop-shadow-2xl">
+                </div>
+                
+                <!-- Titre -->
+                <h1 class="text-4xl font-bold text-center mb-4 tracking-tight">
+                    RÉPUBLIQUE DÉMOCRATIQUE DU CONGO
+                </h1>
+                
+                <!-- Sous-titre -->
+                <p class="text-xl font-medium text-white/90 text-center mb-6">
+                    SI-SEP SPORT RDC
+                </p>
+                
+                <!-- Description -->
+                <p class="text-sm text-white/80 text-center max-w-md leading-relaxed">
+                    Système Intégré de Suivi-Évaluation<br>et Pilotage du Sport
+                </p>
+                
+                <!-- Copyright -->
+                <p class="text-xs text-white/50 text-center mt-8">
+                    SI-SEP SPORT-RDC © 2026<br>
+                    Ministère des Sports et Loisirs
+                </p>
+            </div>
+        </div>
+
+        <!-- Panneau droit - Contenu -->
+        <div class="w-full lg:w-2/5 flex items-center justify-center px-6 py-12 bg-white">
+            <div class="w-full max-w-md">
+                <!-- Logo RDC au-dessus du formulaire (desktop uniquement) -->
+                 <div class="logo-rdc-desktop justify-center mb-8">
+                    <img src="{% static 'assets/images/logo-rdc.png' %}" 
+                         alt="Logo RDC" 
+                         class="h-20 w-20 object-contain">
+                </div>
+                            
+                <!-- Logo mobile (visible uniquement sur mobile) -->
+                <div class="logo-mobile justify-center mb-8">
+                    <img src="{% static 'assets/images/logo-ministere-sports-black.png' %}" 
+                         alt="Ministère des Sports et Loisirs" 
+                         class="h-20 w-auto object-contain">
+                </div>
+                
+                <!-- Contenu de la page -->
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

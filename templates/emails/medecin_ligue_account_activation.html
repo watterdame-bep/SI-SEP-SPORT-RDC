@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activation Compte Médecin Inspecteur - SI-SEP Sport RDC</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #0036ca 0%, #0052ff 100%); color: white; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+        .content { padding: 30px 20px; }
+        .greeting { font-size: 16px; margin-bottom: 20px; }
+        .greeting strong { color: #0036ca; }
+        .info-box { background-color: #f0f4ff; border-left: 4px solid #0036ca; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-box .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .info-box .value { font-size: 16px; font-weight: 600; color: #0036ca; margin-top: 5px; }
+        .cta-box { background-color: #fff9e6; border: 1px solid #FDE015; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .cta-box h3 { margin: 0 0 15px 0; color: #333; font-size: 14px; font-weight: 600; }
+        .cta-button { display: inline-block; background-color: #0036ca; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: 600; margin: 20px 0; font-size: 14px; }
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Compte Médecin Inspecteur</h1>
+            <p>Activation de votre accès au SI-SEP Sport RDC</p>
+        </div>
+        <div class="content">
+            <div class="greeting">Docteur <strong>{{ medecin_nom }}</strong>,</div>
+            <p>La Division Provinciale des Sports a créé un compte pour vous en tant que <strong>Médecin Inspecteur / Validateur</strong> de la ligue <strong>{{ ligue_name }}</strong> (N° Ordre des Médecins : {{ numero_ordre }}).</p>
+            <div class="info-box">
+                <div class="label">Votre rôle</div>
+                <div class="value">Médecin Inspecteur — Dossiers médicaux des athlètes</div>
+                <p style="margin-top: 10px; font-size: 13px; color: #666;">Ligue : {{ ligue_name }}</p>
+                <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">Email du compte : {{ user_email }}</p>
+            </div>
+            <p>Ce compte vous permet d'accéder aux dossiers médicaux des athlètes de votre ligue (visites médicales F67, certificats d'aptitude, etc.).</p>
+            <div class="cta-box">
+                <h3>Activation de votre compte</h3>
+                <p style="margin: 0 0 15px 0; font-size: 13px;">Pour activer votre compte et définir votre mot de passe, cliquez sur le bouton ci-dessous :</p>
+                <center>
+                    <a href="{{ activation_url }}" class="cta-button">Activer mon compte</a>
+                </center>
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #666; text-align: center;">Ce lien est valide pendant 7 jours.</p>
+            </div>
+            <p style="font-size: 13px; color: #666;">Après activation, connectez-vous au portail SI-SEP Sport RDC avec votre adresse e-mail et le mot de passe que vous aurez choisi.</p>
+            <p style="font-size: 13px; color: #666; margin-top: 20px;">Cordialement,<br><strong>L'équipe SI-SEP Sport RDC</strong><br>Ministère des Sports et Loisirs</p>
+        </div>
+        <div class="footer">
+            <p><strong>SI-SEP Sport RDC</strong> — Système Intégré de Suivi-Évaluation et Pilotage du Sport — RDC</p>
+        </div>
+    </div>
+</body>
+</html>

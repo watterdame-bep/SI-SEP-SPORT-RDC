@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Charte Graphique SI-SEP Sport "RDC Royale" */
+@layer base {
+  :root {
+    --sisep-bleu-royal: #0036ca;
+    --sisep-bleu-hover: #0028a0;
+    --sisep-jaune-drapeau: #FDE015;
+    --sisep-rouge-drapeau: #ED1C24;
+    --sisep-fond-gris: #f8f9fa;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  /* Boutons selon la charte RDC */
+  .btn-primary {
+    @apply bg-rdc-blue hover:bg-rdc-blue-hover text-white font-semibold py-2 px-4 transition duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 transition duration-200;
+  }
+  
+  .btn-warning {
+    @apply bg-rdc-yellow hover:bg-yellow-500 text-gray-900 font-semibold py-2 px-4 transition duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-rdc-red hover:bg-red-700 text-white font-semibold py-2 px-4 transition duration-200;
+  }
+  
+  /* Bouton de connexion avec dégradé */
+  .btn-login {
+    background: linear-gradient(135deg, #0036ca 0%, #002a9e 100%);
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .btn-login::before {
+    content: '';
+    @apply absolute top-0 -left-full w-full h-full;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-login:hover::before {
+    @apply left-full;
+  }
+  
+  .btn-login:hover {
+    background: linear-gradient(135deg, #002a9e 0%, #001f7a 100%);
+    @apply -translate-y-px;
+    box-shadow: 0 8px 20px rgba(0, 54, 202, 0.3);
+  }
+  
+  .btn-login:active {
+    @apply translate-y-0;
+    box-shadow: 0 4px 12px rgba(0, 54, 202, 0.2);
+  }
+  
+  /* Cartes avec en-tête dégradé bleu */
+  .card {
+    @apply bg-white shadow-md p-6;
+  }
+  
+  .card-header {
+    @apply bg-gradient-to-r from-rdc-blue to-rdc-blue-hover text-white px-4 py-3 font-semibold;
+  }
+  
+  /* Champs de formulaire */
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 transition-all duration-200;
+  }
+  
+  .input-field:focus {
+    border-color: #0036ca;
+    box-shadow: 0 0 0 3px rgba(0, 54, 202, 0.1);
+    @apply outline-none;
+  }
+  
+  /* Sidebar selon charte RDC */
+  .sidebar-link-blue { 
+    @apply transition-all duration-200;
+    font-weight: 400;
+  }
+  
+  .sidebar-link-blue:hover { 
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .sidebar-link-blue.active-blue { 
+    background-color: rgba(255, 255, 255, 0.12); 
+    border-left: 3px solid #FDE015; 
+    font-weight: 500;
+  }
+  
+  /* Avatar circulaire */
+  .avatar-circle {
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .avatar-circle:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+  }
+  
+  /* Logo container avec dégradé subtil */
+  .logo-container {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.05) 100%);
+  }
+  
+  /* Logo avec effet glow */
+  .logo-glow {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+  }
+  
+  /* Pattern grid pour fond */
+  .pattern-grid {
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+}
+
+@layer utilities {
+  /* Masquer la scrollbar mais garder la fonctionnalité */
+  .sidebar-nav::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  .sidebar-nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  /* Animation dropdown */
+  .dropdown-menu { 
+    animation: slideDown 0.2s ease-out; 
+  }
+  
+  @keyframes slideDown {
+    from { 
+      opacity: 0; 
+      transform: translateY(-10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  /* Animation shimmer */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    background-size: 1000px 100%;
+    animation: shimmer 3s infinite;
+  }
+  
+  /* Supprimer tous les border-radius (design carré selon charte) */
+  * { 
+    border-radius: 0 !important; 
+  }
+}

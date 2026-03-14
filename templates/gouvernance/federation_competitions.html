@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Calendrier & Compétitions - {{ federation.sigle }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">📅 Calendrier & Compétitions</h1>
+                    <p class="text-muted mb-0">{{ federation.nom_officiel }}</p>
+                </div>
+                <a href="{% url 'gouvernance:federation_secretary_dashboard' %}" class="btn btn-outline-secondary">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <p class="mb-0">Cette fonctionnalité sera bientôt disponible. Vous pourrez déclarer votre calendrier sportif et vos compétitions.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord Ministre | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Tableau de bord Ministre</h1>
+                <p class="text-sm text-white/80 mt-1">Vue d'ensemble et validation des demandes</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <p class="text-xs text-white/70">Dernière mise à jour</p>
+                    <p class="text-sm font-semibold text-white">{{ now|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Statistiques principales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Card 1: En attente de signature -->
+    <div class="bg-gradient-to-br from-rdc-yellow/10 to-rdc-yellow/5 rounded-lg shadow border border-rdc-yellow/30 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">En attente</p>
+                <h3 class="text-3xl font-bold text-rdc-yellow mt-1">{{ stats.en_attente }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Demandes à valider</p>
+            </div>
+            <div class="bg-rdc-yellow/20 p-2.5 rounded-lg">
+                <i class="fa-solid fa-clock text-xl text-rdc-yellow"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Fédérations actives -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
+                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ stats.total_federations }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Agréées</p>
+            </div>
+            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
+                <i class="fa-solid fa-flag text-xl text-rdc-blue"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Ligues provinciales -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Ligues</p>
+                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ stats.total_ligues }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Provinciales</p>
+            </div>
+            <div class="bg-purple-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-building text-xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 4: Clubs -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Clubs</p>
+                <h3 class="text-3xl font-bold text-indigo-600 mt-1">{{ stats.total_clubs }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Sportifs</p>
+            </div>
+            <div class="bg-indigo-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-users text-xl text-indigo-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 5: Athlètes -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Athlètes</p>
+                <h3 class="text-3xl font-bold text-emerald-600 mt-1">{{ stats.total_athletes }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Certifiés</p>
+            </div>
+            <div class="bg-emerald-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-running text-xl text-emerald-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 6: Infrastructures -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Infrastructures</p>
+                <h3 class="text-3xl font-bold text-cyan-600 mt-1">{{ stats.total_infrastructures }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Validées</p>
+            </div>
+            <div class="bg-cyan-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-building-columns text-xl text-cyan-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 7: Disciplines -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Disciplines</p>
+                <h3 class="text-3xl font-bold text-slate-700 mt-1">{{ stats.disciplines }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Sportives</p>
+            </div>
+            <div class="bg-slate-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-futbol text-xl text-slate-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 8: Taux de validation -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Taux validation</p>
+                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ stats.taux_validation }}%</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Ce mois</p>
+            </div>
+            <div class="bg-green-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-chart-line text-xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertes importantes -->
+{% if en_attente %}
+<div class="bg-gradient-to-r from-rdc-yellow/15 to-orange-50 border-l-4 border-rdc-yellow rounded-lg p-4 mb-6">
+    <div class="flex items-start gap-3">
+        <div class="bg-rdc-yellow/30 p-2 rounded-lg">
+            <i class="fa-solid fa-bell text-lg text-rdc-yellow"></i>
+        </div>
+        <div class="flex-1">
+            <h3 class="text-base font-bold text-slate-800 mb-0.5">
+                {{ en_attente|length }} demande{{ en_attente|length|pluralize }} en attente de votre signature
+            </h3>
+            <p class="text-sm text-slate-600">
+                Des fédérations ont été enregistrées par le Secrétaire Général et nécessitent votre validation.
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Demandes en attente de signature -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-file-signature text-rdc-blue"></i>
+            Demandes en attente de signature
+        </h2>
+        <span class="bg-rdc-yellow/20 text-rdc-yellow px-2.5 py-1 rounded-full text-xs font-semibold">
+            {{ en_attente|length }} en attente
+        </span>
+    </div>
+    
+    {% if en_attente %}
+    <div class="space-y-3">
+        {% for institution in en_attente %}
+        <div class="border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow bg-slate-50/50">
+            <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h3 class="text-base font-bold text-slate-800 truncate">{{ institution.nom_officiel }}</h3>
+                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs font-semibold flex-shrink-0">
+                            {{ institution.sigle }}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-slate-600">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-hashtag text-slate-400"></i>
+                            <span class="font-mono">{{ institution.code }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder text-slate-400"></i>
+                            <span>{{ institution.numero_dossier|default:"—" }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-futbol text-slate-400"></i>
+                            <span>
+                                {% for discipline in institution.disciplines.all %}
+                                    {{ discipline.designation }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    —
+                                {% endfor %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-xs text-slate-600">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                            <span>{{ institution.nom_president|default:"—" }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-phone text-slate-400"></i>
+                            <span>{{ institution.telephone_president|default:"—" }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if institution.type_agrement_sollicite %}
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+                            Agrément {{ institution.get_type_agrement_sollicite_display }}
+                        </span>
+                        {% if institution.date_demande_agrement %}
+                        <span class="text-xs text-slate-500">
+                            Demandé le {{ institution.date_demande_agrement|date:"d/m/Y" }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex flex-col gap-2 flex-shrink-0">
+                    <a href="{% url 'gouvernance:parapheur_detail' institution.pk %}" 
+                       class="px-5 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 shadow hover:shadow-md whitespace-nowrap justify-center">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>Examiner</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 rounded-full mb-4">
+            <i class="fa-solid fa-check-circle text-3xl text-green-500"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-700 mb-2">Aucune demande en attente</h3>
+        <p class="text-sm text-slate-500">Toutes les demandes ont été traitées.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Historique récent -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-history text-rdc-blue"></i>
+        Historique récent
+    </h2>
+    
+    {% if historique %}
+    <div class="space-y-2">
+        {% for item in historique %}
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+            <div class="flex-shrink-0">
+                {% if item.statut_signature == 'SIGNE' %}
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-check text-sm text-green-600"></i>
+                </div>
+                {% else %}
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-times text-sm text-red-600"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ item.nom_officiel }}</p>
+                <p class="text-xs text-slate-500 font-mono">{{ item.code }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                {% if item.statut_signature == 'SIGNE' %}
+                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">Signé</span>
+                {% else %}
+                <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-semibold">Refusé</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-sm text-slate-500 py-6">Aucun historique disponible</p>
+    {% endif %}
+</div>
+{% endblock %}

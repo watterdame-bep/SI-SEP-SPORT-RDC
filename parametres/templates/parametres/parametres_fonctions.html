@@ -1,0 +1,254 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Paramètres Fonctions | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+input:focus, select:focus {
+    outline: none !important;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-briefcase text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Paramètres Fonctions</h1>
+                <p class="text-sm text-white/80 mt-1">Gestion des fonctions du ministère</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-briefcase text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Fonctions</p>
+                        <p class="text-2xl font-bold text-white">{{ fonctions|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="message-container" class="mb-6 space-y-3"></div>
+
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
+    <div class="flex gap-4 items-center">
+        <div class="flex-1">
+            <input type="text" id="search-input" placeholder="Rechercher une fonction..." 
+                   class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        </div>
+        
+        <button onclick="openCreateModal()" 
+                class="px-6 py-3 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold rounded-lg whitespace-nowrap flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nouvelle Fonction</span>
+        </button>
+    </div>
+</div>
+
+<!-- Liste des fonctions -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Désignation</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Priorité</th>
+                <th class="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="fonctions-list">
+            {% for fonction in fonctions %}
+            <tr class="hover:bg-slate-50 transition-colors" data-uid="{{ fonction.uid }}">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase text-rdc-blue"></i>
+                        <span class="text-sm text-slate-700">{{ fonction.designation }}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm font-semibold text-slate-600">{{ fonction.ordre_priorite }}</span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                        <button onclick="editFonction('{{ fonction.uid }}')" 
+                                class="p-2 text-rdc-blue hover:bg-rdc-blue hover:text-white rounded-lg transition-all" 
+                                title="Modifier">
+                            <i class="fa-solid fa-edit text-lg"></i>
+                        </button>
+                        <button onclick="deleteFonction('{{ fonction.uid }}')" 
+                                class="p-2 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" 
+                                title="Supprimer">
+                            <i class="fa-solid fa-trash text-lg"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-briefcase text-4xl text-slate-300 mb-4"></i>
+                    <p class="text-base font-bold text-slate-900">Aucune fonction enregistrée</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Créer/Modifier -->
+<div id="modal-fonction" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark px-6 py-4 rounded-t-2xl flex items-center justify-between">
+            <h3 id="modal-title" class="text-xl font-bold text-white">Nouvelle Fonction</h3>
+            <button onclick="closeModal()" class="text-white hover:text-rdc-yellow transition-colors">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <form id="form-fonction" method="post" class="p-6 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="fonction-action" name="action" value="add">
+            <input type="hidden" id="fonction-uid" name="fonction_id" value="">
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Désignation <span class="text-rdc-red">*</span></label>
+                <input type="text" id="fonction-designation" name="designation" required
+                       class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                       placeholder="Ex: Ministre, Secrétaire Général...">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Ordre de priorité</label>
+                <input type="number" id="fonction-priorite" name="ordre_priorite" value="0" min="0" max="999"
+                       class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+                <p class="text-xs text-slate-500 mt-1">Plus bas = plus haute priorité</p>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="closeModal()" 
+                        class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg">
+                    Annuler
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold rounded-lg">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmation Suppression -->
+<div id="modal-confirm-delete" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="bg-gradient-to-r from-rdc-red to-red-600 px-6 py-4 rounded-t-2xl">
+            <h3 class="text-xl font-bold text-white">Confirmer la suppression</h3>
+        </div>
+        
+        <div class="p-6">
+            <p class="text-slate-700 mb-6">Êtes-vous sûr de vouloir supprimer cette fonction ? Cette action est irréversible.</p>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="closeConfirmDelete()" 
+                        class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg">
+                    Annuler
+                </button>
+                <button type="button" onclick="confirmDelete()" 
+                        class="flex-1 px-4 py-2.5 bg-rdc-red hover:bg-red-600 text-white text-sm font-semibold rounded-lg">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let fonctionToDelete = null;
+
+// Recherche en temps réel
+document.getElementById('search-input').addEventListener('keyup', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#fonctions-list tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+function openCreateModal() {
+    document.getElementById('fonction-action').value = 'add';
+    document.getElementById('fonction-uid').value = '';
+    document.getElementById('modal-title').textContent = 'Nouvelle Fonction';
+    document.getElementById('fonction-designation').value = '';
+    document.getElementById('fonction-priorite').value = '0';
+    document.getElementById('modal-fonction').classList.remove('hidden');
+}
+
+function editFonction(fonctionId) {
+    const row = document.querySelector(`tr[data-uid="${fonctionId}"]`);
+    const designation = row.querySelector('td:nth-child(1)').textContent.trim();
+    const priorite = row.querySelector('td:nth-child(2)').textContent.trim();
+    
+    document.getElementById('fonction-action').value = 'update';
+    document.getElementById('fonction-uid').value = fonctionId;
+    document.getElementById('modal-title').textContent = 'Modifier la fonction';
+    document.getElementById('fonction-designation').value = designation;
+    document.getElementById('fonction-priorite').value = priorite;
+    document.getElementById('modal-fonction').classList.remove('hidden');
+}
+
+function deleteFonction(fonctionId) {
+    fonctionToDelete = fonctionId;
+    document.getElementById('modal-confirm-delete').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('modal-fonction').classList.add('hidden');
+}
+
+function closeConfirmDelete() {
+    document.getElementById('modal-confirm-delete').classList.add('hidden');
+    fonctionToDelete = null;
+}
+
+function confirmDelete() {
+    if (!fonctionToDelete) return;
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.innerHTML = `
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="fonction_id" value="${fonctionToDelete}">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Fermer les modales avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+        closeConfirmDelete();
+    }
+});
+</script>
+{% endblock %}

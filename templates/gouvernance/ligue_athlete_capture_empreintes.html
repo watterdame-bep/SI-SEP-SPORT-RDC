@@ -1,0 +1,542 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Prise des empreintes — {{ athlete.personne.nom_complet }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-4">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete_uid=athlete.uid %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors" title="Retour à l'enrôlement">
+                    <i class="fa-solid fa-arrow-left text-white"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Station de capture — Empreintes digitales</h1>
+                    <p class="text-white/90 text-sm mt-0.5">SI-SEP Sport RDC — Prélèvement 10 doigts</p>
+                </div>
+            </div>
+            <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete_uid=athlete.uid %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 rounded-lg text-white text-sm font-medium transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+                Retour à l'enrôlement
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" crossorigin="anonymous"></script>
+<script>window.MORPHO_SERVICE_URI = "{{ morpho_service_uri|default:'http://localhost:8032/morfinenroll/' }}";</script>
+<script src="{% static 'capteur/morfinenroll.js' %}"></script>
+<script src="{% static 'capteur/morpho_sisep.js' %}"></script>
+
+<form method="post" enctype="multipart/form-data" id="form-capture">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Colonne gauche : informations de l'athlète -->
+        <div class="lg:col-span-4 space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-900">{{ athlete.personne.nom_complet }}</h2>
+                    <p class="text-sm font-mono font-semibold text-rdc-blue mt-1">#{{ athlete.numero_sportif }}</p>
+                </div>
+                <div class="p-4 flex justify-center bg-slate-50">
+                    {% if athlete.personne.photo %}
+                    <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.personne.nom_complet }}" class="w-36 h-36 rounded-lg object-cover border-2 border-slate-200 shadow-sm">
+                    {% else %}
+                    <div class="w-36 h-36 rounded-lg border-2 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center">
+                        <i class="fa-solid fa-user text-5xl text-slate-400"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="px-4 py-3 bg-slate-50 border-t border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3">Données d'identification</h3>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between"><dt class="text-slate-500">Nom</dt><dd class="font-medium text-slate-900">{{ athlete.personne.nom|default:"—" }}</dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-500">Post-nom</dt><dd class="font-medium text-slate-900">{{ athlete.personne.postnom|default:"—" }}</dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-500">Prénom</dt><dd class="font-medium text-slate-900">{{ athlete.personne.prenom|default:"—" }}</dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-500">N° sportif</dt><dd class="font-mono font-medium text-rdc-blue">{{ athlete.numero_sportif }}</dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-500">Naissance</dt><dd class="font-medium text-slate-900">{{ athlete.personne.date_naissance|date:"d/m/Y"|default:"—" }}{% if athlete.age %} ({{ athlete.age }} ans){% endif %}</dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-500">Sexe</dt><dd class="font-medium text-slate-900">{{ athlete.personne.get_sexe_display|default:"—" }}</dd></div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne droite : lecteur + capture + 10 doigts -->
+        <div class="lg:col-span-8 space-y-4">
+            <!-- Bannière statut lecteur -->
+            <div class="rounded-xl border border-slate-200 overflow-hidden" id="scanner-banner">
+                <div class="px-4 py-3 bg-red-50 border-l-4 border-red-500 flex items-center justify-between flex-wrap gap-2" id="scanner-banner-inner">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+                        <span class="font-semibold text-red-800">Lecteur biométrique : non détecté</span>
+                    </div>
+                    <button type="button" id="btn-init-reader" class="px-3 py-1.5 bg-white border border-red-300 text-red-700 rounded-lg text-sm font-medium hover:bg-red-50">Vérifier le lecteur</button>
+                </div>
+            </div>
+
+            <!-- Instruction + bouton capture -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100">
+                    <p class="text-sm text-slate-700 step-instruction" id="step-instruction">
+                        Placez les <strong>4 doigts de la main droite</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.
+                    </p>
+                </div>
+                <div class="p-4 flex flex-wrap items-center gap-4">
+                    <button type="button" id="btn-capture" class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white rounded-xl hover:bg-rdc-blue-dark font-semibold shadow-lg hover:shadow-xl transition-all">
+                        <i class="fa-solid fa-fingerprint text-xl"></i>
+                        <span id="btn-capture-label">Capturer — Étape 1/3 : Main droite (4 doigts)</span>
+                    </button>
+                    <p class="text-sm text-amber-600 min-w-0" id="capture-status-msg" role="status"></p>
+                </div>
+            </div>
+
+            <!-- MAIN GAUCHE et MAIN DROITE : 4 doigts chacune ; 2 POUCES dans une section à part -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ■ MAIN GAUCHE : 4 doigts (sans les pouces) -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden">
+                    <div class="px-4 py-2.5 border-b border-slate-300">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">■ Main gauche</h3>
+                    </div>
+                    <div class="p-4 flex flex-row gap-3 justify-between">
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L5">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Auriculaire</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L4">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Annulaire</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L3">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Majeur</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L2">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Index</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- ■ MAIN DROITE : 4 doigts (sans les pouces) -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden">
+                    <div class="px-4 py-2.5 border-b border-slate-300">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">■ Main droite</h3>
+                    </div>
+                    <div class="p-4 flex flex-row gap-3 justify-between">
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R2">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Index</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R3">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Majeur</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R4">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Annulaire</span>
+                        </div>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R5">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Auriculaire</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ■ 2 POUCES : pris ensemble, une section à part -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-slate-300">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">■ 2 pouces (pris ensemble)</h3>
+                </div>
+                <div class="p-4 flex flex-row gap-8 justify-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-[160px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                            <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L1">
+                                <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center">Pouce</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-[160px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                            <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R1">
+                                <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center">Pouce</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- État d'avancement (remplace Intégrité de la capture) -->
+            <div class="px-4 py-4 pb-5 bg-white rounded-xl border border-slate-200 shadow-sm mb-8">
+                <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3">État d'avancement</h3>
+                <div class="flex items-center justify-between py-2">
+                    <span class="text-sm text-slate-600">Empreintes digitales</span>
+                    <span class="font-bold text-rdc-blue" id="progress-text">0/10 doigts</span>
+                </div>
+                <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-rdc-blue rounded-full transition-all duration-300" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <p class="text-sm font-semibold text-slate-600 text-center mt-3" id="status-label">Prêt à capturer</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden inputs -->
+    <input type="file" id="input_main_droite_4" name="main_droite_4" accept="image/*" class="hidden">
+    <input type="file" id="input_main_gauche_4" name="main_gauche_4" accept="image/*" class="hidden">
+    <input type="file" id="input_pouces_2" name="pouces_2" accept="image/*" class="hidden">
+    <input type="hidden" name="main_droite_4_b64" id="main_droite_4_b64" value="">
+    <input type="hidden" name="main_gauche_4_b64" id="main_gauche_4_b64" value="">
+    <input type="hidden" name="pouces_2_b64" id="pouces_2_b64" value="">
+    <input type="hidden" name="main_droite_4_template_b64" id="main_droite_4_template_b64" value="">
+    <input type="hidden" name="main_gauche_4_template_b64" id="main_gauche_4_template_b64" value="">
+    <input type="hidden" name="pouces_2_template_b64" id="pouces_2_template_b64" value="">
+</form>
+
+<!-- Modale : empreinte déjà enregistrée (doublon détecté) -->
+<dialog id="modal-empreinte-duplicate" class="rounded-2xl shadow-2xl border-2 border-amber-300 bg-white p-0 w-full max-w-md overflow-hidden backdrop:bg-black/50">
+    <div class="bg-amber-500 px-6 py-4 border-b border-amber-600">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-fingerprint"></i>
+            Empreinte déjà enregistrée
+        </h3>
+    </div>
+    <div class="p-6 space-y-4">
+        <p class="text-slate-700 font-medium">Ces empreintes appartiennent déjà à l'athlète suivant. L'enregistrement est impossible pour éviter les doublons.</p>
+        <div id="modal-duplicate-content" class="flex flex-col items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <img id="modal-duplicate-photo" src="" alt="" class="w-24 h-24 rounded-xl object-cover border-2 border-slate-200 hidden">
+            <div id="modal-duplicate-no-photo" class="w-24 h-24 rounded-xl bg-slate-200 flex items-center justify-center border-2 border-slate-300 hidden">
+                <i class="fa-solid fa-user text-3xl text-slate-500"></i>
+            </div>
+            <div class="text-center">
+                <p id="modal-duplicate-nom" class="font-bold text-slate-900 text-lg"></p>
+                <p id="modal-duplicate-numero" class="text-sm font-mono text-rdc-blue mt-0.5"></p>
+            </div>
+        </div>
+    </div>
+    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button type="button" id="modal-duplicate-close" class="px-5 py-2.5 bg-rdc-blue text-white rounded-xl hover:bg-rdc-blue-dark font-medium transition-colors">
+            Fermer
+        </button>
+    </div>
+</dialog>
+
+<!-- Actions en bas (marge sous État d'avancement = mb-8, plus mt-8 ici = bien séparé des boutons) -->
+<div class="mt-8 flex flex-wrap items-center justify-between gap-4">
+    <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete_uid=athlete.uid %}" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i>Retour sans enregistrer
+    </a>
+    <button type="submit" form="form-capture" id="btn-submit-capture" disabled class="px-6 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed font-medium text-white hover:opacity-90" style="background-color: #0036ca;">
+        <i class="fa-solid fa-check mr-2"></i>Enregistrer les empreintes et retourner à l'enrôlement
+    </button>
+</div>
+
+<script>
+(function() {
+    var steps = [
+        { key: 'main_droite_4', inputId: 'input_main_droite_4', label: 'Capturer — Étape 1/3 : Main droite (4 doigts)', instruction: 'Placez les <strong>4 doigts de la main droite</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.', cellIds: ['cell-R2','cell-R3','cell-R4','cell-R5'] },
+        { key: 'main_gauche_4', inputId: 'input_main_gauche_4', label: 'Capturer — Étape 2/3 : Main gauche (4 doigts)', instruction: 'Placez les <strong>4 doigts de la main gauche</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.', cellIds: ['cell-L5','cell-L4','cell-L3','cell-L2'] },
+        { key: 'pouces_2', inputId: 'input_pouces_2', label: 'Capturer — Étape 3/3 : Les 2 pouces', instruction: 'Placez les <strong>2 pouces</strong> (droit et gauche) <strong>simultanément ou l\'un après l\'autre</strong> sur le lecteur.', cellIds: ['cell-L1','cell-R1'] }
+    ];
+    var currentStep = 0, countDone = 0;
+    var btnCapture = document.getElementById('btn-capture');
+    var btnLabel = document.getElementById('btn-capture-label');
+    var stepInstruction = document.getElementById('step-instruction');
+    var captureStatusMsg = document.getElementById('capture-status-msg');
+    var btnSubmit = document.getElementById('btn-submit-capture');
+    var progressText = document.getElementById('progress-text');
+    var progressBar = document.getElementById('progress-bar');
+    var integrityText = document.getElementById('integrity-text');
+    var statusLabel = document.getElementById('status-label');
+    var scannerBanner = document.getElementById('scanner-banner-inner');
+
+    function updateProgress() {
+        var n = countDone * 10 / 3;
+        if (countDone >= 3) n = 10;
+        var pct = (n / 10) * 100;
+        if (progressBar) progressBar.style.width = pct + '%';
+        if (progressText) progressText.textContent = Math.round(n) + '/10 doigts';
+        if (integrityText) integrityText.textContent = Math.round(n) + '/10 doigts';
+        if (statusLabel) statusLabel.textContent = countDone >= 3 ? 'Capture terminée' : (countDone > 0 ? 'Capture en cours' : 'Prêt à capturer');
+    }
+
+    function setCaptureStatusMsg(text, isError) {
+        if (!captureStatusMsg) return;
+        captureStatusMsg.textContent = text || '';
+        captureStatusMsg.className = 'text-sm min-w-0 ' + (isError ? 'text-red-600' : 'text-amber-600');
+    }
+
+    function setCellsGreen(cellIds) {
+        (cellIds || []).forEach(function(id) {
+            var cell = document.getElementById(id);
+            if (!cell) return;
+            var box = cell.querySelector('.finger-box');
+            cell.classList.remove('border-slate-500', 'bg-white');
+            cell.classList.add('border-emerald-600', 'bg-emerald-500');
+            cell.style.backgroundColor = '#10b981';
+            cell.style.borderColor = '#059669';
+            if (box) box.innerHTML = '<i class="fa-solid fa-check text-white text-lg"></i>';
+        });
+    }
+
+    function setCaptureResult(imageDataUrl, imageBase64, templateBase64, capturedFingers) {
+        var key = steps[currentStep].key;
+        var s = steps[currentStep];
+        setCellsGreen(s.cellIds);
+        var b64El = document.getElementById(key + '_b64');
+        var tplEl = document.getElementById(key + '_template_b64');
+        if (b64El && imageBase64) b64El.value = imageBase64;
+        if (tplEl && templateBase64) tplEl.value = templateBase64;
+        countDone++;
+        updateProgress();
+        if (countDone >= 3) {
+            btnCapture.disabled = true;
+            btnLabel.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>Prélèvement terminé';
+            stepInstruction.innerHTML = 'Toutes les empreintes ont été capturées. Cliquez sur « Enregistrer et retourner » ci-dessous.';
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        } else {
+            setTimeout(function() {
+                currentStep = countDone;
+                var next = steps[currentStep];
+                stepInstruction.innerHTML = next.instruction;
+                btnLabel.textContent = next.label;
+            }, 2500);
+        }
+    }
+
+    document.getElementById('btn-init-reader').addEventListener('click', function() {
+        if (typeof MorphoSISEP === 'undefined' || !MorphoSISEP.checkDevice) return;
+        MorphoSISEP.checkDevice().then(function(r) {
+            if (r.available) {
+                scannerBanner.className = 'px-4 py-3 bg-emerald-50 border-l-4 border-emerald-500 flex items-center justify-between flex-wrap gap-2';
+                scannerBanner.innerHTML = '<div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span class="font-semibold text-emerald-800">Lecteur biométrique : détecté</span></div>';
+            } else {
+                setCaptureStatusMsg(r.error || 'Lecteur non détecté', true);
+            }
+        });
+    });
+
+    btnCapture.addEventListener('click', function() {
+        if (this.disabled) return;
+        var step = currentStep;
+        if (typeof MorphoSISEP !== 'undefined' && MorphoSISEP.captureStep) {
+            btnLabel.textContent = 'Capture en cours...';
+            btnCapture.disabled = true;
+            setCaptureStatusMsg('Connexion au capteur...', false);
+            var statusTimer = setTimeout(function() { setCaptureStatusMsg('Posez la main sur le lecteur...', false); }, 800);
+            var timeoutId = setTimeout(function() {
+                setCaptureStatusMsg('Lecteur ne répond pas (port 8032). Utilisez le sélecteur de fichier.', true);
+                btnCapture.disabled = false;
+                btnLabel.textContent = steps[step].label;
+            }, 62000);
+            MorphoSISEP.captureStep(step).then(function(result) {
+                if (timeoutId) clearTimeout(timeoutId);
+                clearTimeout(statusTimer);
+                btnCapture.disabled = false;
+                btnLabel.textContent = steps[step].label;
+                setCaptureStatusMsg('', false);
+                if (result.success && result.imageBase64) {
+                    setCaptureResult('data:image/bmp;base64,' + result.imageBase64, result.imageBase64, result.templateBase64 || '', result.capturedFingers || []);
+                } else if (result.success) {
+                    setCaptureResult(null, '', result.templateBase64 || '', result.capturedFingers || []);
+                } else {
+                    setCaptureStatusMsg(result.error || 'Échec capture.', true);
+                    alert(result.error || 'Utilisez le sélecteur de fichier.');
+                    var input = document.getElementById(steps[step].inputId);
+                    if (input) input.click();
+                }
+            }).catch(function(e) {
+                if (timeoutId) clearTimeout(timeoutId);
+                clearTimeout(statusTimer);
+                btnCapture.disabled = false;
+                btnLabel.textContent = steps[step].label;
+                setCaptureStatusMsg((e && e.message) || 'Erreur', true);
+            });
+            return;
+        }
+        var input = document.getElementById(steps[step].inputId);
+        if (input) input.click();
+    });
+
+    steps.forEach(function(s) {
+        var input = document.getElementById(s.inputId);
+        if (!input) return;
+        input.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file || !file.type.match(/^image\//)) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var b64 = e.target.result.split(',')[1] || '';
+                setCaptureResult(e.target.result, b64, '', []);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    updateProgress();
+
+    function hasCapture(i) {
+        var key = ['main_droite_4', 'main_gauche_4', 'pouces_2'][i];
+        var input = document.getElementById('input_' + key);
+        var b64 = document.getElementById(key + '_b64');
+        return (input && input.files && input.files.length) || (b64 && b64.value);
+    }
+    // Compression des images base64 en JPEG pour rester sous la limite d'envoi (éviter RequestDataTooBig)
+    function compressBase64Image(b64Value, maxSizeBytes) {
+        maxSizeBytes = maxSizeBytes || 300000;
+        if (!b64Value || b64Value.length < maxSizeBytes) return Promise.resolve(b64Value);
+        var dataUrl = b64Value.indexOf(',') >= 0 ? b64Value : 'data:image/bmp;base64,' + b64Value;
+        return new Promise(function(resolve, reject) {
+            var img = new Image();
+            img.onload = function() {
+                var w = img.width, h = img.height, maxDim = 800;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+                    else { w = Math.round(w * maxDim / h); h = maxDim; }
+                }
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                try {
+                    var jpeg = canvas.toDataURL('image/jpeg', 0.75);
+                    var out = jpeg.indexOf(',') >= 0 ? jpeg.split(',')[1] : jpeg;
+                    resolve(out);
+                } catch (err) { resolve(b64Value); }
+            };
+            img.onerror = function() { resolve(b64Value); };
+            img.src = dataUrl;
+        });
+    }
+
+    var modalDuplicate = document.getElementById('modal-empreinte-duplicate');
+    var modalDuplicatePhoto = document.getElementById('modal-duplicate-photo');
+    var modalDuplicateNoPhoto = document.getElementById('modal-duplicate-no-photo');
+    var modalDuplicateNom = document.getElementById('modal-duplicate-nom');
+    var modalDuplicateNumero = document.getElementById('modal-duplicate-numero');
+    var modalDuplicateClose = document.getElementById('modal-duplicate-close');
+    var empreintesTemplatesUrl = '{% url "gouvernance:ligue_athlete_capture_empreintes_templates" athlete.uid %}';
+
+    if (modalDuplicateClose && modalDuplicate) {
+        modalDuplicateClose.addEventListener('click', function() { modalDuplicate.close(); });
+    }
+
+    function showDuplicateModal(item) {
+        if (!modalDuplicate || !item) return;
+        if (item.photo_url) {
+            modalDuplicatePhoto.src = item.photo_url;
+            modalDuplicatePhoto.alt = item.nom_complet || '';
+            modalDuplicatePhoto.classList.remove('hidden');
+            if (modalDuplicateNoPhoto) modalDuplicateNoPhoto.classList.add('hidden');
+        } else {
+            modalDuplicatePhoto.classList.add('hidden');
+            if (modalDuplicateNoPhoto) modalDuplicateNoPhoto.classList.remove('hidden');
+        }
+        if (modalDuplicateNom) modalDuplicateNom.textContent = item.nom_complet || '—';
+        if (modalDuplicateNumero) modalDuplicateNumero.textContent = item.numero_sportif ? 'N° ' + item.numero_sportif : '';
+        modalDuplicate.showModal();
+    }
+
+    function checkDuplicateThenSubmit(form) {
+        var capturedTemplate = document.getElementById('main_droite_4_template_b64');
+        var templateB64 = (capturedTemplate && capturedTemplate.value) ? capturedTemplate.value.trim() : '';
+        if (!templateB64 || typeof MorFinEnrollMatchTemplate !== 'function') {
+            doSubmit(form);
+            return;
+        }
+        fetch(empreintesTemplatesUrl, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok || !(data.items && data.items.length)) {
+                    doSubmit(form);
+                    return;
+                }
+                var tempFormat = data.temp_format || '0';
+                var idx = 0;
+                function checkNext() {
+                    if (idx >= data.items.length) {
+                        doSubmit(form);
+                        return;
+                    }
+                    var item = data.items[idx];
+                    idx++;
+                    MorFinEnrollMatchTemplate(item.template_base64, templateB64, tempFormat).then(function(res) {
+                        if (res.httpStaus && res.data && res.data.ErrorCode === '0') {
+                            var score = parseInt(res.data.MatchScore, 10) || 0;
+                            if (score >= 40) {
+                                showDuplicateModal(item);
+                                return;
+                            }
+                        }
+                        checkNext();
+                    }).catch(function() { checkNext(); });
+                }
+                checkNext();
+            })
+            .catch(function() { doSubmit(form); });
+    }
+
+    function doSubmit(form) {
+        if (!confirm('Enregistrer les empreintes et retourner à la page d\'enrôlement ?')) return;
+        var ids = ['main_droite_4_b64', 'main_gauche_4_b64', 'pouces_2_b64'];
+        var promises = ids.map(function(id) {
+            var el = document.getElementById(id);
+            if (!el || !el.value) return Promise.resolve();
+            return compressBase64Image(el.value, 250000).then(function(compressed) {
+                el.value = compressed;
+            });
+        });
+        Promise.all(promises).then(function() {
+            form.submit();
+        });
+    }
+
+    document.getElementById('form-capture').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!hasCapture(0) || !hasCapture(1) || !hasCapture(2)) {
+            alert('Veuillez effectuer les 3 prélèvements avant d\'enregistrer.');
+            return;
+        }
+        var form = document.getElementById('form-capture');
+        checkDuplicateThenSubmit(form);
+    });
+})();
+</script>
+{% endblock %}

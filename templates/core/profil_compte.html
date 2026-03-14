@@ -1,0 +1,320 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Profil du compte | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-user-circle text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Profil du compte</h1>
+                <p class="text-sm text-white/80 mt-1">{{ mon_institution.nom_officiel }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <input type="hidden" name="user_id" value="{{ profil_compte.user.id }}">
+    
+    <!-- Informations du compte -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user text-rdc-blue"></i>
+            Informations du compte
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Utilisateur</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ profil_compte.user.get_full_name|default:profil_compte.user.username }}</p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Email</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ profil_compte.user.email }}</p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Rôle</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                        <i class="fa-solid fa-user-shield"></i>
+                        {{ profil_compte.get_role_display }}
+                    </span>
+                </p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Statut</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">
+                    {% if profil_compte.user.is_active %}
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Actif
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            Inactif
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Date de création</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">{{ profil_compte.user.date_joined|date:"d/m/Y H:i" }}</p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Dernière connexion</p>
+                <p class="text-sm font-semibold text-slate-800 mt-1">
+                    {% if profil_compte.user.last_login %}
+                        {{ profil_compte.user.last_login|date:"d/m/Y H:i" }}
+                    {% else %}
+                        <span class="text-slate-500">Jamais</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations de l'agent lié -->
+    {% if agent_lie %}
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-tie text-rdc-blue"></i>
+                Agent lié
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Nom complet</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">{{ agent_lie.personne.nom }} {{ agent_lie.personne.prenom }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Matricule</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">{{ agent_lie.matricule|default:"N/A" }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Email</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">{{ agent_lie.personne.email }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Téléphone</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">{{ agent_lie.personne.telephone|default:"N/A" }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fonction</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">
+                        {% if agent_lie.personne.membres.all %}
+                            {{ agent_lie.personne.membres.all.0.fonction.designation }}
+                        {% else %}
+                            <span class="text-slate-500">Non renseignée</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-info-circle text-blue-600 text-lg mt-0.5 flex-shrink-0"></i>
+                <div>
+                    <h3 class="font-semibold text-blue-900">Aucun agent lié</h3>
+                    <p class="text-sm text-blue-800 mt-1">Ce compte n'est actuellement lié à aucun agent.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Boutons d'action -->
+    <div class="flex gap-3">
+        <a href="{% url 'core:gerer_comptes' %}" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>Retour
+        </a>
+        <button onclick="openLinkAgentModal()" class="px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-link"></i>{% if agent_lie %}Changer l'agent{% else %}Lier un agent{% endif %}
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour relier un agent -->
+<dialog id="confirmLinkModal" class="rounded-lg shadow-2xl w-full max-w-md p-0">
+    <form class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-yellow-100 rounded-full">
+                <i class="fa-solid fa-exclamation-triangle text-yellow-600"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Confirmation</h2>
+        </div>
+
+        <div class="text-sm text-slate-600 mb-4">
+            <p>Vous êtes sur le point de <strong>transférer ce compte</strong> à une nouvelle personne.</p>
+            <p class="mt-2">L'agent actuellement lié (<strong>{{ agent_lie.personne.nom }} {{ agent_lie.personne.prenom }}</strong>) ne sera plus associé à ce compte.</p>
+            <p class="mt-2">Êtes-vous sûr de vouloir continuer ?</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="button" onclick="closeConfirmModal()" class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                Annuler
+            </button>
+            <button type="button" onclick="proceedToLinkAgent()" class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors">
+                Continuer
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Modal de sélection d'agent -->
+<dialog id="linkAgentModal" class="rounded-lg shadow-2xl w-full max-w-md p-0">
+    <form class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-blue-100 rounded-full">
+                <i class="fa-solid fa-users text-blue-600"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Sélectionner un agent</h2>
+        </div>
+
+        <div id="agent-list-link" class="max-h-96 overflow-y-auto mb-4 space-y-2">
+            <!-- Agents will be loaded here -->
+        </div>
+
+        <div class="flex gap-3">
+            <button type="button" onclick="closeLinkAgentModal()" class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                Annuler
+            </button>
+            <button type="button" onclick="confirmLinkAgent()" class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors">
+                Lier
+            </button>
+        </div>
+    </form>
+</dialog>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedAgentForLink = null;
+
+function openLinkAgentModal() {
+    // First show confirmation modal if agent is already linked
+    const agentLinked = '{{ agent_lie.uid|default:"" }}';
+    if (agentLinked) {
+        document.getElementById('confirmLinkModal').showModal();
+    } else {
+        proceedToLinkAgent();
+    }
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmLinkModal').close();
+}
+
+function proceedToLinkAgent() {
+    closeConfirmModal();
+    
+    // Récupérer les agents disponibles
+    fetch(`/api/agents-disponibles/`)
+        .then(response => response.json())
+        .then(data => {
+            const agentList = document.getElementById('agent-list-link');
+            agentList.innerHTML = '';
+            
+            if (data.agents.length === 0) {
+                agentList.innerHTML = '<p class="text-center text-slate-600 py-8">Aucun agent disponible</p>';
+            } else {
+                data.agents.forEach(agent => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-rdc-blue hover:bg-blue-50 transition-all';
+                    div.onmouseover = () => {
+                        div.classList.add('border-rdc-blue', 'bg-blue-50');
+                    };
+                    div.onmouseout = () => {
+                        if (!div.classList.contains('selected')) {
+                            div.classList.remove('border-rdc-blue', 'bg-blue-50');
+                        }
+                    };
+                    
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="agent-link" value="${agent.uid}" class="agent-radio cursor-pointer">
+                            <div class="flex-1">
+                                <div class="font-semibold text-slate-900 text-sm">${agent.nom_complet}</div>
+                                <div class="text-xs text-slate-500">${agent.matricule}</div>
+                            </div>
+                        </div>
+                    `;
+                    div.onclick = () => {
+                        document.querySelectorAll('#agent-list-link > div').forEach(item => {
+                            item.classList.remove('border-rdc-blue', 'bg-blue-50', 'selected');
+                        });
+                        div.classList.add('border-rdc-blue', 'bg-blue-50', 'selected');
+                        document.querySelectorAll('.agent-radio').forEach(r => r.checked = false);
+                        div.querySelector('.agent-radio').checked = true;
+                    };
+                    agentList.appendChild(div);
+                });
+            }
+            
+            document.getElementById('linkAgentModal').showModal();
+        });
+}
+
+function confirmLinkAgent() {
+    const selectedAgent = document.querySelector('input[name="agent-link"]:checked');
+    if (!selectedAgent) {
+        alert('Veuillez sélectionner un agent');
+        return;
+    }
+    
+    const agentId = selectedAgent.value;
+    const userId = document.querySelector('input[name="user_id"]').value;
+    
+    const formData = new FormData();
+    formData.append('agent_id', agentId);
+    
+    fetch(`/api/compte/${userId}/lier-agent/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        },
+        body: formData
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload();
+          } else {
+              alert('Erreur: ' + data.error);
+          }
+      });
+    
+    document.getElementById('linkAgentModal').close();
+}
+
+function closeLinkAgentModal() {
+    document.getElementById('linkAgentModal').close();
+}
+
+// Close modals with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const confirmModal = document.getElementById('confirmLinkModal');
+        const linkModal = document.getElementById('linkAgentModal');
+        if (confirmModal && confirmModal.open) confirmModal.close();
+        if (linkModal && linkModal.open) linkModal.close();
+    }
+});
+</script>
+{% endblock %}

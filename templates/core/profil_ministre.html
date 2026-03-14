@@ -1,0 +1,354 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Mon Profil - Ministre | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-user-tie text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Mon Profil</h1>
+                <p class="text-sm text-white/80 mt-1">Gestion de votre compte et documents officiels</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg">
+        <p class="text-sm font-semibold">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Modale de confirmation par mot de passe -->
+<div id="passwordModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-lock text-red-600 text-lg"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Confirmation de sécurité</h2>
+        </div>
+        
+        <p class="text-sm text-slate-600 mb-4">
+            Entrez votre mot de passe pour modifier la signature ou le sceau (protection d'État).
+        </p>
+        
+        <form id="passwordForm" method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="formType" name="form_type" value="">
+            <input type="hidden" id="fileInput" name="file_input" value="">
+            
+            <div>
+                <label for="modalPassword" class="block text-sm font-semibold text-slate-700 mb-2">
+                    Mot de passe
+                </label>
+                <input type="password" id="modalPassword" name="password" 
+                       placeholder="Entrez votre mot de passe"
+                       class="block w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                       required autofocus>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="closePasswordModal()" 
+                        class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors">
+                    Confirmer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Profil Principal -->
+<div class="max-w-6xl mx-auto">
+    <!-- En-tête du profil avec avatar -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden mb-6">
+        <div class="h-32 bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker"></div>
+        
+        <div class="px-6 pb-6">
+            <div class="flex flex-col md:flex-row md:items-end md:gap-6 -mt-16 mb-6">
+                <!-- Avatar -->
+                <div class="flex h-32 w-32 items-center justify-center bg-white rounded-lg shadow border-4 border-white text-rdc-blue text-5xl font-bold">
+                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                </div>
+                
+                <!-- Infos principales -->
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold text-slate-900">
+                        {{ user.get_full_name|default:user.username }}
+                    </h1>
+                    <p class="text-lg text-rdc-blue font-semibold mt-1">
+                        {{ profil.get_role_display }}
+                    </p>
+                    <p class="text-sm text-slate-500 mt-2">
+                        {{ profil.institution.nom_officiel }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu en deux colonnes -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Colonne gauche: Informations personnelles -->
+        <div class="lg:col-span-1">
+            <!-- Informations de contact -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900">Informations de Contact</h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Email</p>
+                        <p class="text-sm text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-envelope text-rdc-blue"></i>
+                            {{ user.email }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Rôle</p>
+                        <p class="text-sm text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-rdc-blue"></i>
+                            {{ profil.get_role_display }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Institution</p>
+                        <p class="text-sm text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-building text-rdc-blue"></i>
+                            {{ profil.institution.nom_officiel }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statut du compte -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900">Statut du Compte</h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Compte actif</span>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Actif
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-slate-600">Email vérifié</span>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Vérifié
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                        <span class="text-xs text-slate-500">Membre depuis</span>
+                        <span class="text-sm font-semibold text-slate-900">
+                            {{ user.date_joined|date:"d/m/Y" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne droite: Documents officiels -->
+        <div class="lg:col-span-2">
+            <!-- Signature -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Votre Signature</h2>
+                        <p class="text-xs text-slate-500 mt-1">Document officiel - Protection d'État</p>
+                    </div>
+                    <i class="fa-solid fa-pen-fancy text-2xl text-rdc-blue/20"></i>
+                </div>
+                <div class="p-6">
+                    {% if profil.signature_image %}
+                    <div class="mb-6">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Signature actuelle</p>
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex items-center justify-center" style="height: 120px;">
+                            <img src="{{ profil.signature_image.url }}" alt="Signature" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800 flex items-center gap-2">
+                            <i class="fa-solid fa-exclamation-circle"></i>
+                            Aucune signature enregistrée. Veuillez en ajouter une.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <input type="file" id="signature_image" name="signature_image" accept=".png" class="hidden">
+                    <button type="button" onclick="openPasswordModal('signature', 'signature_image')" 
+                            class="w-full px-4 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-upload"></i>
+                        Mettre à jour la Signature
+                    </button>
+                    <p class="text-xs text-slate-500 mt-3 text-center">
+                        PNG avec fond transparent, 400×200px recommandé
+                    </p>
+                </div>
+            </div>
+
+            <!-- Sceau -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Sceau du Ministère</h2>
+                        <p class="text-xs text-slate-500 mt-1">Document officiel - Protection d'État</p>
+                    </div>
+                    <i class="fa-solid fa-stamp text-2xl text-rdc-blue/20"></i>
+                </div>
+                <div class="p-6">
+                    {% if profil.sceau_image %}
+                    <div class="mb-6">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Sceau actuel</p>
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 flex items-center justify-center" style="height: 120px;">
+                            <img src="{{ profil.sceau_image.url }}" alt="Sceau" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800 flex items-center gap-2">
+                            <i class="fa-solid fa-exclamation-circle"></i>
+                            Aucun sceau enregistré. Veuillez en ajouter un.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <input type="file" id="sceau_image" name="sceau_image" accept=".png" class="hidden">
+                    <button type="button" onclick="openPasswordModal('sceau', 'sceau_image')" 
+                            class="w-full px-4 py-3 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-upload"></i>
+                        Mettre à jour le Sceau
+                    </button>
+                    <p class="text-xs text-slate-500 mt-3 text-center">
+                        PNG avec fond transparent, 300×300px recommandé
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section d'aide -->
+    <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+        <div class="flex gap-4">
+            <i class="fa-solid fa-lightbulb text-blue-600 text-xl mt-0.5 flex-shrink-0"></i>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-2">Comment préparer vos images?</h3>
+                <ul class="text-sm text-blue-800 space-y-1">
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <span>Scanner votre signature et le sceau à 300 DPI minimum</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <span>Retirer le fond blanc (utiliser remove.bg ou GIMP)</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <span>Exporter en PNG avec fond transparent</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fa-solid fa-check text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <span>Redimensionner: Signature 400×200px, Sceau 300×300px</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPasswordModal(formType, fileInputId) {
+    // Ouvrir le sélecteur de fichier
+    document.getElementById(fileInputId).click();
+    
+    // Attendre que l'utilisateur sélectionne un fichier
+    document.getElementById(fileInputId).addEventListener('change', function() {
+        if (this.files.length > 0) {
+            // Afficher la modale
+            document.getElementById('formType').value = formType;
+            document.getElementById('fileInput').value = fileInputId;
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('modalPassword').focus();
+        }
+    }, { once: true });
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').classList.add('hidden');
+    document.getElementById('modalPassword').value = '';
+}
+
+// Fermer la modale en cliquant en dehors
+document.getElementById('passwordModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePasswordModal();
+    }
+});
+
+// Soumettre le formulaire avec le fichier
+document.getElementById('passwordForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formType = document.getElementById('formType').value;
+    const fileInputId = document.getElementById('fileInput').value;
+    const password = document.getElementById('modalPassword').value;
+    const fileInput = document.getElementById(fileInputId);
+    
+    if (fileInput.files.length === 0) {
+        alert('Veuillez sélectionner un fichier');
+        return;
+    }
+    
+    // Créer un FormData avec le fichier et le mot de passe
+    const formData = new FormData();
+    formData.append('form_type', formType);
+    formData.append('password', password);
+    formData.append(fileInputId, fileInput.files[0]);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Soumettre via fetch
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert('Erreur lors du téléchargement');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du téléchargement');
+    });
+});
+
+// Fermer la modale avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePasswordModal();
+    }
+});
+</script>
+{% endblock %}

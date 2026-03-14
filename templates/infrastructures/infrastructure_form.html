@@ -1,0 +1,1168 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{# Template version: 2.0 - Manager Identity Complete #}
+
+{% block title %}{% if form.instance.uid %}Modifier{% else %}Créer{% endif %} Infrastructure | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                    {% if form.instance.uid %}Modifier{% else %}Créer{% endif %} une Infrastructure
+                </h1>
+                <p class="text-sm text-white/80 mt-1">
+                    {% if form.instance.uid %}
+                        Mise à jour des informations de l'infrastructure
+                    {% else %}
+                        Enregistrement d'une nouvelle infrastructure sportive
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'infrastructures:infrastructure_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold rounded-lg transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages Django -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 p-4 rounded-lg border-l-4 {% if message.tags == 'error' %}bg-red-50 border-red-400{% elif message.tags == 'success' %}bg-green-50 border-green-400{% else %}bg-blue-50 border-blue-400{% endif %}">
+        <div class="flex-1">
+            <p class="text-sm {% if message.tags == 'error' %}text-red-800{% elif message.tags == 'success' %}text-green-800{% else %}text-blue-800{% endif %}">
+                {{ message }}
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Messages d'erreur -->
+{% if form.non_field_errors %}
+<div class="mb-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+    <div class="flex items-start gap-3">
+        <i class="fa-solid fa-exclamation-circle text-xl text-red-600 mt-0.5"></i>
+        <div class="flex-1">
+            <p class="text-sm font-semibold text-red-800">Erreurs du formulaire:</p>
+            <ul class="mt-2 space-y-1">
+                {% for error in form.non_field_errors %}
+                <li class="text-sm text-red-700">• {{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<form method="post" class="space-y-6">
+    {% csrf_token %}
+    
+    <!-- Section 1: Informations Générales -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-info text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Informations Générales</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nom -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Nom de l'Infrastructure
+                    <span class="text-red-500">*</span>
+                </label>
+                {{ form.nom }}
+                {% if form.nom.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.nom.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Type d'infrastructure -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Type d'Infrastructure
+                    <span class="text-red-500">*</span>
+                </label>
+                {{ form.type_infrastructure }}
+                {% if form.type_infrastructure.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.type_infrastructure.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- État de viabilité -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    État de Viabilité
+                </label>
+                {{ form.etat_viabilite }}
+                {% if form.etat_viabilite.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.etat_viabilite.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Type de sol -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Type de Sol
+                </label>
+                {{ form.type_sol }}
+                {% if form.type_sol.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.type_sol.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="mt-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Description
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.description.errors.0 }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Section 2: Géolocalisation -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-map-location-dot text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Géolocalisation</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Latitude -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Latitude
+                </label>
+                {{ form.latitude }}
+                {% if form.latitude.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.latitude.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Longitude -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Longitude
+                </label>
+                {{ form.longitude }}
+                {% if form.longitude.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.longitude.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Bouton Géolocalisation -->
+        <button type="button" onclick="getLocation()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors shadow hover:shadow-md">
+            <i class="fa-solid fa-location-crosshairs"></i>
+            <span>Obtenir ma position actuelle</span>
+        </button>
+        
+    </div>
+    
+    <!-- Section 3: Localisation Administrative -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-building text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Localisation Administrative</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Province -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Province
+                    <span class="text-slate-500 text-xs">(Auto-remplie)</span>
+                </label>
+                {{ form.province_admin }}
+                {% if form.province_admin.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.province_admin.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Territoire -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Territoire/Ville
+                </label>
+                {{ form.territoire }}
+                {% if form.territoire.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.territoire.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Secteur -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Secteur
+                </label>
+                {{ form.secteur }}
+                {% if form.secteur.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.secteur.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Quartier -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Quartier/Groupement
+                </label>
+                {{ form.quartier }}
+                {% if form.quartier.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.quartier.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Avenue et Numéro -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Avenue -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Avenue/Rue
+                </label>
+                {{ form.avenue }}
+                {% if form.avenue.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.avenue.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Numéro -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Numéro
+                </label>
+                {{ form.numero }}
+                {% if form.numero.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.numero.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section 4: Gestion et Contact -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-phone text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Gestion et Contact</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Type de propriétaire -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Type de Propriétaire
+                </label>
+                {{ form.proprietaire_type }}
+                {% if form.proprietaire_type.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.proprietaire_type.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Propriétaire -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Propriétaire
+                </label>
+                {{ form.proprietaire }}
+                {% if form.proprietaire.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.proprietaire.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Gestionnaire -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Identité du Gestionnaire
+            </label>
+            <p class="text-xs text-slate-500 mb-3">
+                Entrez les informations complètes du gestionnaire responsable de l'infrastructure
+            </p>
+            
+            <!-- Type de Gestionnaire -->
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">
+                    Type de Gestionnaire
+                </label>
+                {{ form.gestionnaire_type }}
+                {% if form.gestionnaire_type.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.gestionnaire_type.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Grille 2x2 pour les détails du gestionnaire -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Prénom -->
+                <div id="prenom-field">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Prénom
+                    </label>
+                    {{ form.gestionnaire_prenom }}
+                    {% if form.gestionnaire_prenom.errors %}
+                    <div class="text-xs text-red-600 mt-1">{{ form.gestionnaire_prenom.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Nom (label change selon le type) -->
+                <div id="nom-field">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="nom-label">
+                        Nom
+                    </label>
+                    {{ form.gestionnaire_nom }}
+                    {% if form.gestionnaire_nom.errors %}
+                    <div class="text-xs text-red-600 mt-1">{{ form.gestionnaire_nom.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Postnom -->
+                <div id="postnom-field">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Postnom
+                    </label>
+                    {{ form.gestionnaire_postnom }}
+                    {% if form.gestionnaire_postnom.errors %}
+                    <div class="text-xs text-red-600 mt-1">{{ form.gestionnaire_postnom.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Sexe -->
+                <div id="sexe-field">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">
+                        Sexe
+                    </label>
+                    {{ form.gestionnaire_sexe }}
+                    {% if form.gestionnaire_sexe.errors %}
+                    <div class="text-xs text-red-600 mt-1">{{ form.gestionnaire_sexe.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Téléphone et Email du gestionnaire -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Téléphone du gestionnaire -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Téléphone du Gestionnaire
+                </label>
+                {{ form.telephone_gestionnaire }}
+                {% if form.telephone_gestionnaire.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.telephone_gestionnaire.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Email du gestionnaire -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Email du Gestionnaire
+                </label>
+                {{ form.email_gestionnaire }}
+                {% if form.email_gestionnaire.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.email_gestionnaire.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section 5: Paramètres Spéciaux -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-sliders text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Paramètres Spéciaux</h2>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Infrastructure d'intérêt national -->
+            <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex items-center h-6">
+                    {{ form.interet_national }}
+                </div>
+                <div class="flex-1">
+                    <label class="text-sm font-semibold text-slate-700">
+                        Infrastructure d'Intérêt National
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Marquez cette infrastructure si elle est d'importance nationale (modifiable uniquement par le Secrétaire Général).
+                    </p>
+                    {% if form.interet_national.errors %}
+                    <div class="text-xs text-red-600 mt-1">{{ form.interet_national.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section 6: Suivi Technique -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-chart-line text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Informations Technique</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Capacité en spectateurs -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Capacité en Spectateurs
+                </label>
+                {{ form.capacite_spectateurs }}
+                {% if form.capacite_spectateurs.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.capacite_spectateurs.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Surface sportive -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Surface Sportive
+                </label>
+                {{ form.surface_sportive }}
+                {% if form.surface_sportive.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.surface_sportive.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Éclairage -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Éclairage
+                </label>
+                {{ form.eclairage }}
+                {% if form.eclairage.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.eclairage.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Vestiaires -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Vestiaires
+                </label>
+                {{ form.vestiaires }}
+                {% if form.vestiaires.errors %}
+                <div class="text-xs text-red-600 mt-1">{{ form.vestiaires.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Équipements disponibles -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Équipements Disponibles
+            </label>
+            {{ form.equipements_disponibles }}
+            {% if form.equipements_disponibles.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.equipements_disponibles.errors.0 }}</div>
+            {% endif %}
+            <p class="text-xs text-slate-500 mt-1">
+                Listez les équipements disponibles (buts, filets, bancs, etc.)
+            </p>
+        </div>
+        
+        <!-- Mesures de sécurité -->
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Mesures de Sécurité
+            </label>
+            {{ form.securite }}
+            {% if form.securite.errors %}
+            <div class="text-xs text-red-600 mt-1">{{ form.securite.errors.0 }}</div>
+            {% endif %}
+            <p class="text-xs text-slate-500 mt-1">
+                Décrivez les mesures de sécurité en place (clôture, gardiens, extincteurs, etc.)
+            </p>
+        </div>
+    </div>
+    
+    <!-- Section 7: Photo du Stade -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-200">
+            <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-camera text-lg text-rdc-blue"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-800">Photos du Stade</h2>
+            <span class="ml-auto inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                <i class="fa-solid fa-star"></i> 5 obligatoires
+            </span>
+        </div>
+        
+        <!-- Galerie de photos -->
+        <div id="photoGallery" class="mb-4 pb-2">
+            <div class="flex gap-2 overflow-x-auto pb-1">
+                <!-- Les photos seront ajoutées ici dynamiquement -->
+            </div>
+        </div>
+        
+        <!-- Boutons d'action -->
+        <div class="flex gap-3">
+            <button type="button" id="btnCamera" class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-xl">
+                <i class="fa-solid fa-camera text-xl"></i>
+                <span>Capturer</span>
+            </button>
+            <button type="button" id="btnUpload" class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-xl">
+                <i class="fa-solid fa-upload text-xl"></i>
+                <span>Télécharger</span>
+            </button>
+        </div>
+        
+        <p class="text-xs text-slate-500 mt-3 text-center">
+            <i class="fa-solid fa-info-circle"></i>
+            Cliquez pour capturer avec votre caméra ou télécharger des photos
+        </p>
+    </div>
+    
+    <!-- Modal Caméra -->
+    <div id="cameraModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" style="display: none;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+            <div class="px-6 py-4 bg-gradient-to-r from-rdc-blue to-rdc-blue/80 rounded-t-xl flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Capturer une Photo</h3>
+                <button type="button" id="btnCloseCam" class="text-white/80 hover:text-white text-xl">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <video id="cameraStream" class="w-full rounded-lg bg-black mb-4" style="max-height: 400px;"></video>
+                
+                <div class="flex gap-3 justify-center">
+                    <button type="button" id="btnCapture" class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Prendre une Photo</span>
+                    </button>
+                    <button type="button" id="btnCancelCam" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-300 hover:bg-slate-400 text-slate-800 font-semibold rounded-lg transition-colors">
+                        <i class="fa-solid fa-times"></i>
+                        <span>Annuler</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Input file caché pour upload -->
+    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+    
+    <!-- Boutons d'action -->
+    <div class="flex items-center justify-between gap-3 bg-white rounded-lg shadow border border-slate-200 p-6">
+        <a href="{% url 'infrastructures:infrastructure_list' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm font-semibold rounded-lg transition-colors">
+            <i class="fa-solid fa-times"></i>
+            <span>Annuler</span>
+        </a>
+        
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors shadow hover:shadow-md">
+            <i class="fa-solid fa-check"></i>
+            <span>Enregistrer</span>
+        </button>
+    </div>
+</form>
+
+<script>
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                document.getElementById('id_latitude').value = position.coords.latitude.toFixed(6);
+                document.getElementById('id_longitude').value = position.coords.longitude.toFixed(6);
+                alert('Position obtenue avec succès!');
+            },
+            function(error) {
+                alert('Erreur de géolocalisation: ' + error.message);
+            }
+        );
+    } else {
+        alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+    }
+}
+
+// ===== PHOTO UPLOAD MANAGEMENT =====
+let uploadedPhotos = [];
+let cameraStream = null;
+let canvas = null;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    renderPhotos();
+    setupPhotoEventListeners();
+});
+
+function setupPhotoEventListeners() {
+    const btnCamera = document.getElementById('btnCamera');
+    if (btnCamera) btnCamera.addEventListener('click', openCameraModal);
+    
+    const btnUpload = document.getElementById('btnUpload');
+    if (btnUpload) btnUpload.addEventListener('click', triggerFileUpload);
+    
+    const btnCloseCam = document.getElementById('btnCloseCam');
+    if (btnCloseCam) btnCloseCam.addEventListener('click', closeCameraModal);
+    
+    const btnCancelCam = document.getElementById('btnCancelCam');
+    if (btnCancelCam) btnCancelCam.addEventListener('click', closeCameraModal);
+    
+    const btnCapture = document.getElementById('btnCapture');
+    if (btnCapture) btnCapture.addEventListener('click', capturePhoto);
+    
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.addEventListener('change', handlePhotoUpload);
+}
+
+function openCameraModal() {
+    const modal = document.getElementById('cameraModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' },
+            audio: false 
+        })
+        .then(stream => {
+            cameraStream = stream;
+            const video = document.getElementById('cameraStream');
+            if (video) {
+                video.srcObject = stream;
+                video.play();
+            }
+        })
+        .catch(err => {
+            alert('Erreur d\'accès à la caméra: ' + err.message);
+            closeCameraModal();
+        });
+    }
+}
+
+function closeCameraModal() {
+    const modal = document.getElementById('cameraModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraStream');
+    if (!video) return;
+    
+    if (!canvas) canvas = document.createElement('canvas');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob(blob => {
+        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        processPhoto(file);
+        closeCameraModal();
+    }, 'image/jpeg', 0.95);
+}
+
+function triggerFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.click();
+}
+
+function handlePhotoUpload(event) {
+    const files = event.target.files;
+    if (files) {
+        for (let i = 0; i < files.length; i++) {
+            if (uploadedPhotos.length >= 5) {
+                alert('Vous avez déjà 5 photos. Supprimez-en une avant d\'en ajouter d\'autres.');
+                break;
+            }
+            processPhoto(files[i]);
+        }
+    }
+    event.target.value = '';
+}
+
+function processPhoto(file) {
+    if (uploadedPhotos.length >= 5) {
+        alert('Vous avez déjà 5 photos. Supprimez-en une avant d\'en ajouter une nouvelle.');
+        return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner une image valide.');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('La photo ne doit pas dépasser 5MB.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxWidth = 800;
+            const maxHeight = 800;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = Math.round((width * maxHeight) / height);
+                    height = maxHeight;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob(blob => {
+                const photoId = 'photo_' + Date.now();
+                const photoData = {
+                    id: photoId,
+                    file: new File([blob], file.name, { type: 'image/jpeg' }),
+                    preview: canvas.toDataURL('image/jpeg', 0.8)
+                };
+                
+                uploadedPhotos.push(photoData);
+                renderPhotos();
+            }, 'image/jpeg', 0.8);
+        };
+        img.onerror = function() {
+            alert('Erreur lors du chargement de l\'image');
+        };
+        img.src = e.target.result;
+    };
+    reader.onerror = function() {
+        alert('Erreur lors de la lecture du fichier');
+    };
+    reader.readAsDataURL(file);
+}
+
+function renderPhotos() {
+    const photoGallery = document.getElementById('photoGallery');
+    if (!photoGallery) return;
+    
+    let gallery = photoGallery.querySelector('div');
+    if (!gallery) {
+        gallery = document.createElement('div');
+        gallery.className = 'flex gap-3 overflow-x-auto pb-2';
+        photoGallery.appendChild(gallery);
+    }
+    
+    gallery.innerHTML = '';
+    
+    uploadedPhotos.forEach((photo, index) => {
+        const photoCard = document.createElement('div');
+        photoCard.className = 'flex-shrink-0 relative group';
+        photoCard.innerHTML = `
+            <div class="relative bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 w-20 h-20 md:w-24 md:h-24">
+                <img src="${photo.preview}" alt="Photo ${index + 1}" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
+                    <button type="button" class="opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow-lg" onclick="removePhoto('${photo.id}')">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                </div>
+                <div class="absolute top-0.5 right-0.5 bg-rdc-blue text-white px-1.5 py-0.5 rounded text-xs font-bold shadow">
+                    ${index + 1}/5
+                </div>
+            </div>
+        `;
+        gallery.appendChild(photoCard);
+    });
+    
+    for (let i = uploadedPhotos.length; i < 5; i++) {
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'flex-shrink-0';
+        emptySlot.innerHTML = `
+            <div class="bg-slate-50 rounded-lg border-2 border-dashed border-slate-300 w-20 h-20 md:w-24 md:h-24 flex items-center justify-center hover:border-rdc-blue hover:bg-rdc-blue/5 transition-all">
+                <div class="text-center">
+                    <i class="fa-solid fa-image text-lg text-slate-300"></i>
+                    <p class="text-xs text-slate-400 font-medium">${i + 1}/5</p>
+                </div>
+            </div>
+        `;
+        gallery.appendChild(emptySlot);
+    }
+}
+
+function removePhoto(photoId) {
+    uploadedPhotos = uploadedPhotos.filter(p => p.id !== photoId);
+    renderPhotos();
+}
+// ===== END PHOTO UPLOAD MANAGEMENT =====
+
+// Cascading selects for address fields
+document.addEventListener('DOMContentLoaded', function() {
+    const provinceSelect = document.getElementById('id_province_admin');
+    const territoireSelect = document.getElementById('id_territoire');
+    const secteurSelect = document.getElementById('id_secteur');
+    const quartierSelect = document.getElementById('id_quartier');
+    const proprietaireTypeSelect = document.getElementById('id_proprietaire_type');
+    const proprietaireField = document.getElementById('id_proprietaire');
+    const gestionnaireTypeSelect = document.getElementById('id_gestionnaire_type');
+    const nomLabel = document.getElementById('nom-label');
+    
+    // Handle gestionnaire type change
+    if (gestionnaireTypeSelect) {
+        function updateGestionnaireLabel() {
+            const type = gestionnaireTypeSelect.value;
+            const prenomField = document.getElementById('prenom-field');
+            const postnomField = document.getElementById('postnom-field');
+            const sexeField = document.getElementById('sexe-field');
+            
+            if (type === 'PERSONNE') {
+                // Personne physique - show all personal fields
+                nomLabel.textContent = 'Nom';
+                if (prenomField) prenomField.style.display = 'block';
+                if (postnomField) postnomField.style.display = 'block';
+                if (sexeField) sexeField.style.display = 'block';
+            } else if (type === 'ENTREPRISE') {
+                // Entreprise - hide personal fields, keep Nom visible
+                nomLabel.textContent = 'Nom de l\'Entreprise';
+                if (prenomField) prenomField.style.display = 'none';
+                if (postnomField) postnomField.style.display = 'none';
+                if (sexeField) sexeField.style.display = 'none';
+            } else {
+                // Aucun type sélectionné - show all fields
+                nomLabel.textContent = 'Nom';
+                if (prenomField) prenomField.style.display = 'block';
+                if (postnomField) postnomField.style.display = 'block';
+                if (sexeField) sexeField.style.display = 'block';
+            }
+        }
+        
+        gestionnaireTypeSelect.addEventListener('change', updateGestionnaireLabel);
+        
+        // On page load, apply the logic
+        updateGestionnaireLabel();
+    }
+    
+    // Handle proprietaire type change
+    if (proprietaireTypeSelect) {
+        proprietaireTypeSelect.addEventListener('change', function() {
+            if (this.value === 'PUBLIC') {
+                proprietaireField.value = 'Ministère du Sport';
+                proprietaireField.readOnly = true;
+                proprietaireField.style.backgroundColor = '#f1f5f9';
+                proprietaireField.style.color = '#94a3b8';
+                proprietaireField.style.cursor = 'not-allowed';
+            } else {
+                proprietaireField.value = '';
+                proprietaireField.readOnly = false;
+                proprietaireField.style.backgroundColor = '#ffffff';
+                proprietaireField.style.color = '#000000';
+                proprietaireField.style.cursor = 'auto';
+            }
+        });
+        
+        // On page load, if PUBLIC is selected, apply the logic
+        if (proprietaireTypeSelect.value === 'PUBLIC') {
+            proprietaireField.value = 'Ministère du Sport';
+            proprietaireField.readOnly = true;
+            proprietaireField.style.backgroundColor = '#f1f5f9';
+            proprietaireField.style.color = '#94a3b8';
+            proprietaireField.style.cursor = 'not-allowed';
+        }
+    }
+    
+    // Function to load territoires for a given province
+    function loadTerritoires(provinceId, selectedTerritoireId = null) {
+        territoireSelect.innerHTML = '<option value="">Sélectionner un territoire...</option>';
+        secteurSelect.innerHTML = '<option value="">Sélectionner un secteur...</option>';
+        quartierSelect.innerHTML = '<option value="">Sélectionner un quartier...</option>';
+        
+        if (provinceId) {
+            fetch(`/parametres-geographiques/api/territoires/?province=${provinceId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        territoireSelect.innerHTML = '<option value="">Aucun territoire disponible</option>';
+                        return;
+                    }
+                    
+                    data.forEach(t => {
+                        const option = document.createElement('option');
+                        option.value = t.uid;
+                        option.textContent = t.designation;
+                        if (selectedTerritoireId && t.uid === selectedTerritoireId) {
+                            option.selected = true;
+                        }
+                        territoireSelect.appendChild(option);
+                    });
+                    
+                    // If a territoire was pre-selected, load its secteurs
+                    if (selectedTerritoireId) {
+                        loadSecteurs(selectedTerritoireId);
+                    }
+                })
+                .catch(err => console.error('Erreur lors du chargement des territoires:', err));
+        }
+    }
+    
+    // Function to load secteurs for a given territoire
+    function loadSecteurs(territoireId, selectedSecteurId = null) {
+        secteurSelect.innerHTML = '<option value="">Sélectionner un secteur...</option>';
+        quartierSelect.innerHTML = '<option value="">Sélectionner un quartier...</option>';
+        
+        if (territoireId) {
+            fetch(`/parametres-geographiques/api/secteurs/?territoire=${territoireId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        secteurSelect.innerHTML = '<option value="">Aucun secteur disponible</option>';
+                        return;
+                    }
+                    
+                    data.forEach(s => {
+                        const option = document.createElement('option');
+                        option.value = s.uid;
+                        option.textContent = s.designation;
+                        if (selectedSecteurId && s.uid === selectedSecteurId) {
+                            option.selected = true;
+                        }
+                        secteurSelect.appendChild(option);
+                    });
+                    
+                    // If a secteur was pre-selected, load its quartiers
+                    if (selectedSecteurId) {
+                        loadQuartiers(selectedSecteurId);
+                    }
+                })
+                .catch(err => console.error('Erreur lors du chargement des secteurs:', err));
+        }
+    }
+    
+    // Function to load quartiers for a given secteur
+    function loadQuartiers(secteurId, selectedQuartierId = null) {
+        quartierSelect.innerHTML = '<option value="">Sélectionner un quartier...</option>';
+        
+        if (secteurId) {
+            fetch(`/parametres-geographiques/api/groupements/?secteur=${secteurId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        quartierSelect.innerHTML = '<option value="">Aucun quartier disponible</option>';
+                        return;
+                    }
+                    
+                    data.forEach(g => {
+                        const option = document.createElement('option');
+                        option.value = g.uid;
+                        option.textContent = g.designation;
+                        if (selectedQuartierId && g.uid === selectedQuartierId) {
+                            option.selected = true;
+                        }
+                        quartierSelect.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Erreur lors du chargement des quartiers:', err));
+        }
+    }
+    
+    // Event listener for province change
+    if (provinceSelect) {
+        provinceSelect.addEventListener('change', function() {
+            loadTerritoires(this.value);
+        });
+    }
+    
+    // Event listener for territoire change
+    if (territoireSelect) {
+        territoireSelect.addEventListener('change', function() {
+            loadSecteurs(this.value);
+        });
+    }
+    
+    // Event listener for secteur change
+    if (secteurSelect) {
+        secteurSelect.addEventListener('change', function() {
+            loadQuartiers(this.value);
+        });
+    }
+    
+    // On page load, if province is already selected, load its cascading data
+    if (provinceSelect && provinceSelect.value) {
+        const selectedTerritoireId = territoireSelect.value || null;
+        const selectedSecteurId = secteurSelect.value || null;
+        const selectedQuartierId = quartierSelect.value || null;
+        
+        // Load the full cascade
+        loadTerritoires(provinceSelect.value, selectedTerritoireId);
+    }
+});
+
+// Fermer la modal en cliquant en dehors
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser la galerie au chargement
+    renderPhotos();
+    
+    // Ajouter l'event listener pour fermer le modal en cliquant en dehors
+    const photoModal = document.getElementById('photoModal');
+    if (photoModal) {
+        photoModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePhotoModal();
+            }
+        });
+    }
+    
+    // Validation du formulaire avant soumission
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (uploadedPhotos.length !== 5) {
+                e.preventDefault();
+                alert('Vous devez joindre exactement 5 photos du stade.');
+                return false;
+            }
+            
+            // Ajouter les photos au formulaire
+            uploadedPhotos.forEach((photo, index) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'photos[]';
+                input.value = photo.preview;
+                this.appendChild(input);
+            });
+        });
+    }
+});
+</script>
+
+<style>
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    .animate-slideUp {
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    /* Backdrop blur pour le modal */
+    #photoModal {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        will-change: backdrop-filter;
+    }
+    
+    #cameraModal {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    #photoModal.hidden,
+    #cameraModal.hidden {
+        display: none !important;
+    }
+    
+    #cameraStream {
+        object-fit: cover;
+        transform: scaleX(-1);
+    }
+    
+    /* Styles pour les champs du formulaire */
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="email"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        background-color: #ffffff;
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: #0036ca;
+        box-shadow: 0 0 0 3px rgba(0, 54, 202, 0.1);
+    }
+    
+    input[type="text"]:disabled,
+    input[type="number"]:disabled,
+    input[type="tel"]:disabled,
+    input[type="email"]:disabled,
+    textarea:disabled,
+    select:disabled {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
+        accent-color: #0036ca;
+    }
+</style>
+
+{% endblock %}

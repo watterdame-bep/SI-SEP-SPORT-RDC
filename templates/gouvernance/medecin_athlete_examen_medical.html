@@ -1,0 +1,577 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load arrete_filters %}
+
+{% block title %}Examen médical (F67) — {{ athlete.nom_complet }} | Médecin Inspecteur | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-slate-200/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:medecin_athletes_en_attente_examen' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Examen médical (F67) — Visite d'homologation</h1>
+                <p class="text-sm text-white/80 mt-1">{{ athlete.nom_complet }} — {{ athlete.club.nom_officiel }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages d'erreur / succès (obligatoire pour comprendre pourquoi l'enregistrement a échoué) -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="rounded-xl border-l-4 p-4 flex items-start gap-3 {% if message.tags == 'error' %}bg-red-50 border-red-500 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-500 text-green-800{% elif message.tags == 'warning' %}bg-amber-50 border-amber-500 text-amber-800{% else %}bg-blue-50 border-blue-500 text-blue-800{% endif %}">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% elif message.tags == 'success' %}fa-circle-check{% elif message.tags == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %} text-xl flex-shrink-0 mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Vérification biométrique : l'athlète doit poser le doigt sur le lecteur avant d'activer le formulaire -->
+<div id="bloc-verif-biometrique" class="mb-8">
+    {% if has_empreintes_template %}
+    <div class="bg-white rounded-2xl shadow-md border-2 border-amber-200 overflow-hidden" id="verif-biometrique-card">
+        <div class="px-6 py-4 bg-amber-500 border-b border-amber-600">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-fingerprint"></i>
+                Vérification biométrique obligatoire
+            </h2>
+            <p class="text-sm text-amber-100 mt-1">Avant de renseigner l'examen (F67), l'athlète doit poser son doigt sur le lecteur d'empreintes pour confirmer son identité.</p>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-slate-700">Demandez à l'athlète de placer les <strong>4 doigts de la main droite</strong> (index, majeur, annulaire, auriculaire) sur le lecteur, puis cliquez sur « Vérifier l'identité ».</p>
+            <div class="flex flex-wrap items-center gap-4">
+                <button type="button" id="btn-verif-empreinte" class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white rounded-xl hover:bg-rdc-blue-dark font-semibold shadow-lg transition-all">
+                    <i class="fa-solid fa-fingerprint text-xl"></i>
+                    <span>Vérifier l'identité biométrique</span>
+                </button>
+                <span id="verif-status-msg" class="text-sm text-slate-600" role="status"></span>
+            </div>
+            <div id="verif-success-block" class="hidden rounded-xl bg-green-50 border-2 border-green-300 p-4">
+                <p class="text-green-800 font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-green-600"></i>
+                    Identité vérifiée. La photo et les informations ci-dessous correspondent à l'athlète du dossier. Vous pouvez maintenant remplir l'examen médical.
+                </p>
+            </div>
+            <div id="verif-error-block" class="hidden rounded-xl bg-red-50 border-2 border-red-300 p-4">
+                <p class="text-red-800 font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-circle-xmark text-red-600"></i>
+                    <span id="verif-error-text">L'empreinte ne correspond pas au dossier de cet athlète. Veuillez réessayer.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-amber-50 rounded-2xl border-2 border-amber-300 p-6">
+        <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-2">
+            <i class="fa-solid fa-fingerprint"></i>
+            Vérification biométrique impossible
+        </h2>
+        <p class="text-amber-800 mt-2">Cet athlète n'a pas d'empreintes enregistrées. Veuillez procéder à la capture des empreintes à la ligue (enrôlement) avant de pouvoir réaliser l'examen médical (F67).</p>
+        <p class="text-sm text-amber-700 mt-2">Le formulaire d'examen reste désactivé tant que l'identité n'est pas vérifiable par biométrie.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div id="form-examen-wrapper" class="form-examen-disabled">
+<form method="post" enctype="multipart/form-data" class="space-y-8" id="form-examen-f67">
+    {% csrf_token %}
+
+    <!-- Informations athlète — photo compacte + infos lisibles -->
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+            <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-rdc-blue"></i>
+                Informations athlète
+            </h2>
+        </div>
+        <div class="p-6 sm:p-7">
+            <div class="flex items-center gap-6">
+                <div class="flex-shrink-0">
+                    {% if athlete.personne.photo %}
+                    <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
+                    {% else %}
+                    <div class="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200">
+                        <i class="fa-solid fa-user text-2xl text-slate-400"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+                    <div>
+                        <span class="text-slate-400 block">Nom complet</span>
+                        <span class="font-medium text-slate-800">{{ athlete.nom_complet }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Club</span>
+                        <span class="text-slate-700">{{ athlete.club.nom_officiel }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Discipline</span>
+                        <span class="text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Date de naissance</span>
+                        <span class="text-slate-700">{{ athlete.personne.date_naissance|date:"d/m/Y" }}{% if athlete.age %} ({{ athlete.age }} ans){% endif %}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">Catégorie</span>
+                        <span class="text-slate-700">{{ athlete.get_categorie_display }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">N° sportif</span>
+                        <span class="font-mono text-slate-700">{{ athlete.numero_sportif }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Examen médical (F67) — Visite d'homologation -->
+    <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 bg-rdc-blue border-b border-slate-200/20">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-doctor"></i>
+                Examen médical (F67)
+            </h2>
+        </div>
+        <div class="p-6 sm:p-8 space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pb-6 border-b border-slate-100">
+                <div>
+                    <label for="date_visite" class="block text-sm font-medium text-slate-600 mb-2">Date de la visite <span class="text-red-500">*</span></label>
+                    <input type="date" id="date_visite" name="date_visite" value="{% if form_data|get_item:'date_visite' %}{{ form_data|get_item:'date_visite' }}{% else %}{% now 'Y-m-d' %}{% endif %}" required
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue transition-shadow">
+                </div>
+                <div>
+                    <label for="medecin_nom" class="block text-sm font-medium text-slate-600 mb-2">Nom du médecin <span class="text-red-500">*</span></label>
+                    <input type="text" id="medecin_nom" name="medecin_nom" value="{{ form_data|get_item:'medecin_nom'|default:medecin_nom|default:'' }}" required placeholder="Dr. Nom Prénom"
+                           class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue transition-shadow">
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4 flex items-center gap-2">
+                    <span class="flex w-8 h-8 items-center justify-center rounded-lg bg-rdc-blue/10 text-rdc-blue text-xs font-bold">1</span>
+                    Biométrie
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="taille" class="block text-sm font-medium text-slate-600 mb-2">Taille (cm) <span class="text-red-500">*</span></label>
+                        <input type="number" id="taille" name="taille" min="50" max="250" step="1" placeholder="175" required
+                               value="{{ form_data|get_item:'taille'|default:athlete.taille|default:'' }}"
+                               class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue transition-shadow">
+                    </div>
+                    <div>
+                        <label for="poids" class="block text-sm font-medium text-slate-600 mb-2">Poids (kg) <span class="text-red-500">*</span></label>
+                        <input type="number" id="poids" name="poids" min="20" max="300" step="0.1" placeholder="70.5" required
+                               value="{{ form_data|get_item:'poids'|default:athlete.poids|default:'' }}"
+                               class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue transition-shadow">
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <label for="notes_examen_clinique" class="block text-sm font-medium text-slate-600 mb-2">Notes examen clinique</label>
+                    <textarea id="notes_examen_clinique" name="notes_examen_clinique" rows="3" placeholder="Remarques du médecin..."
+                              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue transition-shadow resize-none">{{ form_data|get_item:'notes_examen_clinique'|default:'' }}</textarea>
+                </div>
+            </div>
+
+            {% if types_examen %}
+            <div>
+                <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4 flex items-center gap-2">
+                    <span class="flex w-8 h-8 items-center justify-center rounded-lg bg-rdc-blue/10 text-rdc-blue text-xs font-bold">2</span>
+                    Résultats par type d'examen (obligatoires)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for te in types_examen %}
+                    {% if te.obligatoire %}
+                    {% with resultat_key="resultat_examen_"|add:te.id valeur_key="valeur_examen_"|add:te.id %}
+                    <div class="flex flex-col gap-3 p-4 rounded-xl border {% if te.code == 'ECG' %}bg-amber-50/80 border-amber-300/80{% else %}bg-slate-50/80 border-slate-200/80{% endif %}" {% if te.code == 'ECG' %}data-ecg-required="true"{% endif %}>
+                        <label class="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            {{ te.libelle }}
+                            {% if te.code == 'ECG' %}
+                            <span class="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">Requis : document + résultat</span>
+                            {% endif %}
+                        </label>
+                        {% if te.code == 'ECG' %}
+                        <p class="text-xs text-amber-700">Pour enregistrer l'examen, joignez le document ECG et choisissez Conforme ou Non conforme.</p>
+                        {% endif %}
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select name="resultat_examen_{{ te.id }}" id="resultat_examen_{{ te.id }}"
+                                    class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue min-w-[120px]">
+                                <option value="">—</option>
+                                <option value="1" {% if form_data|get_item:resultat_key == '1' %}selected{% endif %}>Conforme</option>
+                                <option value="0" {% if form_data|get_item:resultat_key == '0' %}selected{% endif %}>Non conforme</option>
+                            </select>
+                            <input type="text" name="valeur_examen_{{ te.id }}" id="valeur_examen_{{ te.id }}"
+                                   placeholder="120/80, 10/10" maxlength="500" value="{{ form_data|get_item:valeur_key|default:'' }}"
+                                   class="px-3 py-2 border border-slate-200 rounded-lg text-sm w-36 focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue">
+                            {% if te.accepte_fichier %}
+                            <label class="upload-zone cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-rdc-blue/50 hover:bg-rdc-blue/5 text-sm" for="fichier_examen_{{ te.id }}">
+                                <i class="fa-solid fa-paperclip text-slate-400"></i>
+                                <span class="upload-zone-text">Fichier</span>
+                            </label>
+                            <input type="file" name="fichier_examen_{{ te.id }}" id="fichier_examen_{{ te.id }}" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" data-upload-zone>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div id="examens-optionnels-block" class="mt-6" {% if not has_examens_optionnels %}style="display:none"{% endif %}>
+                    <button type="button" id="btn-ajouter-examens-optionnels" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-rdc-blue bg-rdc-blue/10 hover:bg-rdc-blue/20 rounded-xl border border-rdc-blue/30 transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                        Ajouter des examens optionnels
+                    </button>
+
+                    <!-- Panneau de sélection : liste des examens non obligatoires -->
+                    <div id="panel-selection-examens" class="hidden mt-4 p-5 rounded-xl border border-slate-200 bg-slate-50/80">
+                        <p class="text-sm font-medium text-slate-700 mb-3">Choisissez les examens optionnels à ajouter au formulaire :</p>
+                        <div class="space-y-2 max-h-56 overflow-y-auto pr-2">
+                            {% for te in types_examen %}
+                            {% if not te.obligatoire %}
+                            <label class="flex items-center gap-2 py-1.5 px-3 rounded-lg hover:bg-white cursor-pointer">
+                                <input type="checkbox" class="examen-optionnel-cb rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue" value="{{ te.id }}">
+                                <span class="text-sm text-slate-700">{{ te.libelle }}</span>
+                            </label>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="flex items-center gap-3 mt-4 pt-3 border-t border-slate-200">
+                            <button type="button" id="btn-valider-selection-examens" class="px-4 py-2 bg-rdc-blue text-white text-sm font-medium rounded-xl hover:bg-rdc-blue-dark transition-colors">
+                                <i class="fa-solid fa-check mr-2"></i>Valider et ajouter au formulaire
+                            </button>
+                            <button type="button" id="btn-annuler-selection-examens" class="px-4 py-2 text-slate-600 text-sm font-medium rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Grille des examens optionnels ajoutés (chaque bloc caché par défaut, affiché après validation) -->
+                    <div id="examens-optionnels-grid" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for te in types_examen %}
+                        {% if not te.obligatoire %}
+                        {% with resultat_key="resultat_examen_"|add:te.id valeur_key="valeur_examen_"|add:te.id %}
+                        <div class="examen-optionnel-block flex flex-col gap-3 p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 border-dashed hidden" data-examen-id="{{ te.id }}">
+                            <label class="text-sm font-medium text-slate-600">{{ te.libelle }} <span class="text-slate-400 text-xs">(optionnel)</span></label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select name="resultat_examen_{{ te.id }}"
+                                        class="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue min-w-[120px]">
+                                    <option value="">—</option>
+                                    <option value="1" {% if form_data|get_item:resultat_key == '1' %}selected{% endif %}>Conforme</option>
+                                    <option value="0" {% if form_data|get_item:resultat_key == '0' %}selected{% endif %}>Non conforme</option>
+                                </select>
+                                <input type="text" name="valeur_examen_{{ te.id }}"
+                                       placeholder="120/80, 10/10" maxlength="500" value="{{ form_data|get_item:valeur_key|default:'' }}"
+                                       class="px-3 py-2 border border-slate-200 rounded-lg text-sm w-36 focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue">
+                                {% if te.accepte_fichier %}
+                                <label class="upload-zone cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-rdc-blue/50 hover:bg-rdc-blue/5 text-sm" for="fichier_examen_{{ te.id }}_opt">
+                                    <i class="fa-solid fa-paperclip text-slate-400"></i>
+                                    <span class="upload-zone-text">Fichier</span>
+                                </label>
+                                <input type="file" name="fichier_examen_{{ te.id }}" id="fichier_examen_{{ te.id }}_opt" accept=".pdf,.jpg,.jpeg,.png" class="sr-only" data-upload-zone>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endwith %}
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="rounded-xl p-5 border border-slate-200/80 bg-slate-50/50">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-droplet text-rdc-blue"></i>
+                    Groupe sanguin et Rhésus (F22)
+                </h3>
+                <select id="groupe_sanguin_rh" name="groupe_sanguin_rh" required class="w-full max-w-xs px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue">
+                    <option value="">-- Choisir --</option>
+                    <option value="A+" {% if form_data|get_item:'groupe_sanguin_rh' == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if form_data|get_item:'groupe_sanguin_rh' == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if form_data|get_item:'groupe_sanguin_rh' == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if form_data|get_item:'groupe_sanguin_rh' == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="AB+" {% if form_data|get_item:'groupe_sanguin_rh' == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if form_data|get_item:'groupe_sanguin_rh' == 'AB-' %}selected{% endif %}>AB-</option>
+                    <option value="O+" {% if form_data|get_item:'groupe_sanguin_rh' == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if form_data|get_item:'groupe_sanguin_rh' == 'O-' %}selected{% endif %}>O-</option>
+                </select>
+            </div>
+
+            <div class="rounded-xl p-5 border border-amber-200/80 bg-amber-50/50">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-certificate text-rdc-blue"></i>
+                    Certificat d'aptitude (F72)
+                </h3>
+                <p class="text-xs text-slate-600 mb-3">Le certificat officiel (PDF avec QR code de vérification) est généré automatiquement par le système à l'enregistrement.</p>
+                <label class="inline-flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="certificat_aptitude_delivre" name="certificat_aptitude_delivre" value="1" {% if form_data|get_item:'certificat_aptitude_delivre' == '1' %}checked{% endif %} required class="w-4 h-4 rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue">
+                    <span class="text-sm font-medium text-slate-700">Délivré <span class="text-red-500">*</span></span>
+                </label>
+            </div>
+
+            <div class="rounded-xl p-5 border border-slate-200/80">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-up text-rdc-blue"></i>
+                    Surclassement (Cadet/Junior → Senior)
+                </h3>
+                <label class="inline-flex items-center gap-3 cursor-pointer mb-4">
+                    <input type="checkbox" id="demande_surclassement" name="demande_surclassement" value="1" {% if form_data|get_item:'demande_surclassement' == '1' %}checked{% endif %} class="w-4 h-4 rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue">
+                    <span class="text-sm text-slate-700">Demande de surclassement (tests supplémentaires requis)</span>
+                </label>
+                <div id="surclassement_fields" class="hidden space-y-4 pl-6 border-l-2 border-slate-200">
+                    <div>
+                        <label class="upload-zone inline-flex items-center gap-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 hover:border-rdc-blue/50 hover:bg-rdc-blue/5 cursor-pointer" for="radiographie_poignet_joint">
+                            <i class="fa-solid fa-paperclip text-slate-400"></i>
+                            <span class="upload-zone-rad-text">Radiographie poignet</span>
+                        </label>
+                        <input type="file" id="radiographie_poignet_joint" name="radiographie_poignet_joint" accept=".pdf,.jpg,.jpeg,.png" class="sr-only">
+                    </div>
+                    <label class="inline-flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="test_greulich_pyle_ok" value="1" {% if form_data|get_item:'test_greulich_pyle_ok' == '1' %}checked{% endif %} class="w-4 h-4 rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue">
+                        <span class="text-sm text-slate-700">Âge osseux compatible avec le surclassement</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-200">
+                <label for="resultat_global" class="block text-sm font-medium text-slate-600 mb-3">
+                    Résultat global <span class="text-red-500">*</span>
+                </label>
+                <select id="resultat_global" name="resultat_global" required
+                        class="w-full max-w-md px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue">
+                    <option value="">-- Choisir --</option>
+                    <option value="APTE" {% if form_data|get_item:'resultat_global' == 'APTE' %}selected{% endif %}>✓ APTE</option>
+                    <option value="APTE_AVEC_RESERVE" {% if form_data|get_item:'resultat_global' == 'APTE_AVEC_RESERVE' %}selected{% endif %}>⚠ Apte avec réserve</option>
+                    <option value="INAPTE" {% if form_data|get_item:'resultat_global' == 'INAPTE' %}selected{% endif %}>✗ INAPTE</option>
+                </select>
+            </div>
+            <div class="pt-6 border-t border-slate-200">
+                <label for="recommandations_securite" class="block text-sm font-medium text-slate-600 mb-2">
+                    Recommandations pour la Ligue (sécurité / équipement)
+                </label>
+                <textarea id="recommandations_securite" name="recommandations_securite" rows="2" maxlength="500" placeholder="Ex. : Doit porter des lunettes de protection en compétition"
+                          class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-rdc-blue/40 focus:border-rdc-blue resize-none text-sm">{{ form_data|get_item:'recommandations_securite'|default:'' }}</textarea>
+                <p class="text-xs text-slate-500 mt-1">Visible uniquement par le secrétaire de la Ligue (aucun détail médical).</p>
+            </div>
+            <input type="hidden" name="date_test_medical" id="date_test_medical" value="{% if form_data|get_item:'date_visite' %}{{ form_data|get_item:'date_visite' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
+        </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-end gap-4 pt-2">
+        <a href="{% url 'gouvernance:medecin_athletes_en_attente_examen' %}"
+           class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-medium">
+            <i class="fa-solid fa-times mr-2"></i>
+            Annuler
+        </a>
+        <button type="submit" class="px-6 py-2.5 bg-rdc-blue text-white rounded-xl hover:bg-rdc-blue-dark transition-all shadow-md hover:shadow-lg font-medium">
+            <i class="fa-solid fa-check mr-2"></i>
+            Enregistrer l'examen médical (F67)
+        </button>
+    </div>
+</form>
+</div><!-- #form-examen-wrapper -->
+
+{% if has_empreintes_template %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" crossorigin="anonymous"></script>
+<script>window.MORPHO_SERVICE_URI = "{{ morpho_service_uri|default:'http://localhost:8032/morfinenroll/' }}";</script>
+<script src="{% static 'capteur/morfinenroll.js' %}"></script>
+<script src="{% static 'capteur/morpho_sisep.js' %}"></script>
+{% endif %}
+
+<style>
+#form-examen-wrapper.form-examen-disabled {
+    pointer-events: none;
+    opacity: 0.65;
+    user-select: none;
+}
+</style>
+
+<script>
+(function() {
+    // ---------- Vérification biométrique (F67) : activer le formulaire après match empreinte ----------
+    var formWrapper = document.getElementById('form-examen-wrapper');
+    var btnVerif = document.getElementById('btn-verif-empreinte');
+    var verifStatusMsg = document.getElementById('verif-status-msg');
+    var verifSuccessBlock = document.getElementById('verif-success-block');
+    var verifErrorBlock = document.getElementById('verif-error-block');
+    var verifErrorText = document.getElementById('verif-error-text');
+    var athleteUid = '{{ athlete.uid }}';
+    var empreinteTemplateUrl = '{% url "gouvernance:medecin_athlete_empreinte_template" athlete.uid %}';
+
+    if (btnVerif && formWrapper && formWrapper.classList.contains('form-examen-disabled')) {
+        btnVerif.addEventListener('click', function() {
+            if (!empreinteTemplateUrl || !athleteUid) return;
+            verifStatusMsg.textContent = 'Chargement du template...';
+            if (verifErrorBlock) verifErrorBlock.classList.add('hidden');
+            if (verifSuccessBlock) verifSuccessBlock.classList.add('hidden');
+            fetch(empreinteTemplateUrl, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok || !data.template_base64) {
+                        verifStatusMsg.textContent = '';
+                        if (verifErrorBlock) { verifErrorText.textContent = data.error || 'Template indisponible.'; verifErrorBlock.classList.remove('hidden'); }
+                        return;
+                    }
+                    var galleryTemplate = data.template_base64;
+                    var tempFormat = data.temp_format || '0';
+                    verifStatusMsg.textContent = 'Placez les 4 doigts de la main droite sur le lecteur...';
+                    if (typeof MorphoSISEP === 'undefined' || !MorphoSISEP.captureStep) {
+                        verifStatusMsg.textContent = '';
+                        if (verifErrorBlock) { verifErrorText.textContent = 'Lecteur Morpho non chargé. Vérifiez la connexion au lecteur.'; verifErrorBlock.classList.remove('hidden'); }
+                        return;
+                    }
+                    MorphoSISEP.captureStep(0).then(function(captureResult) {
+                        verifStatusMsg.textContent = '';
+                        if (!captureResult.success) {
+                            if (verifErrorBlock) { verifErrorText.textContent = captureResult.error || 'Capture échouée.'; verifErrorBlock.classList.remove('hidden'); }
+                            return;
+                        }
+                        var probeTemplate = captureResult.templateBase64 || (captureResult.capturedFingers && captureResult.capturedFingers[0]);
+                        if (!probeTemplate) {
+                            if (verifErrorBlock) { verifErrorText.textContent = 'Aucun template obtenu depuis le lecteur. Réessayez.'; verifErrorBlock.classList.remove('hidden'); }
+                            return;
+                        }
+                        if (typeof MorFinEnrollMatchTemplate !== 'function') {
+                            if (verifErrorBlock) { verifErrorText.textContent = 'API de comparaison non disponible.'; verifErrorBlock.classList.remove('hidden'); }
+                            return;
+                        }
+                        MorFinEnrollMatchTemplate(galleryTemplate, probeTemplate, tempFormat).then(function(res) {
+                            if (res.httpStaus && res.data && res.data.ErrorCode === '0') {
+                                var score = parseInt(res.data.MatchScore, 10) || 0;
+                                if (score >= 40) {
+                                    formWrapper.classList.remove('form-examen-disabled');
+                                    if (verifSuccessBlock) verifSuccessBlock.classList.remove('hidden');
+                                    if (verifErrorBlock) verifErrorBlock.classList.add('hidden');
+                                    var card = document.getElementById('verif-biometrique-card');
+                                    if (card) card.classList.remove('border-amber-200'), card.classList.add('border-green-300');
+                                    verifStatusMsg.textContent = 'Identité vérifiée.';
+                                } else {
+                                    if (verifErrorBlock) { verifErrorText.textContent = 'L\'empreinte ne correspond pas au dossier (score: ' + score + '). Veuillez réessayer.'; verifErrorBlock.classList.remove('hidden'); }
+                                }
+                            } else {
+                                if (verifErrorBlock) { verifErrorText.textContent = (res.data && res.data.ErrorDescription) ? res.data.ErrorDescription : 'L\'empreinte ne correspond pas au dossier de cet athlète. Veuillez réessayer.'; verifErrorBlock.classList.remove('hidden'); }
+                            }
+                        }).catch(function() {
+                            if (verifErrorBlock) { verifErrorText.textContent = 'Erreur lors de la comparaison.'; verifErrorBlock.classList.remove('hidden'); }
+                        });
+                    }).catch(function() {
+                        verifStatusMsg.textContent = '';
+                        if (verifErrorBlock) { verifErrorText.textContent = 'Erreur lors de la capture.'; verifErrorBlock.classList.remove('hidden'); }
+                    });
+                })
+                .catch(function() {
+                    verifStatusMsg.textContent = '';
+                    if (verifErrorBlock) { verifErrorText.textContent = 'Impossible de charger le template d\'empreinte.'; verifErrorBlock.classList.remove('hidden'); }
+                });
+        });
+    }
+
+    var cb = document.getElementById('demande_surclassement');
+    var block = document.getElementById('surclassement_fields');
+    if (cb && block) {
+        cb.addEventListener('change', function() { block.classList.toggle('hidden', !cb.checked); });
+        block.classList.toggle('hidden', !cb.checked);
+    }
+    var btnAjouter = document.getElementById('btn-ajouter-examens-optionnels');
+    var panelSelection = document.getElementById('panel-selection-examens');
+    var btnValiderSelection = document.getElementById('btn-valider-selection-examens');
+    var btnAnnulerSelection = document.getElementById('btn-annuler-selection-examens');
+    var gridOptionnels = document.getElementById('examens-optionnels-grid');
+
+    function syncCheckboxesFromVisibleBlocks() {
+        if (!panelSelection) return;
+        document.querySelectorAll('.examen-optionnel-block').forEach(function(block) {
+            var id = block.getAttribute('data-examen-id');
+            var cb = panelSelection.querySelector('.examen-optionnel-cb[value="' + id + '"]');
+            if (cb) cb.checked = !block.classList.contains('hidden');
+        });
+    }
+
+    if (btnAjouter && panelSelection) {
+        btnAjouter.addEventListener('click', function() {
+            panelSelection.classList.remove('hidden');
+            syncCheckboxesFromVisibleBlocks();
+        });
+    }
+    if (btnAnnulerSelection && panelSelection) {
+        btnAnnulerSelection.addEventListener('click', function() {
+            panelSelection.classList.add('hidden');
+        });
+    }
+    if (btnValiderSelection && panelSelection && gridOptionnels) {
+        btnValiderSelection.addEventListener('click', function() {
+            var checked = panelSelection.querySelectorAll('.examen-optionnel-cb:checked');
+            checked.forEach(function(cb) {
+                var id = cb.value;
+                var block = document.querySelector('.examen-optionnel-block[data-examen-id="' + id + '"]');
+                if (block) block.classList.remove('hidden');
+            });
+            panelSelection.classList.add('hidden');
+            var visibleBlocks = document.querySelectorAll('.examen-optionnel-block:not(.hidden)');
+            if (visibleBlocks.length > 0) gridOptionnels.classList.remove('hidden');
+        });
+    }
+    var dateVisite = document.getElementById('date_visite');
+    var dateTestMedical = document.getElementById('date_test_medical');
+    if (dateVisite && dateTestMedical) {
+        dateVisite.addEventListener('change', function() { dateTestMedical.value = dateVisite.value; });
+    }
+
+    // Afficher le nom du fichier dans les zones d'upload
+    document.querySelectorAll('input[type="file"][data-upload-zone]').forEach(function(input) {
+        input.addEventListener('change', function() {
+            var zone = input.previousElementSibling;
+            if (zone && zone.classList.contains('upload-zone')) {
+                var span = zone.querySelector('.upload-zone-text');
+                if (span) span.textContent = this.files.length ? this.files[0].name : 'Fichier';
+            }
+        });
+    });
+    var radInput = document.getElementById('radiographie_poignet_joint');
+    if (radInput) {
+        radInput.addEventListener('change', function() {
+            var zone = radInput.previousElementSibling;
+            var span = zone && zone.querySelector('.upload-zone-rad-text');
+            if (span) span.textContent = this.files.length ? this.files[0].name : 'Radiographie poignet';
+        });
+    }
+})();
+document.querySelector('form').addEventListener('submit', function(e) {
+    var taille = document.getElementById('taille').value.trim();
+    var poids = document.getElementById('poids').value.trim();
+    var resultatGlobal = document.getElementById('resultat_global').value;
+    var medecinNom = document.getElementById('medecin_nom').value.trim();
+    var groupeSanguin = document.getElementById('groupe_sanguin_rh').value;
+    var certAptitudeDelivre = document.getElementById('certificat_aptitude_delivre') && document.getElementById('certificat_aptitude_delivre').checked;
+    if (!taille || taille < 50 || taille > 250) { e.preventDefault(); alert('Veuillez saisir la taille (entre 50 et 250 cm).'); return false; }
+    if (!poids || poids < 20 || poids > 300) { e.preventDefault(); alert('Veuillez saisir le poids (entre 20 et 300 kg).'); return false; }
+    if (!medecinNom) { e.preventDefault(); alert('Veuillez indiquer le nom du médecin.'); return false; }
+    if (!groupeSanguin) { e.preventDefault(); alert('Veuillez sélectionner le groupe sanguin et Rhésus.'); return false; }
+    if (!certAptitudeDelivre) { e.preventDefault(); alert('Veuillez cocher que le certificat d\'aptitude (F72) a été délivré.'); return false; }
+    if (!resultatGlobal) { e.preventDefault(); alert('Veuillez sélectionner le résultat global de la visite médicale.'); return false; }
+    if (resultatGlobal === 'INAPTE') { e.preventDefault(); alert('Un athlète déclaré INAPTE ne peut pas être enregistré pour validation. Le dossier reste en attente d\'examen.'); return false; }
+    // Vérification ECG obligatoire (bloc marqué data-ecg-required)
+    var ecgBlock = document.querySelector('[data-ecg-required="true"]');
+    if (ecgBlock) {
+        var s = ecgBlock.querySelector('select[name^="resultat_examen_"]');
+        var f = ecgBlock.querySelector('input[type="file"]');
+        var noResult = !s || s.value === '' || (s.value !== '1' && s.value !== '0');
+        var noFile = !f || !f.files || f.files.length === 0;
+        if (noResult || noFile) {
+            e.preventDefault();
+            alert('L\'ECG est obligatoire pour enregistrer : joignez le document et choisissez Conforme ou Non conforme dans la ligne « Électrocardiogramme (ECG) ».');
+            return false;
+        }
+    }
+    return true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,800 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SI-SEP Sport RDC{% endblock %}</title>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/output.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Masquer la scrollbar du sidebar */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-slate-50 font-sans antialiased">
+    
+    <!-- Sidebar -->
+    <aside id="app-sidebar" class="fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-br from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+        
+        <!-- Logo Header -->
+        <div class="h-16 flex items-center justify-center px-6 border-b border-white/10 bg-black/10">
+            <a href="{% if user_role == 'ministre' %}{% url 'gouvernance:minister_dashboard' %}{% elif user_role == 'sg' %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'core:setup_sisep' %}{% endif %}" class="block group">
+                <img src="{% static 'assets/images/logo-ministere-sports.png' %}" 
+                     alt="Ministère des Sports" 
+                     class="h-14 w-auto object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-300">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 scrollbar-none">
+            
+            {% if user_role == 'ministre' %}
+            
+            <a href="{% url 'gouvernance:minister_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'minister_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Parapheur Électronique</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:minister_courriers' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'minister_courriers' %}bg-white/15 text-white shadow-lg{% endif %} relative">
+                <i class="fa-solid fa-pen-to-square text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Courriers à Signer</span>
+                {% if nb_courriers_attente and nb_courriers_attente > 0 %}
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 bg-rdc-yellow text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">
+                    {{ nb_courriers_attente }}
+                </span>
+                {% endif %}
+            </a>
+            
+            <a href="{% url 'gouvernance:minister_arretes' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'minister_arretes' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-signature text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Arrêtés Signés</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Paramètres</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:profil_ministre' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'profil_ministre' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-pen text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Profil</span>
+            </a>
+            
+            {% elif user_role == 'sg' %}
+            
+            <a href="{% url 'gouvernance:sg_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'sg_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Administration</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'core:gestion_administrative' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'gestion_administrative' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-tasks text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Gestion Administrative</span>
+            </a>
+            
+            <a href="{% url 'core:gerer_comptes' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'gerer_comptes' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-users-cog text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Gérer comptes</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:personnel_ministere' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'personnel_ministere' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-id-badge text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Personnel du Ministère</span>
+            </a>
+            
+            <!-- Paramètres avec sous-menu -->
+            <div class="space-y-1">
+                <button onclick="toggleSubmenu('parametres-menu')" 
+                        class="group w-full flex items-center justify-between gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <i class="fa-solid fa-cog text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                        <span class="font-medium text-sm">Paramètres</span>
+                    </div>
+                    <i id="icon-parametres-menu" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                </button>
+                
+                <div id="parametres-menu" class="hidden ml-6 space-y-1 border-l-2 border-white/10 pl-4">
+                    <a href="{% url 'gouvernance:parametres_disciplines' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'parametres_disciplines' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-futbol text-sm w-5 text-center"></i>
+                        <span>Paramètres Disciplines</span>
+                    </a>
+                    <a href="{% url 'referentiel_geo:parametres_geographiques' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'parametres_geographiques' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-map-location-dot text-sm w-5 text-center"></i>
+                        <span>Paramètres Géographiques</span>
+                    </a>
+                    <a href="{% url 'parametres:parametres_fonctions' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'parametres_fonctions' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-briefcase text-sm w-5 text-center"></i>
+                        <span>Paramètres Fonctions</span>
+                    </a>
+                    <a href="{% url 'infrastructures:type_infrastructure_list' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'type_infrastructure_list' or request.resolver_match.url_name == 'type_infrastructure_create' or request.resolver_match.url_name == 'type_infrastructure_edit' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-layer-group text-sm w-5 text-center"></i>
+                        <span>Types d'Infrastructure</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Paramètres</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:profil_sg' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'profil_sg' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-pen text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Profil</span>
+            </a>
+            <div class="space-y-1">
+                <button onclick="toggleSubmenu('institutions-menu')" 
+                        class="group w-full flex items-center justify-between gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <i class="fa-solid fa-building-columns text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                        <span class="font-medium text-sm">Institutions Sportives</span>
+                    </div>
+                    <i id="icon-institutions-menu" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                </button>
+                
+                <div id="institutions-menu" class="hidden ml-6 space-y-1 border-l-2 border-white/10 pl-4">
+                    <a href="{% url 'gouvernance:federations_nationales' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'federations_nationales' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-flag text-sm w-5 text-center"></i>
+                        <span>Fédérations Nationales</span>
+                    </a>
+                    <a href="{% url 'gouvernance:divisions_provinciales' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'divisions_provinciales' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-map-location-dot text-sm w-5 text-center"></i>
+                        <span>Divisions Provinciales</span>
+                    </a>
+                    <a href="{% url 'gouvernance:sg_ligues_en_attente' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'sg_ligues_en_attente' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-map-marked-alt text-sm w-5 text-center"></i>
+                        <span>Ligues Provinciales</span>
+                    </a>
+                    <a href="{% url 'infrastructures:infrastructure_list' %}" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm {% if request.resolver_match.url_name == 'infrastructure_list' or request.resolver_match.url_name == 'infrastructure_create' or request.resolver_match.url_name == 'infrastructure_edit' or request.resolver_match.url_name == 'infrastructure_detail' %}bg-white/15 text-white{% endif %}">
+                        <i class="fa-solid fa-building text-sm w-5 text-center"></i>
+                        <span>Infrastructures Sportives</span>
+                    </a>
+                    <a href="#" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm">
+                        <i class="fa-solid fa-shield-halved text-sm w-5 text-center"></i>
+                        <span>Clubs</span>
+                    </a>
+                    <a href="#" 
+                       class="group flex items-center gap-3 px-4 py-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 text-sm">
+                        <i class="fa-solid fa-graduation-cap text-sm w-5 text-center"></i>
+                        <span>Académies</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Ressources</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="#" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-address-book text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Annuaire des dirigeants</span>
+            </a>
+            
+            <a href="#" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-box-archive text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Archives numériques</span>
+            </a>
+            
+            {% elif user_role == 'directeur_provincial' %}
+            
+            <a href="{% url 'gouvernance:directeur_provincial_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'directeur_provincial_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Opérations Terrain</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:clubs_en_attente_validation' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'clubs_en_attente_validation' %}bg-white/15 text-white shadow-lg{% endif %} relative">
+                <i class="fa-solid fa-building text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Clubs en Attente</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:enquetes_viabilite' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'enquetes_viabilite' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-folder-magnifying-glass text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Enquêtes de Viabilité</span>
+            </a>
+            
+            <a href="{% url 'infrastructures:infrastructure_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infrastructure_list' or request.resolver_match.url_name == 'infrastructure_create' or request.resolver_match.url_name == 'infrastructure_edit' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-building text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Infrastructures Sportives</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:division_medecins_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'division_medecins_list' or request.resolver_match.url_name == 'division_medecin_create_account' or request.resolver_match.url_name == 'division_medecin_toggle_actif' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-doctor text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Médecins des Ligues</span>
+            </a>
+            
+            <a href="#" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-users text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Annuaire des Clubs & Ligues</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Rapports</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="#" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-file-lines text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Rapports Mensuels</span>
+            </a>
+            
+            {% elif user_role == 'medecin_inspecteur' %}
+            
+            <a href="{% url 'gouvernance:medecin_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de bord</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:medecin_athletes_en_attente_examen' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_athletes_en_attente_examen' or request.resolver_match.url_name == 'medecin_athlete_examen_medical' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-clipboard-user text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">En attente d'examen (F67)</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:medecin_athletes_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_athletes_list' or request.resolver_match.url_name == 'medecin_athlete_dossier' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-medical text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Dossiers médicaux des athlètes</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:medecin_types_examen_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_types_examen_list' or request.resolver_match.url_name == 'medecin_type_examen_create' or request.resolver_match.url_name == 'medecin_type_examen_edit' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-list-check text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Types d'examens</span>
+            </a>
+            
+            {% elif user_role == 'ligue_secretary' %}
+            
+            <a href="{% url 'gouvernance:ligue_secretary_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_secretary_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de Bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Gestion Ligue</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:ligue_clubs_affiliation' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_clubs_affiliation' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-building text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mes Clubs Affiliés</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_medecins_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_medecins_list' or request.resolver_match.url_name == 'ligue_medecin_register' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-doctor text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Médecins de la ligue</span>
+            </a>
+            
+            <!-- Section Athlètes -->
+            <div class="pt-4 pb-2 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Athlètes</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:ligue_athletes_enrollment_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_athletes_enrollment_list' or request.resolver_match.url_name == 'ligue_athlete_enroll' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-plus text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Enrôlement Athlètes</span>
+                {% if athletes_enrollment_count %}
+                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-rdc-yellow text-slate-900 rounded-full">
+                    {{ athletes_enrollment_count }}
+                </span>
+                {% endif %}
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_athletes_validation_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_athletes_validation_list' or request.resolver_match.url_name == 'ligue_athlete_validate' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-check text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Validation Athlètes</span>
+                {% if athletes_validation_count %}
+                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-blue-400 text-white rounded-full">
+                    {{ athletes_validation_count }}
+                </span>
+                {% endif %}
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_athletes_certifies_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_athletes_certifies_list' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-certificate text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Athlètes certifiés</span>
+                {% if athletes_certifies_count %}
+                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-green-400 text-white rounded-full">
+                    {{ athletes_certifies_count }}
+                </span>
+                {% endif %}
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_competitions_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_competitions_list' or request.resolver_match.url_name == 'ligue_competition_create' or request.resolver_match.url_name == 'ligue_competition_calendrier' or request.resolver_match.url_name == 'ligue_types_competition_list' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-trophy text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Compétitions</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_evenements_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_evenements_list' or request.resolver_match.url_name == 'ligue_evenement_create' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-calendar-check text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Événements</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_calendrier_provincial' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_calendrier_provincial' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-calendar-days text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Calendrier Provincial</span>
+            </a>
+            
+            <a href="#" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200">
+                <i class="fa-solid fa-file-lines text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Rapports de Compétition</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Documents</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:ligue_documents' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_documents' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-pdf text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Documents Officiels</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:ligue_profile' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_profile' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-pen text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Profil</span>
+            </a>
+            
+            {% elif user_role == 'federation_secretary' %}
+            
+            <a href="{% url 'gouvernance:federation_secretary_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_secretary_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Dashboard</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Gestion Fédération</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:federation_athletes_validation_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_athletes_validation_list' or request.resolver_match.url_name == 'federation_athlete_validate' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-certificate text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Certification Athlètes</span>
+                {% if athletes_certifies_provinciaux_count %}
+                <span class="ml-auto inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-rdc-yellow text-slate-900 rounded-full">
+                    {{ athletes_certifies_provinciaux_count }}
+                </span>
+                {% endif %}
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_athletes' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_athletes' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-users text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tous les Athlètes</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_competitions' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_competitions' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-calendar-days text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Calendrier & Compétitions</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_clubs' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_clubs' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-building text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Clubs Affiliés</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_ligues' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_ligues' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-layer-group text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Ligues Provinciales</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_ordre_mission' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_ordre_mission' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-contract text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Ordre de Mission</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Documents</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:federation_documents' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_documents' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-pdf text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Documents Officiels</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:federation_profile' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'federation_profile' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-user-pen text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Profil</span>
+            </a>
+            
+            {% elif user_role == 'club_secretary' %}
+            
+            <a href="{% url 'gouvernance:club_secretary_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_secretary_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de Bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Mon Club</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:club_identity' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_identity' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-building text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Identité</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:club_documents' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_documents' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-pdf text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Documents</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Athlètes</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:club_athletes_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_athletes_list' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-users text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Athlètes</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:club_licences_galerie' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_licences_galerie' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-id-card text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Ma Galerie de Licences</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:club_license_requests' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_license_requests' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-file-check text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Demandes Licences</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Staff & Infra</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:club_staff' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_staff' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-person-hiking text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Staff Technique</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:club_infrastructure' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_infrastructure' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-stadium text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Mon Terrain</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Compétitions</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'gouvernance:club_competitions_calendar' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_competitions_calendar' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-calendar text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Calendrier</span>
+            </a>
+            
+            <a href="{% url 'gouvernance:club_match_sheets' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'club_match_sheets' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-sheet-plastic text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Feuilles de Match</span>
+            </a>
+            
+            {% elif user_role == 'infra_manager' %}
+            
+            <a href="{% url 'infrastructures:infra_manager_dashboard' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_dashboard' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-chart-line text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Tableau de Bord</span>
+            </a>
+            
+            <!-- Section Header -->
+            <div class="pt-6 pb-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Mon Infrastructure</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                </div>
+            </div>
+            
+            <a href="{% url 'infrastructures:infra_manager_reservations' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_reservations' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-calendar-check text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Réservations</span>
+            </a>
+            
+            <a href="{% url 'infrastructures:infra_manager_maintenance' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_maintenance' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-wrench text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Maintenance</span>
+            </a>
+            
+            <a href="{% url 'infrastructures:infra_manager_photos' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_photos' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-images text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Galerie Photos</span>
+            </a>
+            
+            <a href="{% url 'infrastructures:infra_manager_zones' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_zones' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-layer-group text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Zones du stade</span>
+            </a>
+            
+            <a href="{% url 'infrastructures:infra_manager_evenements' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_evenements' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-ticket text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Rencontres & Billetterie</span>
+            </a>
+            
+            {% else %}
+            
+            <a href="{% url 'core:setup_sisep' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'setup_sisep' %}bg-white/15 text-white shadow-lg{% endif %}">
+                <i class="fa-solid fa-cogs text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="font-medium text-sm">Configuration initiale</span>
+            </a>
+            
+            {% endif %}
+        </nav>
+
+        <!-- Logout -->
+        <div class="p-4 border-t border-white/10 bg-black/5">
+            <form method="post" action="{% url 'core:logout' %}" class="w-full">
+                {% csrf_token %}
+                <button type="submit" class="group w-full flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-rdc-red/30 rounded-xl transition-all duration-200">
+                    <i class="fa-solid fa-right-from-bracket text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
+                    <span class="font-medium text-sm">Se déconnecter</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" 
+         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 opacity-0 pointer-events-none lg:hidden transition-opacity duration-300"></div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-72 min-h-screen flex flex-col">
+        
+        <!-- Top Bar -->
+        <header class="sticky top-0 z-30 h-16 bg-white border-b border-slate-200 shadow-sm">
+            <div class="h-full px-4 lg:px-6 flex items-center justify-between">
+                
+                <!-- Mobile Menu Button -->
+                <button type="button" 
+                        id="mobile-menu-btn" 
+                        class="lg:hidden p-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                
+                <div class="flex-1"></div>
+                
+                <!-- User Menu -->
+                <div class="relative">
+                    <details id="user-menu" class="group">
+                        <summary class="flex items-center gap-3 cursor-pointer list-none px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors duration-200 [&::-webkit-details-marker]:hidden">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-rdc-blue to-rdc-blue-darker flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-rdc-yellow/20">
+                                {{ user.get_full_name|default:user.username|slice:":2"|upper }}
+                            </div>
+                            <div class="hidden md:block text-left">
+                                <p class="text-sm font-semibold text-slate-900 leading-tight">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-xs text-slate-500 leading-tight">{{ user.email|default:"" }}</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200"></i>
+                        </summary>
+                        
+                        <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 py-2 z-50 animate-fade-in">
+                            <div class="px-4 py-3 border-b border-slate-100">
+                                <p class="text-sm font-semibold text-slate-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-xs text-slate-500 truncate mt-1">{{ user.email|default:"" }}</p>
+                            </div>
+                            {% if user_role == 'ministre' %}
+                            <a href="{% url 'gouvernance:profil_ministre' %}" 
+                               class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-200 mx-2">
+                                <i class="fa-solid fa-user-pen w-5 text-slate-400"></i>
+                                <span>Mon Profil (Signature & Sceau)</span>
+                            </a>
+                            {% elif user_role == 'sg' %}
+                            <a href="{% url 'gouvernance:profil_sg' %}" 
+                               class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-200 mx-2">
+                                <i class="fa-solid fa-user-pen w-5 text-slate-400"></i>
+                                <span>Mon Profil (Signature & Sceau)</span>
+                            </a>
+                            {% endif %}
+                            <form method="post" action="{% url 'core:logout' %}" class="p-2">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-200">
+                                    <i class="fa-solid fa-right-from-bracket w-5 text-slate-400"></i>
+                                    <span>Se déconnecter</span>
+                                </button>
+                            </form>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Header -->
+        {% block page_header %}{% endblock %}
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 lg:p-8 bg-slate-50">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 px-4 lg:px-8 py-5 w-full">
+            <div class="flex flex-col md:flex-row items-center justify-center text-center md:text-left gap-2 md:gap-6 text-xs text-slate-500 max-w-6xl mx-auto">
+                <p>© 2026 SI-SEP Sport RDC — Ministère des Sports et Loisirs</p>
+                <p>Système Intégré de Suivi-Évaluation et Pilotage du Sport</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile sidebar
+        const sidebar = document.getElementById('app-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        
+        function openSidebar() {
+            sidebar?.classList.remove('-translate-x-full');
+            overlay?.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        
+        function closeSidebar() {
+            sidebar?.classList.add('-translate-x-full');
+            overlay?.classList.add('opacity-0', 'pointer-events-none');
+        }
+        
+        mobileBtn?.addEventListener('click', openSidebar);
+        overlay?.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', (e) => e.key === 'Escape' && closeSidebar());
+        
+        // User menu
+        const userMenu = document.getElementById('user-menu');
+        document.addEventListener('click', (e) => {
+            if (userMenu && !userMenu.contains(e.target)) {
+                userMenu.removeAttribute('open');
+            }
+        });
+        
+        // Submenu toggle
+        function toggleSubmenu(id) {
+            const menu = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            menu?.classList.toggle('hidden');
+            icon?.classList.toggle('rotate-180');
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

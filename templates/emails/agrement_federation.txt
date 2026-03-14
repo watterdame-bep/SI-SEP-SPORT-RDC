@@ -1,0 +1,40 @@
+Félicitations !
+
+Votre fédération a été officiellement agréée par le Ministère des Sports et Loisirs.
+
+Bienvenue {{ federation_sigle }} !
+
+Nous avons le plaisir de vous informer que votre fédération {{ federation_name }} a été officiellement agréée par le Ministère des Sports et Loisirs de la République Démocratique du Congo.
+
+STATUT : AGRÉÉE
+Votre fédération est maintenant enregistrée dans le système SI-SEP Sport RDC et peut accéder à tous les services disponibles.
+
+ACTIVATION DE VOTRE COMPTE
+Pour activer votre compte et définir votre mot de passe, cliquez sur le lien ci-dessous :
+
+{{ activation_url }}
+
+Ce lien est valide pendant 7 jours.
+
+DOCUMENTS JOINTS
+Les documents suivants sont attachés à cet email :
+- Arrêté Ministériel d'Agrément
+- Certificat d'Homologation Nationale
+
+PROCHAINES ÉTAPES
+1. Cliquez sur le lien d'activation ci-dessus
+2. Définissez votre mot de passe personnel
+3. Connectez-vous au portail SI-SEP Sport RDC
+4. Complétez votre profil de fédération
+5. Commencez à utiliser les services disponibles
+
+Si vous avez des questions ou besoin d'assistance, n'hésitez pas à contacter le Ministère des Sports et Loisirs.
+
+Cordialement,
+L'équipe SI-SEP Sport RDC
+Ministère des Sports et Loisirs
+
+---
+SI-SEP Sport RDC © 2026
+Système Intégré de Suivi-Évaluation et Pilotage du Sport
+République Démocratique du Congo

@@ -1,0 +1,610 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Parapheur Électronique | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-white border-b border-slate-200">
+    <div class="px-4 lg:px-8 py-4">
+        <!-- Fil d'Ariane -->
+        <nav class="flex items-center gap-2 text-sm text-slate-600 mb-3">
+            <a href="{% url 'core:minister_courriers' %}" class="hover:text-rdc-blue transition-colors">
+                <i class="fa-solid fa-arrow-left mr-1"></i>
+                Courriers à signer
+            </a>
+            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+            <span class="text-slate-900 font-semibold">Examen du dossier</span>
+        </nav>
+        
+        <!-- En-tête du dossier -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-file-signature text-rdc-blue text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900">{{ dossier.nom_officiel }}</h1>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">
+                            <i class="fa-solid fa-hashtag mr-1"></i>
+                            {{ dossier.numero_dossier|default:"—" }}
+                        </span>
+                        {% if dossier.date_demande_agrement %}
+                        <span class="text-xs text-slate-500">
+                            <i class="fa-solid fa-clock mr-1"></i>
+                            Reçu il y a {{ dossier.date_demande_agrement|timesince }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg">
+        <p class="text-sm font-semibold">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 xl:grid-cols-10 gap-6">
+    
+    <!-- Colonne Gauche : Le Dossier (70%) -->
+    <div class="xl:col-span-7 space-y-6">
+        
+        <!-- Ligne 1: Identité & Localisation -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Identité -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Identité de l'institution</h2>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Code</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.code }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Nom officiel</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.nom_officiel }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Sigle</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.sigle|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Type</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.type_institution.designation }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Date de création</p>
+                        <p class="text-sm font-semibold text-slate-900">
+                            {% if dossier.date_creation %}{{ dossier.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Localisation -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Localisation & Contacts</h2>
+                </div>
+                <div class="p-4 space-y-4">
+                    {% with adresse=dossier.adresses_contact.first %}
+                    {% if adresse %}
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Province</p>
+                        <p class="text-sm font-semibold text-slate-900">
+                            {% if adresse.groupement_quartier.secteur.territoire.province_admin %}
+                                {{ adresse.groupement_quartier.secteur.territoire.province_admin.designation }}
+                            {% else %}—{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Territoire</p>
+                        <p class="text-sm font-semibold text-slate-900">
+                            {% if adresse.groupement_quartier.secteur.territoire %}
+                                {{ adresse.groupement_quartier.secteur.territoire.designation }}
+                            {% else %}—{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Avenue/Rue</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ adresse.avenue|default:"—" }}</p>
+                    </div>
+                    {% else %}
+                    <div class="text-sm text-slate-400">Aucune adresse</div>
+                    {% endif %}
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Téléphone</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.telephone_off|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Email</p>
+                        <p class="text-sm font-semibold text-slate-900 truncate">{{ dossier.email_officiel|default:"—" }}</p>
+                    </div>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ligne 2: Responsables (gauche) | Disciplines + Pièces Jointes (droite) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Colonne Gauche: Responsables -->
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Responsables</h2>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Président/Mandataire</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.nom_president|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Téléphone</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.telephone_president|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Personnel administratif</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.nombre_pers_admin }} personne{{ dossier.nombre_pers_admin|pluralize }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Personnel technique</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.nombre_pers_tech }} personne{{ dossier.nombre_pers_tech|pluralize }}</p>
+                    </div>
+                    {% if dossier.partenaire %}
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Partenaires</p>
+                        <p class="text-sm font-semibold text-slate-900">{{ dossier.partenaire }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Colonne Droite: Disciplines + Pièces Jointes -->
+            <div class="space-y-6">
+                <!-- Disciplines sportives -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Disciplines sportives</h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex flex-wrap gap-2">
+                            {% for discipline in dossier.disciplines.all %}
+                            <span class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-semibold bg-rdc-blue/10 text-rdc-blue">
+                                <i class="fa-solid fa-futbol mr-2"></i>
+                                {{ discipline.designation }}
+                            </span>
+                            {% empty %}
+                            <span class="text-sm text-slate-400">Aucune discipline renseignée</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pièces Jointes -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Pièces Jointes</h2>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        {% if dossier.document_statuts %}
+                        <a href="{{ dossier.document_statuts.url }}" target="_blank" 
+                           class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
+                            <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-pdf text-red-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-slate-800 truncate">Statuts</p>
+                            </div>
+                            <i class="fa-solid fa-external-link-alt text-xs text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if dossier.document_pv_ag %}
+                        <a href="{{ dossier.document_pv_ag.url }}" target="_blank" 
+                           class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
+                            <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-pdf text-red-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-slate-800 truncate">PV de l'AG</p>
+                            </div>
+                            <i class="fa-solid fa-external-link-alt text-xs text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if dossier.document_liste_membres %}
+                        <a href="{{ dossier.document_liste_membres.url }}" target="_blank" 
+                           class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
+                            <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-pdf text-red-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-slate-800 truncate">Liste membres</p>
+                            </div>
+                            <i class="fa-solid fa-external-link-alt text-xs text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if dossier.document_certificat %}
+                        <a href="{{ dossier.document_certificat.url }}" target="_blank" 
+                           class="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
+                            <div class="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-pdf text-red-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-semibold text-slate-800 truncate">Certificat</p>
+                            </div>
+                            <i class="fa-solid fa-external-link-alt text-xs text-slate-400 group-hover:text-rdc-blue transition-colors"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if not dossier.document_statuts and not dossier.document_pv_ag and not dossier.document_liste_membres and not dossier.document_certificat %}
+                        <div class="text-sm text-slate-400 text-center py-4">Aucun document</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Colonne Droite : Décision Ministérielle (30%, sticky) -->
+    <div class="xl:col-span-3">
+        <div class="xl:sticky xl:top-24">
+            <div class="bg-white rounded-lg shadow-xl border-2 border-rdc-yellow/30 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-rdc-yellow/20 to-rdc-yellow/10 border-b border-rdc-yellow/30">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-gavel"></i>
+                        Décision Finale
+                    </h2>
+                </div>
+                
+                <form method="post" action="{% url 'core:minister_sign_action' dossier.uid %}" class="p-6 space-y-6" id="minister-action-form">
+                    {% csrf_token %}
+                    
+                    <!-- Informations agrément -->
+                    <div class="bg-slate-50 rounded-lg p-4 space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-xs text-slate-500 uppercase tracking-wide">Type d'agrément</span>
+                            <span class="font-semibold text-slate-900">{{ dossier.get_type_agrement_sollicite_display|default:"—" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-slate-500 uppercase tracking-wide">Date de demande</span>
+                            <span class="font-semibold text-slate-900">
+                                {% if dossier.date_demande_agrement %}{{ dossier.date_demande_agrement|date:"d/m/Y" }}{% else %}—{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-slate-500 uppercase tracking-wide">Durée sollicitée</span>
+                            <span class="font-semibold text-slate-900">{{ dossier.duree_sollicitee }} ans</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Observations -->
+                    <div>
+                        <label for="observations" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Observations
+                            <span class="text-xs font-normal text-slate-500">(optionnel)</span>
+                        </label>
+                        <textarea 
+                            id="observations" 
+                            name="observations" 
+                            rows="4" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue resize-none text-sm"
+                            placeholder="Vos observations..."></textarea>
+                    </div>
+                    
+                    <!-- Zone de refus (cachée par défaut) -->
+                    <div id="refus-zone" class="hidden">
+                        <label for="motif-refus" class="block text-sm font-semibold text-red-700 mb-2">
+                            Motif du renvoi
+                            <span class="text-red-600">*</span>
+                        </label>
+                        <textarea 
+                            id="motif-refus" 
+                            name="motif_refus" 
+                            rows="4" 
+                            class="w-full px-3 py-2 border-2 border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none text-sm"
+                            placeholder="Précisez les raisons du renvoi..."></textarea>
+                        <p class="text-xs text-red-600 mt-1">Ce motif sera communiqué au Secrétariat Général</p>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="space-y-3">
+                        <button 
+                            type="button"
+                            onclick="confirmerSignature()"
+                            id="btn-signer"
+                            class="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                            <i class="fa-solid fa-pen-nib text-lg"></i>
+                            <span>Approuver et Signer l'Agrément</span>
+                        </button>
+                        
+                        <button 
+                            type="button"
+                            onclick="afficherRefus()"
+                            id="btn-refuser"
+                            class="w-full text-center px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold rounded-lg transition-all duration-200 text-sm">
+                            <i class="fa-solid fa-undo mr-1"></i>
+                            Renvoyer au Secrétariat pour correction
+                        </button>
+                        
+                        <!-- Bouton de confirmation du refus (caché par défaut) -->
+                        <button 
+                            id="btn-confirmer-refus"
+                            type="button"
+                            onclick="confirmerRefus()"
+                            class="hidden w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                            <i class="fa-solid fa-exclamation-triangle text-lg"></i>
+                            <span>Confirmer le renvoi</span>
+                        </button>
+                        
+                        <button 
+                            id="btn-annuler-refus"
+                            type="button"
+                            onclick="annulerRefus()"
+                            class="hidden w-full text-center px-4 py-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 font-semibold rounded-lg transition-all duration-200 text-sm">
+                            <i class="fa-solid fa-times mr-1"></i>
+                            Annuler
+                        </button>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-slate-200">
+                        <p class="text-xs text-slate-500 text-center leading-relaxed">
+                            <i class="fa-solid fa-shield-halved mr-1"></i>
+                            La signature active automatiquement la fédération
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de chargement -->
+<div id="loading-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 text-center">
+        <div class="w-16 h-16 bg-rdc-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-file-signature text-3xl text-rdc-blue animate-pulse"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Génération de l'Arrêté numérique...</h3>
+        <p class="text-sm text-slate-600 mb-4">Veuillez patienter</p>
+        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+            <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark h-full rounded-full animate-progress"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de signature -->
+<div id="confirmation-signature-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-green-100 rounded-full">
+                <i class="fa-solid fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Confirmer la signature</h2>
+        </div>
+        
+        <p class="text-sm text-slate-600 mb-6">
+            Êtes-vous sûr de vouloir approuver et signer l'agrément de cette fédération ?
+        </p>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-blue-800">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                <strong>Cette action est irréversible.</strong> Un Arrêté Ministériel sera généré automatiquement.
+            </p>
+        </div>
+        
+        <div class="flex gap-3">
+            <button type="button" onclick="closeConfirmationModal()" 
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                Annuler
+            </button>
+            <button type="button" onclick="confirmerSignatureModal()" 
+                    class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors">
+                Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de refus -->
+<div id="confirmation-refus-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Confirmer le renvoi</h2>
+        </div>
+        
+        <p class="text-sm text-slate-600 mb-4">
+            Êtes-vous sûr de vouloir renvoyer ce dossier au Secrétariat Général pour correction ?
+        </p>
+        
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+            <p class="text-xs font-semibold text-slate-700 mb-2">Motif du renvoi :</p>
+            <p id="motif-refus-display" class="text-sm text-slate-900 italic"></p>
+        </div>
+        
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-red-800">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                <strong>Cette action est irréversible.</strong> Le dossier sera marqué comme renvoyé.
+            </p>
+        </div>
+        
+        <div class="flex gap-3">
+            <button type="button" onclick="closeRefusModal()" 
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                Annuler
+            </button>
+            <button type="button" onclick="confirmerRefusModal()" 
+                    class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'erreur -->
+<div id="error-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-12 w-12 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Erreur</h2>
+        </div>
+        
+        <p id="error-message" class="text-sm text-slate-600 mb-6"></p>
+        
+        <button type="button" onclick="closeErrorModal()" 
+                class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+            Fermer
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function afficherRefus() {
+    document.getElementById('refus-zone').classList.remove('hidden');
+    document.getElementById('btn-confirmer-refus').classList.remove('hidden');
+    document.getElementById('btn-annuler-refus').classList.remove('hidden');
+    document.getElementById('btn-signer').classList.add('hidden');
+    document.getElementById('btn-refuser').classList.add('hidden');
+    
+    document.getElementById('refus-zone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => document.getElementById('motif-refus').focus(), 300);
+}
+
+function annulerRefus() {
+    document.getElementById('refus-zone').classList.add('hidden');
+    document.getElementById('btn-confirmer-refus').classList.add('hidden');
+    document.getElementById('btn-annuler-refus').classList.add('hidden');
+    document.getElementById('btn-signer').classList.remove('hidden');
+    document.getElementById('btn-refuser').classList.remove('hidden');
+    document.getElementById('motif-refus').value = '';
+}
+
+function confirmerSignature() {
+    document.getElementById('confirmation-signature-modal').classList.remove('hidden');
+}
+
+function closeConfirmationModal() {
+    document.getElementById('confirmation-signature-modal').classList.add('hidden');
+}
+
+function confirmerSignatureModal() {
+    closeConfirmationModal();
+    // Afficher le modal de chargement
+    document.getElementById('loading-modal').classList.remove('hidden');
+    
+    // Soumettre le formulaire après 2 secondes
+    setTimeout(() => {
+        const form = document.getElementById('minister-action-form');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'action';
+        input.value = 'signer';
+        form.appendChild(input);
+        form.submit();
+    }, 2000);
+}
+
+function confirmerRefus() {
+    const motif = document.getElementById('motif-refus').value.trim();
+    
+    if (!motif) {
+        showErrorModal('Veuillez préciser le motif du renvoi.');
+        document.getElementById('motif-refus').focus();
+        return;
+    }
+    
+    if (motif.length < 10) {
+        showErrorModal('Le motif doit contenir au moins 10 caractères.');
+        document.getElementById('motif-refus').focus();
+        return;
+    }
+    
+    // Afficher la modale de confirmation avec le motif
+    document.getElementById('motif-refus-display').textContent = motif;
+    document.getElementById('confirmation-refus-modal').classList.remove('hidden');
+}
+
+function closeRefusModal() {
+    document.getElementById('confirmation-refus-modal').classList.add('hidden');
+}
+
+function confirmerRefusModal() {
+    closeRefusModal();
+    const form = document.getElementById('minister-action-form');
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'action';
+    input.value = 'refuser';
+    form.appendChild(input);
+    form.submit();
+}
+
+function showErrorModal(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-modal').classList.remove('hidden');
+}
+
+function closeErrorModal() {
+    document.getElementById('error-modal').classList.add('hidden');
+}
+
+// Fermer les modales en cliquant en dehors
+document.getElementById('confirmation-signature-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeConfirmationModal();
+    }
+});
+
+document.getElementById('confirmation-refus-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRefusModal();
+    }
+});
+
+document.getElementById('error-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeErrorModal();
+    }
+});
+
+// Fermer les modales avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeConfirmationModal();
+        closeRefusModal();
+        closeErrorModal();
+    }
+});
+</script>
+
+<style>
+@keyframes progress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+.animate-progress {
+    animation: progress 2s ease-in-out;
+}
+</style>
+{% endblock %}

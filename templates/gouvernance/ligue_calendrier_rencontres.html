@@ -1,0 +1,100 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Calendrier rencontres — {{ competition.titre }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'gouvernance:ligue_competition_journees' competition_uid=competition.uid %}" class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Calendrier des matchs</h1>
+                    <p class="text-sm text-white/80 mt-1">{{ competition.titre }} — Glissez-déposez pour modifier date ou créneau</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4">
+    <div id="calendar"></div>
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/fr.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var apiUrl = '{% url "gouvernance:ligue_calendrier_rencontres_api" competition_uid=competition.uid %}';
+    var updateUrlPlaceholder = '{% url "gouvernance:ligue_rencontre_update_api" rencontre_uid="00000000-0000-0000-0000-000000000000" %}';
+    var csrfToken = '{{ csrf_token }}';
+    function getUpdateUrl(uid) { return updateUrlPlaceholder.replace('00000000-0000-0000-0000-000000000000', uid); }
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        locale: 'fr',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+        events: function(info, successCallback, failureCallback) {
+            fetch(apiUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(events) { successCallback(events); })
+                .catch(function() { failureCallback(); });
+        },
+        editable: true,
+        eventDrop: function(info) {
+            var id = info.event.id;
+            var start = info.event.start;
+            if (!start) return;
+            var url = getUpdateUrl(id);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ start: start.toISOString() })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    alert(data.error || 'Erreur lors du déplacement');
+                    info.revert();
+                }
+            })
+            .catch(function() {
+                info.revert();
+            });
+        },
+        eventResize: function(info) {
+            var id = info.event.id;
+            var start = info.event.start;
+            if (!start) return;
+            var url = getUpdateUrl(id);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ start: start.toISOString() })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) info.revert();
+            })
+            .catch(function() { info.revert(); });
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

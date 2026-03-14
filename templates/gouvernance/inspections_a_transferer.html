@@ -1,0 +1,247 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Inspections à Transférer | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+input:focus, select:focus {
+    outline: none !important;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <a href="{% url 'gouvernance:federations_nationales' %}" 
+               class="flex h-12 w-12 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all">
+                <i class="fa-solid fa-arrow-left text-xl text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Inspections à Transférer</h1>
+                <p class="text-sm text-white/80 mt-1">Validations complétées par les Directeurs Provinciaux</p>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-list-check text-2xl text-orange-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total</p>
+                        <p class="text-2xl font-bold text-white">{{ total_validations }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                        <p class="text-2xl font-bold text-white">{{ validations_acceptees }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                        <p class="text-2xl font-bold text-white">{{ validations_rejetees }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Statut -->
+        <select id="filter-statut" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="VALIDEE">Validée</option>
+            <option value="REJETEE">Rejetée</option>
+        </select>
+    </div>
+</div>
+
+<!-- Vue Table -->
+<div id="table-view" class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100" onclick="sortTable('nom')">
+                    Fédération <i class="fa-solid fa-sort text-slate-400 ml-1"></i>
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Décision</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date Validation</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for validation in validations_completes %}
+            <tr class="hover:bg-slate-50 transition-colors" 
+                data-nom="{{ validation.federation.nom_officiel|lower }}" 
+                data-sigle="{{ validation.federation.sigle|lower }}"
+                data-statut="{{ validation.statut }}">
+                
+                <!-- Fédération -->
+                <td class="px-6 py-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ validation.federation.nom_officiel }}</div>
+                            <div class="text-xs text-slate-500 font-bold">{{ validation.federation.sigle }}</div>
+                        </div>
+                    </div>
+                </td>
+                
+                <!-- Province -->
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-600">{{ validation.province.designation }}</span>
+                </td>
+                
+                <!-- Décision -->
+                <td class="px-6 py-4 text-center">
+                    {% if validation.statut == 'VALIDEE' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-check-circle"></i>Validée
+                    </span>
+                    {% elif validation.statut == 'REJETEE' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-ban"></i>Rejetée
+                    </span>
+                    {% endif %}
+                </td>
+                
+                <!-- Date Validation -->
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-600">
+                        {% if validation.date_validation %}
+                            {{ validation.date_validation|date:"d/m/Y H:i" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </span>
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Bouton Transférer (si pas encore transféré) -->
+                        {% if validation.federation.statut_signature == '' %}
+                        <button onclick="transferToMinister('{{ validation.uid }}')" 
+                                class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                                title="Transférer au Ministre">
+                            <i class="fa-solid fa-arrow-right text-base"></i>
+                        </button>
+                        {% else %}
+                        <!-- Icône Terminé (si déjà transféré) -->
+                        <span class="p-1.5 text-green-600" title="Déjà transféré au Ministre">
+                            <i class="fa-solid fa-check-circle text-base"></i>
+                        </span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-4"></i>
+                    <p class="text-base font-bold text-slate-900">Aucune inspection complétée</p>
+                    <p class="text-sm text-slate-500 mt-1">Les inspections complétées par les Directeurs Provinciaux apparaîtront ici.</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Recherche en temps réel
+const searchInput = document.getElementById('search-input');
+const filterStatut = document.getElementById('filter-statut');
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (filterStatut) filterStatut.addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const statutFilter = filterStatut ? filterStatut.value : '';
+    
+    document.querySelectorAll('#table-body tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchStatut) ? '' : 'none';
+    });
+}
+
+function sortTable(column) {
+    console.log('Tri par:', column);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function transferToMinister(validationUid) {
+    if (!confirm('Êtes-vous sûr de vouloir transférer cette inspection au Ministre?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/gouvernance/validations/${validationUid}/transfer/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Galerie Photos | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Galerie Photos</h1>
+                <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Documentation visuelle</p>
+            </div>
+            <a href="{% url 'infrastructures:infra_manager_dashboard' %}" 
+               class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Retour au tableau de bord</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Statistiques -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total</p>
+                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ photos|length }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Photos</p>
+            </div>
+            <div class="bg-purple-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-images text-xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Minimum</p>
+                <h3 class="text-3xl font-bold text-orange-600 mt-1">5</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Photos requises</p>
+            </div>
+            <div class="bg-orange-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-camera text-xl text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Statut</p>
+                {% if photos|length >= 5 %}
+                <h3 class="text-3xl font-bold text-green-600 mt-1">
+                    <i class="fa-solid fa-check-circle"></i>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Complet</p>
+                {% else %}
+                <h3 class="text-3xl font-bold text-yellow-600 mt-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Incomplet</p>
+                {% endif %}
+            </div>
+            <div class="bg-blue-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-circle-info text-xl text-blue-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Galerie -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-image text-rdc-blue"></i>
+        Photos de l'Infrastructure
+    </h2>
+    
+    {% if photos %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for photo in photos %}
+        <div class="group relative bg-slate-50 rounded-xl overflow-hidden border border-slate-200 hover:border-rdc-blue hover:shadow-lg transition-all duration-300">
+            <!-- Image -->
+            <div class="aspect-video bg-slate-100 overflow-hidden">
+                <img src="{{ photo.photo.url }}" 
+                     alt="{{ photo.description|default:'Photo infrastructure' }}" 
+                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            </div>
+            
+            <!-- Overlay au hover -->
+            <a href="{{ photo.photo.url }}" 
+               target="_blank" 
+               class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/60 transition-all duration-300">
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 bg-white text-rdc-blue text-sm font-semibold rounded-lg shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                    <i class="fa-solid fa-expand mr-2"></i>
+                    Voir en grand
+                </span>
+            </a>
+            
+            <!-- Informations -->
+            <div class="p-4 bg-white">
+                <h3 class="text-sm font-semibold text-slate-800 mb-1 truncate">
+                    {{ photo.description|default:"Sans description" }}
+                </h3>
+                <p class="text-xs text-slate-500">
+                    <i class="fa-solid fa-calendar mr-1"></i>
+                    {{ photo.date_upload|date:"d/m/Y" }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if photos|length < 5 %}
+    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-yellow-600 text-lg mt-0.5"></i>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-yellow-800">Photos manquantes</p>
+                <p class="text-xs text-yellow-700 mt-1">
+                    Il manque {{ 5|add:photos|length|add:"-"|add:photos|length }} photo(s) pour atteindre le minimum requis de 5 photos.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-12">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 rounded-full mb-4">
+            <i class="fa-solid fa-images text-2xl text-slate-400"></i>
+        </div>
+        <h3 class="text-base font-semibold text-slate-700 mb-2">Aucune photo disponible</h3>
+        <p class="text-sm text-slate-500 max-w-md mx-auto mb-4">
+            Les photos de l'infrastructure (vue générale, entrée, vestiaires, terrain, tribunes) apparaîtront ici.
+        </p>
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs font-semibold rounded-lg">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Minimum 5 photos requises pour la validation
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

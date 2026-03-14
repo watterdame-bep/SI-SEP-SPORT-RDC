@@ -1,0 +1,223 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Configuration Billetterie - SI-SEP Sport RDC{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- En-tête -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <a href="{% url 'gouvernance:ligue_rencontres_billetterie' %}" 
+                   class="inline-flex items-center justify-center w-10 h-10 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Configuration Billetterie</h1>
+                    <p class="mt-1 text-slate-600">Définissez les tarifs et générez les billets</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations de la Rencontre -->
+        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark rounded-xl shadow-lg p-6 mb-8 text-white">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                            <i class="fa-solid fa-trophy"></i>
+                            {{ rencontre.journee.competition.titre }}
+                        </span>
+                        <span class="text-white/80 text-sm">{{ rencontre.journee.libelle }}</span>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold mb-3">
+                        {{ rencontre.equipe_a.nom_officiel }} 
+                        <span class="text-white/60 font-normal">vs</span> 
+                        {{ rencontre.equipe_b.nom_officiel }}
+                    </h2>
+                    
+                    <div class="flex items-center gap-6 text-sm">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-calendar"></i>
+                            <span>{{ rencontre.date_heure|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>{{ rencontre.date_heure|date:"H:i" }}</span>
+                        </div>
+                        {% if rencontre.stade %}
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>{{ rencontre.stade.nom }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if rencontre.stade.capacite_spectateurs %}
+                <div class="text-right">
+                    <p class="text-white/80 text-sm mb-1">Capacité totale</p>
+                    <p class="text-3xl font-bold">{{ rencontre.stade.capacite_spectateurs }}</p>
+                    <p class="text-white/80 text-xs">places</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Configuration des Tarifs -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-tags text-rdc-blue"></i>
+                        Configuration des Tarifs par Zone
+                    </h3>
+
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="configurer_tarifs">
+                        
+                        {% for zone in zones_stade %}
+                        <div class="border border-slate-200 rounded-lg p-4 hover:border-rdc-blue transition-colors">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h4 class="font-semibold text-slate-900">{{ zone.nom }}</h4>
+                                    {% if zone.description %}
+                                    <p class="text-sm text-slate-500 mt-1">{{ zone.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="inline-flex items-center justify-center w-8 h-8 bg-rdc-blue/10 text-rdc-blue rounded-full text-sm font-bold">
+                                    {{ forloop.counter }}
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        Prix unitaire (CDF)
+                                    </label>
+                                    <input type="number" 
+                                           name="prix_zone_{{ zone.uid }}" 
+                                           step="0.01"
+                                           min="0"
+                                           {% for tarif in tarifs_existants %}
+                                               {% if tarif.zone_stade.uid == zone.uid %}
+                                                   value="{{ tarif.prix_unitaire }}"
+                                               {% endif %}
+                                           {% endfor %}
+                                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
+                                           placeholder="Ex: 50000">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                                        Nombre de billets
+                                    </label>
+                                    <input type="number" 
+                                           name="capacite_zone_{{ zone.uid }}" 
+                                           min="1"
+                                           {% for tarif in tarifs_existants %}
+                                               {% if tarif.zone_stade.uid == zone.uid %}
+                                                   value="{{ tarif.capacite_max }}"
+                                               {% endif %}
+                                           {% endfor %}
+                                           class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
+                                           placeholder="Ex: 500">
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <i class="fa-solid fa-layer-group text-4xl text-slate-300 mb-3"></i>
+                            <p class="text-slate-600">Aucune zone définie pour ce stade</p>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if zones_stade %}
+                        <div class="flex gap-3 pt-4 border-t border-slate-200">
+                            <button type="submit" 
+                                    class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors font-medium">
+                                <i class="fa-solid fa-save"></i>
+                                <span>Sauvegarder les tarifs</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistiques et Actions -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Génération des Billets -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-ticket text-rdc-blue"></i>
+                        Génération
+                    </h3>
+                    
+                    <p class="text-sm text-slate-600 mb-4">
+                        Générez les billets après avoir configuré les tarifs
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="generer_billets">
+                        <button type="submit" 
+                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Générer les billets</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Statistiques -->
+                {% if tarifs_existants %}
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-rdc-blue"></i>
+                        Statistiques
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        {% for tarif in tarifs_existants %}
+                        {% with zone_uid=tarif.zone_stade.uid|stringformat:"s" %}
+                        {% with stat=stats|get_item:zone_uid %}
+                        <div class="border-l-4 border-rdc-blue pl-3">
+                            <p class="font-medium text-slate-900 text-sm mb-2">{{ tarif.zone_stade.nom }}</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <p class="text-slate-500">Total</p>
+                                    <p class="font-bold text-slate-900">{{ stat.total|default:0 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-500">Vendus</p>
+                                    <p class="font-bold text-green-600">{{ stat.vendus|default:0 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-500">Utilisés</p>
+                                    <p class="font-bold text-blue-600">{{ stat.utilises|default:0 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-500">Disponibles</p>
+                                    <p class="font-bold text-orange-600">{{ stat.disponibles|default:0 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                        {% endwith %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

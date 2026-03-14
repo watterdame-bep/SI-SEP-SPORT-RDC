@@ -1,0 +1,230 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Athlètes | {{ club.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-users text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Athlètes</h1>
+                    <p class="text-sm text-white/80 mt-1">Gestion des athlètes du club</p>
+                </div>
+            </div>
+            <a href="{% url 'gouvernance:club_athlete_registration' %}" class="px-6 py-3 bg-white text-rdc-blue rounded-lg hover:bg-white/90 transition-all shadow-lg font-medium">
+                <i class="fa-solid fa-plus mr-2"></i>
+                Nouvel Athlète
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Athlètes -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Total Athlètes</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ total_athletes }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center bg-rdc-blue/10 rounded-lg">
+                    <i class="fa-solid fa-users text-xl text-rdc-blue"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Athlètes Actifs -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Actifs</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">{{ athletes_actifs }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center bg-green-100 rounded-lg">
+                    <i class="fa-solid fa-check-circle text-xl text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Athlètes Masculins -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Masculins</p>
+                    <p class="text-3xl font-bold text-blue-600 mt-2">{{ athletes_masculins }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center bg-blue-100 rounded-lg">
+                    <i class="fa-solid fa-mars text-xl text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Athlètes Féminins -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Féminins</p>
+                    <p class="text-3xl font-bold text-pink-600 mt-2">{{ athletes_feminins }}</p>
+                </div>
+                <div class="flex h-12 w-12 items-center justify-center bg-pink-100 rounded-lg">
+                    <i class="fa-solid fa-venus text-xl text-pink-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des Athlètes -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+        <div class="px-6 py-4 border-b border-slate-200">
+            <h2 class="text-lg font-semibold text-slate-900">Liste des Athlètes</h2>
+        </div>
+        
+        {% if athletes %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Photo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Nom Complet</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">N° Sportif</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Discipline</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Catégorie</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Poste</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Certification</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for athlete in athletes %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if athlete.personne.photo %}
+                            <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="h-10 w-10 rounded-full object-cover">
+                            {% else %}
+                            <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
+                                <i class="fa-solid fa-user text-slate-400"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-slate-900">{{ athlete.nom_complet }}</div>
+                            <div class="text-sm text-slate-500">
+                                {% if athlete.personne.sexe == 'M' %}
+                                <i class="fa-solid fa-mars text-blue-500"></i>
+                                {% elif athlete.personne.sexe == 'F' %}
+                                <i class="fa-solid fa-venus text-pink-500"></i>
+                                {% endif %}
+                                {% if athlete.age %} {{ athlete.age }} ans{% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-mono text-slate-700">{{ athlete.numero_sportif|default:"—" }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
+                                {{ athlete.get_categorie_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                            {{ athlete.poste|default:"—" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if athlete.statut == 'ACTIF' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                <i class="fa-solid fa-circle text-green-500 text-xs mr-1"></i> Actif
+                            </span>
+                            {% elif athlete.statut == 'INACTIF' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
+                                <i class="fa-solid fa-circle text-slate-400 text-xs mr-1"></i> Inactif
+                            </span>
+                            {% elif athlete.statut == 'SUSPENDU' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                <i class="fa-solid fa-ban text-red-500 text-xs mr-1"></i> Suspendu
+                            </span>
+                            {% elif athlete.statut == 'BLESSE' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                <i class="fa-solid fa-heart-pulse text-orange-500 text-xs mr-1"></i> Blessé
+                            </span>
+                            {% else %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
+                                {{ athlete.get_statut_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if athlete.statut_certification == 'PROVISOIRE' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                <i class="fa-solid fa-clock text-yellow-500 text-xs mr-1"></i> Provisoire
+                            </span>
+                            {% elif athlete.statut_certification == 'EN_ATTENTE_EXAMEN_MEDICAL' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                                <i class="fa-solid fa-user-doctor text-amber-600 text-xs mr-1"></i> Transmis au médecin
+                            </span>
+                            {% elif athlete.statut_certification == 'EN_ATTENTE_VALIDATION_LIGUE' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                                <i class="fa-solid fa-hourglass text-blue-500 text-xs mr-1"></i> Enrôlé
+                            </span>
+                            {% elif athlete.statut_certification == 'CERTIFIE_PROVINCIAL' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                                <i class="fa-solid fa-check text-blue-500 text-xs mr-1"></i> Certifié Provincial
+                            </span>
+                            {% elif athlete.statut_certification == 'CERTIFIE_NATIONAL' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-green-600 text-white border-2 border-green-700 shadow-sm">
+                                <i class="fa-solid fa-certificate text-white text-xs mr-1"></i> Certifié
+                            </span>
+                            {% elif athlete.statut_certification == 'REJETE_LIGUE' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-red-600 text-white border-2 border-red-700 shadow-sm">
+                                <i class="fa-solid fa-times text-white text-xs mr-1"></i> Rejeté
+                            </span>
+                            {% elif athlete.statut_certification == 'REJETE_FEDERATION' %}
+                            <span class="inline-flex px-2 py-1 text-xs font-bold rounded-full bg-red-600 text-white border-2 border-red-700 shadow-sm">
+                                <i class="fa-solid fa-times text-white text-xs mr-1"></i> Rejeté
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="text-rdc-blue hover:text-rdc-blue-dark" title="Voir détails">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button type="button" class="text-slate-600 hover:text-slate-900" title="Modifier">
+                                    <i class="fa-solid fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <div class="flex justify-center mb-4">
+                <div class="flex h-16 w-16 items-center justify-center bg-slate-100 rounded-full">
+                    <i class="fa-solid fa-users text-2xl text-slate-400"></i>
+                </div>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-2">Aucun athlète enregistré</h3>
+            <p class="text-slate-600 mb-6">Commencez par ajouter votre premier athlète au club.</p>
+            <a href="{% url 'gouvernance:club_athlete_registration' %}" class="inline-block px-6 py-2.5 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                <i class="fa-solid fa-plus mr-2"></i>
+                Ajouter un Athlète
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

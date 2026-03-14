@@ -1,0 +1,216 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Enrôlement Athlètes | {{ ligue.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-user-plus text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Enrôlement des Athlètes</h1>
+                    <p class="text-sm text-white/80 mt-1">Athlètes en attente d'enrôlement ou transmis au médecin — {{ ligue.nom_officiel }}</p>
+                </div>
+            </div>
+            <a href="{% url 'gouvernance:ligue_athletes_enrollment_history' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium text-sm transition-colors border border-white/30">
+                <i class="fa-solid fa-history"></i>
+                Historique des enrôlements
+            </a>
+        </div>
+        
+        <!-- Statistiques (style Mes clubs affiliés) -->
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total</p>
+                        <p class="text-2xl font-bold text-white">{{ total_athletes }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock text-2xl text-orange-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">En attente</p>
+                        <p class="text-2xl font-bold text-white">{{ total_provisoires }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-doctor text-2xl text-amber-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Transmis médecin</p>
+                        <p class="text-2xl font-bold text-white">{{ total_transmis_medecin }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Barre d'outils (comme Mes clubs affiliés) -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher par nom, club ou discipline..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Statut -->
+        <select id="filter-statut" class="md:w-56 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="PROVISOIRE">En attente d'enrôlement</option>
+            <option value="EN_ATTENTE_EXAMEN_MEDICAL">Transmis au médecin</option>
+        </select>
+    </div>
+</div>
+
+<!-- Liste des Athlètes (tableau style Mes clubs affiliés) -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    {% if athletes %}
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Catégorie</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date inscription</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for athlete in athletes %}
+            <tr class="hover:bg-slate-50 transition-colors" 
+                data-nom="{{ athlete.nom_complet|lower }}" 
+                data-club="{{ athlete.club.nom_officiel|lower }}"
+                data-discipline="{{ athlete.discipline.designation|default:''|lower }}"
+                data-statut="{{ athlete.statut_certification }}">
+                
+                <!-- Athlète -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        {% if athlete.personne.photo %}
+                        <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="h-10 w-10 rounded-full object-cover">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ athlete.nom_complet }}</div>
+                            <div class="text-xs text-slate-500">
+                                {% if athlete.personne.sexe == 'M' %}<i class="fa-solid fa-mars text-blue-500"></i>{% elif athlete.personne.sexe == 'F' %}<i class="fa-solid fa-venus text-pink-500"></i>{% endif %}
+                                {% if athlete.age %} {{ athlete.age }} ans{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                
+                <!-- Club -->
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-900">{{ athlete.club.nom_officiel }}</span>
+                </td>
+                
+                <!-- Discipline -->
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                </td>
+                
+                <!-- Catégorie -->
+                <td class="px-6 py-4 text-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
+                        {{ athlete.get_categorie_display }}
+                    </span>
+                </td>
+                
+                <!-- Statut -->
+                <td class="px-6 py-4 text-center">
+                    {% if athlete.statut_certification == 'PROVISOIRE' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-rdc-blue/10 text-rdc-blue text-xs font-bold rounded-full border border-rdc-blue/20">
+                        <i class="fa-solid fa-clock"></i>
+                        En attente
+                    </span>
+                    {% elif athlete.statut_certification == 'EN_ATTENTE_EXAMEN_MEDICAL' %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200">
+                        <i class="fa-solid fa-user-doctor"></i>
+                        Transmis au médecin
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                        {{ athlete.get_statut_certification_display }}
+                    </span>
+                    {% endif %}
+                </td>
+                
+                <!-- Date inscription -->
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    {{ athlete.date_inscription|date:"d/m/Y" }}
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                        {% if athlete.statut_certification == 'PROVISOIRE' %}
+                        <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete.uid %}" 
+                           class="inline-flex items-center px-3 py-1.5 bg-rdc-blue text-white text-sm font-medium rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                            <i class="fa-solid fa-user-plus mr-2"></i>
+                            Enrôler
+                        </a>
+                        {% else %}
+                        <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete.uid %}" 
+                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           title="Voir le dossier">
+                            <i class="fa-solid fa-eye text-base"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="px-6 py-16 text-center">
+        <i class="fa-solid fa-user-plus text-4xl text-slate-300 mb-4"></i>
+        <p class="text-base font-bold text-slate-900">Aucun athlète en attente</p>
+        <p class="text-sm text-slate-600 mt-2">Les athlètes à enrôler ou déjà transmis au médecin apparaîtront ici.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Recherche et filtrage (comme Mes clubs affiliés)
+const searchInput = document.getElementById('search-input');
+const filterStatut = document.getElementById('filter-statut');
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (filterStatut) filterStatut.addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = (searchInput ? searchInput.value.toLowerCase() : '').trim();
+    const statutFilter = filterStatut ? filterStatut.value : '';
+    
+    document.querySelectorAll('#table-body tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const club = row.dataset.club || '';
+        const discipline = row.dataset.discipline || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = !searchTerm || nom.includes(searchTerm) || club.includes(searchTerm) || discipline.includes(searchTerm);
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchStatut) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

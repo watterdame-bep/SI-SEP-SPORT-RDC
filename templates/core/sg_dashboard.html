@@ -1,0 +1,208 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="px-4 py-5 border-b border-slate-200 bg-white">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tableau de bord</h1>
+            <p class="text-sm text-gray-500 mt-1">Secrétaire Général — Vue d'ensemble et parapheur technique</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors duration-200">
+                <i class="fas fa-filter"></i>
+                <span>Filtrer</span>
+            </button>
+            <a href="{% url 'core:gestion_administrative' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold uppercase tracking-wider transition-all duration-200">
+                <i class="fas fa-plus"></i>
+                <span>Nouvelle fédération</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 p-4 {% if message.tags == 'error' %}bg-red-50 border-l-4 border-red-500 text-red-700{% elif message.tags == 'success' %}bg-green-50 border-l-4 border-green-500 text-green-700{% else %}bg-blue-50 border-l-4 border-blue-500 text-blue-700{% endif %}">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <span class="flex-1 text-sm font-medium">{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Widgets statistiques (4 cards) -->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <!-- Card 1: Fédérations actives -->
+    <div class="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                    <i class="fas fa-building text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1">
+                    <i class="fas fa-arrow-up text-xs"></i> +12%
+                </span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-2">Fédérations actives</p>
+                <p class="text-3xl font-bold text-slate-900">{{ fed_actives }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Dossiers en attente -->
+    <div class="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-amber-500 to-amber-600 text-white">
+                    <i class="fas fa-folder-open text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1">
+                    <i class="fas fa-clock text-xs"></i> En cours
+                </span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-2">Dossiers en attente</p>
+                <p class="text-3xl font-bold text-slate-900">{{ dossiers_attente }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Alertes de conformité -->
+    <div class="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-red-500 to-red-600 text-white">
+                    <i class="fas fa-exclamation-triangle text-xl"></i>
+                </div>
+                {% if alertes_mandats > 0 %}
+                <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-1">
+                    <i class="fas fa-bell text-xs"></i> Urgent
+                </span>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-2">Alertes conformité</p>
+                <p class="text-3xl font-bold text-slate-900">{{ alertes_mandats }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Utilisateurs actifs -->
+    <div class="bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-green-500 to-green-600 text-white">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1">
+                    <i class="fas fa-circle text-xs"></i> En ligne
+                </span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-500 uppercase tracking-wider mb-2">Utilisateurs actifs</p>
+                <p class="text-3xl font-bold text-slate-900">{{ users_actifs }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Parapheur technique -->
+<div class="bg-white border border-slate-200 shadow-sm">
+    <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-rdc-blue to-rdc-blue-hover">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center bg-white/20 text-white">
+                    <i class="fas fa-file-alt text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-white uppercase tracking-wider">Parapheur technique</h2>
+                    <p class="text-xs text-white/80 mt-0.5">10 dernières demandes d'agrément</p>
+                </div>
+            </div>
+            <button class="text-white/90 hover:text-white text-sm font-medium">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Institution</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date de dépôt</th>
+                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">État</th>
+                    <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+                {% for inst in parapheur %}
+                <tr class="hover:bg-slate-50 transition-colors duration-150">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center bg-slate-100 text-slate-600 font-semibold text-sm">
+                                {{ inst.nom_officiel|slice:":2"|upper }}
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">{{ inst.nom_officiel }}</div>
+                                <div class="text-xs text-slate-500 mt-0.5">{{ inst.code }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-600">{{ inst.type_institution.designation|default:"—" }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-600">{{ inst.etat_administrative.date_delivrance|date:"d/m/Y"|default:"—" }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% with etat=inst.etat_administrative.etat_agrement %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                            {% if etat.code == 'EN_INSTRUCTION' %}bg-amber-50 text-amber-700 border border-amber-200
+                            {% elif etat.code == 'ACCORDE' or etat.code == 'SIGNE' %}bg-green-50 text-green-700 border border-green-200
+                            {% elif etat.code == 'REFUSE' or etat.code == 'REVOQUE' %}bg-red-50 text-red-700 border border-red-200
+                            {% else %}bg-slate-50 text-slate-700 border border-slate-200{% endif %}">
+                            <span class="w-2 h-2 rounded-full
+                                {% if etat.code == 'EN_INSTRUCTION' %}bg-amber-500
+                                {% elif etat.code == 'ACCORDE' or etat.code == 'SIGNE' %}bg-green-500
+                                {% elif etat.code == 'REFUSE' or etat.code == 'REVOQUE' %}bg-red-500
+                                {% else %}bg-slate-400{% endif %}"></span>
+                            {{ etat.designation|default:etat.code|default:"—" }}
+                        </span>
+                        {% endwith %}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="#" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-rdc-blue hover:text-rdc-blue-hover hover:bg-blue-50 transition-all duration-200">
+                            <span>Ouvrir</span>
+                            <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-16 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex h-16 w-16 items-center justify-center bg-slate-100 text-slate-400 mb-4">
+                                <i class="fas fa-folder-open text-3xl"></i>
+                            </div>
+                            <p class="text-base font-semibold text-slate-900 mb-1">Aucune demande d'agrément</p>
+                            <p class="text-sm text-slate-500">Les demandes apparaîtront ici une fois soumises</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

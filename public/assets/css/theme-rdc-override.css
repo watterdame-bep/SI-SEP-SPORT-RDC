@@ -1,0 +1,235 @@
+/*
+ * Charte Graphique "RDC Royale" — SI-SEP SPORT
+ * Couleurs officielles (drapeau RDC). À appliquer à toute l'interface.
+ *
+ * Bleu Royal (Principal) : #0036ca — Sidebar, Navbar, boutons primaires
+ * Jaune Drapeau (Accent)  : #FDE015 — Icônes actives, alertes importantes, mise en évidence (parcimonie)
+ * Rouge Drapeau (Danger)  : #ED1C24 — Erreurs, suppressions, notifications critiques
+ * Fond des pages          : #f8f9fa (gris très clair / blanc)
+ */
+
+:root {
+  /* Variables thème Duralux remplacées par la Charte SI-SEP Sport */
+  --bs-primary: #0036ca;
+  --bs-warning: #FDE015;
+  --bs-danger: #ED1C24;
+  /* Référence explicite pour réutilisation */
+  --sisep-bleu-royal: #0036ca;
+  --sisep-jaune-drapeau: #FDE015;
+  --sisep-rouge-drapeau: #ED1C24;
+  --sisep-fond-page: #fff;
+}
+
+/* Fond global : tout en blanc */
+body,
+.nxl-container .nxl-content .main-content,
+.nxl-content {
+  background-color: #fff;
+}
+
+/* Sidebar (menu latéral) : blanc */
+.nxl-navigation,
+.nxl-navigation .navbar-wrapper {
+  background-color: #fff !important;
+  border-right: 1px solid #e2e8f0;
+}
+
+/* Zone logo dans la sidebar : fond bleu #0036ca */
+.nxl-navigation .m-header {
+  background-color: #0036ca !important;
+  padding: 1rem;
+}
+.nxl-navigation .m-header .b-brand {
+  display: block;
+  text-align: center;
+}
+.nxl-navigation .nxl-navbar .nxl-link,
+.nxl-navigation .nxl-item.nxl-caption label {
+  color: #334155 !important;
+}
+.nxl-navigation .nxl-navbar .nxl-link:hover {
+  color: var(--sisep-bleu-royal) !important;
+}
+.nxl-navigation .card {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0;
+}
+.nxl-navigation .card .text-dark {
+  color: #1e293b !important;
+}
+.nxl-navigation .btn-outline-light {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.nxl-navigation .btn-outline-light:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+
+/* Navbar (en-tête) : blanc */
+.nxl-header,
+.nxl-header .header-wrapper {
+  background-color: #fff !important;
+  border-bottom: 1px solid #e2e8f0;
+}
+.nxl-header .avatar-text.bg-primary {
+  background-color: var(--sisep-bleu-royal) !important;
+  color: #fff !important;
+}
+.nxl-header .dropdown-header .text-dark,
+.nxl-header .dropdown-header .text-muted {
+  color: inherit !important;
+}
+.nxl-header .nxl-head-mobile-toggler,
+.nxl-header .nxl-navigation-toggle a {
+  color: #334155;
+}
+.nxl-header .hamburger-inner,
+.nxl-header .hamburger-inner::before,
+.nxl-header .hamburger-inner::after {
+  background-color: #334155;
+}
+
+/* Boutons primaires : Bleu Royal */
+.btn-primary {
+  background-color: var(--sisep-bleu-royal) !important;
+  border-color: var(--sisep-bleu-royal) !important;
+  background-image: none !important;
+}
+.btn-primary:hover {
+  background-color: #002dab !important;
+  border-color: #002dab !important;
+  background-image: none !important;
+}
+
+/* En-têtes de cartes : fond neutre, touche bleue discrète (bleu non dominant) */
+.card-header {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0;
+  border-left: 4px solid var(--sisep-bleu-royal);
+}
+
+/* Danger / erreurs / suppressions : Rouge Drapeau */
+.alert-danger,
+.btn-danger,
+.text-danger,
+.login-error-message {
+  background-color: rgba(237, 28, 36, 0.1) !important;
+  color: var(--sisep-rouge-drapeau) !important;
+  border-color: rgba(237, 28, 36, 0.3);
+}
+.btn-danger {
+  background-color: var(--sisep-rouge-drapeau) !important;
+  border-color: var(--sisep-rouge-drapeau) !important;
+  color: #fff !important;
+}
+.btn-danger:hover {
+  background-color: #c91820 !important;
+  border-color: #c91820 !important;
+  color: #fff !important;
+}
+
+/* Accent Jaune (parcimonie) : alertes importantes, éléments nécessitant l'attention */
+.alert-warning,
+.badge.bg-warning,
+.text-warning {
+  color: #1e293b !important;
+}
+.alert-warning {
+  background-color: rgba(253, 224, 21, 0.2) !important;
+  border-color: var(--sisep-jaune-drapeau);
+}
+
+/* ========== Page Login (conservation des styles existants) ========== */
+.auth-cover-wrapper .auth-cover-content-inner {
+  background-color: var(--sisep-bleu-royal) !important;
+}
+
+body.login-page .auth-cover-wrapper .auth-cover-card .btn-primary,
+body.login-page .auth-cover-wrapper .auth-cover-card button[type="submit"].btn-primary {
+  background-color: var(--sisep-bleu-royal) !important;
+  border-color: var(--sisep-bleu-royal) !important;
+  background-image: none !important;
+}
+body.login-page .auth-cover-wrapper .auth-cover-card .btn-primary:hover,
+body.login-page .auth-cover-wrapper .auth-cover-card button[type="submit"].btn-primary:hover {
+  background-color: #002dab !important;
+  border-color: #002dab !important;
+  background-image: none !important;
+}
+
+body.login-page .auth-cover-wrapper .auth-cover-card a[href*="password-reset"] {
+  color: var(--sisep-bleu-royal) !important;
+}
+body.login-page .auth-cover-wrapper .auth-cover-card a[href*="password-reset"]:hover {
+  color: #002dab !important;
+}
+
+.auth-cover-wrapper .auth-cover-card-wrapper,
+.auth-cover-wrapper .auth-cover-card {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.login-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1e293b;
+}
+
+body.login-page {
+  height: 100%;
+  overflow: hidden;
+}
+html.login-page {
+  height: 100%;
+}
+.auth-cover-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.auth-cover-wrapper .auth-cover-content-inner {
+  flex: 1;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-cover-wrapper .auth-cover-sidebar-inner {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-height: 100vh;
+  padding: 1.5rem 0;
+}
+.auth-cover-wrapper .auth-cover-card-wrapper {
+  width: 100%;
+  max-width: 100%;
+  margin: auto;
+}
+.auth-cover-wrapper .auth-cover-card {
+  flex-shrink: 0;
+}
+
+.login-error-message {
+  border-radius: 6px;
+  line-height: 1.4;
+  min-height: 2.75rem;
+  border: 1px solid rgba(237, 28, 36, 0.3);
+}
+.login-error-message span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

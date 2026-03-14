@@ -1,0 +1,538 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer un compte | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none !important;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus {
+    border-color: #0036ca;
+    box-shadow: 0 0 0 3px rgba(0, 54, 202, 0.1);
+}
+
+.form-input::placeholder {
+    color: #94a3b8;
+}
+
+.btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: #0036ca;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #002a9f;
+}
+
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+/* Agent Selection Card */
+.agent-selection-card {
+    background: white;
+    border: 2px dashed #cbd5e1;
+    border-radius: 1rem;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.agent-selection-card:hover {
+    border-color: #0036ca;
+    background: #f0f4ff;
+}
+
+.agent-selection-card.selected {
+    border-color: #0036ca;
+    background: #f0f4ff;
+    border-style: solid;
+}
+
+.agent-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0036ca 0%, #002a9f 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin: 0 auto 1rem;
+}
+
+.agent-name-large {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.agent-matricule-large {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.change-agent-btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #e2e8f0;
+    color: #0036ca;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.change-agent-btn:hover {
+    background: #cbd5e1;
+}
+
+/* Modal Styles */
+dialog {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 90%;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0036ca/10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0036ca;
+}
+
+.modal-header-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.agent-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1.5rem;
+}
+
+.agent-list-item {
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.75rem;
+}
+
+.agent-list-item:hover {
+    border-color: #0036ca;
+    background: #f0f4ff;
+}
+
+.agent-list-item.selected {
+    border-color: #0036ca;
+    background: #f0f4ff;
+}
+
+.agent-list-item-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.agent-list-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #0036ca;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.agent-list-info {
+    flex: 1;
+}
+
+.agent-list-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.agent-list-matricule {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.modal-footer button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-footer .btn-cancel {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.modal-footer .btn-cancel:hover {
+    background: #cbd5e1;
+}
+
+.modal-footer .btn-confirm {
+    background: #0036ca;
+    color: white;
+}
+
+.modal-footer .btn-confirm:hover {
+    background: #002a9f;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-user-plus text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Créer un compte</h1>
+                <p class="text-sm text-white/80 mt-1">{{ mon_institution.nom_officiel }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulaire -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Agent Selection Section -->
+            <div class="form-group">
+                {% if agent_preselectionne %}
+                    <!-- Selected Agent Display -->
+                    <div class="agent-selection-card selected">
+                        <div class="agent-avatar-large">
+                            {{ agent_preselectionne.personne.nom|slice:":1"|upper }}{{ agent_preselectionne.personne.prenom|slice:":1"|upper }}
+                        </div>
+                        <div class="agent-name-large">{{ agent_preselectionne.personne.nom }} {{ agent_preselectionne.personne.prenom }}</div>
+                        <div class="agent-matricule-large">{{ agent_preselectionne.matricule }}</div>
+                        <button type="button" class="change-agent-btn" onclick="openAgentModal()">
+                            <i class="fa-solid fa-pen-to-square mr-2"></i>Changer d'agent
+                        </button>
+                        <input type="hidden" name="agent_id" value="{{ agent_preselectionne.uid }}" id="selected-agent-id">
+                    </div>
+                {% else %}
+                    <!-- No Agent Selected -->
+                    <div class="agent-selection-card" onclick="openAgentModal()">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">
+                            <i class="fa-solid fa-user-plus text-slate-300"></i>
+                        </div>
+                        <div style="font-size: 1rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
+                            Sélectionner un agent
+                        </div>
+                        <div style="font-size: 0.875rem; color: #94a3b8;">
+                            Cliquez pour choisir un agent parmi la liste
+                        </div>
+                    </div>
+                    <input type="hidden" name="agent_id" value="" id="selected-agent-id">
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-input" 
+                       placeholder="exemple@institution.cd" value="{{ agent_email }}" required>
+            </div>
+
+            <!-- Fonction de l'agent -->
+            {% if agent_fonction %}
+                <div class="form-group">
+                    <label class="form-label">Fonction</label>
+                    <div style="padding: 0.75rem; background: #f0f4ff; border: 1px solid #0036ca; border-radius: 0.5rem; color: #0036ca; font-weight: 600;">
+                        {{ agent_fonction }}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Rôle -->
+            <div class="form-group">
+                <label class="form-label" for="role">Rôle du système</label>
+                {% if role_force %}
+                    <!-- Rôle forcé - non modifiable -->
+                    <div style="padding: 0.75rem; background: #f0f4ff; border: 1px solid #0036ca; border-radius: 0.5rem; color: #0036ca; font-weight: 600;">
+                        {% if role_force == 'DIRECTEUR_PROVINCIAL' %}
+                            Directeur Provincial
+                        {% elif role_force == 'MINISTRE' %}
+                            Ministre
+                        {% elif role_force == 'SECRETAIRE_GENERAL' %}
+                            Secrétaire Général
+                        {% endif %}
+                    </div>
+                    <input type="hidden" name="role" value="{{ role_force }}">
+                {% else %}
+                    <!-- Rôle modifiable -->
+                    <select id="role" name="role" class="form-select" required>
+                        <option value="">-- Sélectionner un rôle --</option>
+                        <option value="MINISTRE">Ministre</option>
+                        <option value="SECRETAIRE_GENERAL">Secrétaire Général</option>
+                        <option value="DIRECTEUR_PROVINCIAL">Directeur Provincial</option>
+                    </select>
+                {% endif %}
+            </div>
+
+            <!-- Boutons -->
+            <div class="flex gap-3 pt-4">
+                <a href="{% url 'core:gerer_comptes' %}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left mr-2"></i>Retour
+                </a>
+                <button type="submit" class="btn-primary" id="submit-btn" disabled>
+                    <i class="fa-solid fa-check mr-2"></i>Créer le compte
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de sélection d'agent -->
+<dialog id="agentModal">
+    <div style="padding: 1.5rem;">
+        <div class="modal-header">
+            <div class="modal-header-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <h2 class="modal-header-title">Sélectionner un agent</h2>
+        </div>
+
+        <div class="agent-list" id="agent-list">
+            {% if agents_disponibles %}
+                {% for agent in agents_disponibles %}
+                    <div class="agent-list-item" 
+                         data-agent-id="{{ agent.uid }}"
+                         data-agent-email="{{ agent.personne.email }}"
+                         data-agent-fonction="{% if agent.personne.membres.all %}{{ agent.personne.membres.all.0.fonction.designation }}{% endif %}"
+                         onclick="selectAgent('{{ agent.uid }}', '{{ agent.personne.nom }} {{ agent.personne.prenom }}', '{{ agent.matricule }}', '{{ agent.personne.email }}')">
+                        <div class="agent-list-item-content">
+                            <div class="agent-list-avatar">
+                                {{ agent.personne.nom|slice:":1"|upper }}{{ agent.personne.prenom|slice:":1"|upper }}
+                            </div>
+                            <div class="agent-list-info">
+                                <div class="agent-list-name">{{ agent.personne.nom }} {{ agent.personne.prenom }}</div>
+                                <div class="agent-list-matricule">{{ agent.matricule }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #64748b;">
+                    <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-4" style="display: block; margin-bottom: 1rem;"></i>
+                    <p>Aucun agent disponible pour créer un compte.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeAgentModal()">Annuler</button>
+            <button type="button" class="btn-confirm" onclick="confirmAgentSelection()">Confirmer</button>
+        </div>
+    </div>
+</dialog>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedAgentData = null;
+
+function openAgentModal() {
+    document.getElementById('agentModal').showModal();
+}
+
+function closeAgentModal() {
+    document.getElementById('agentModal').close();
+    // Reset selection
+    document.querySelectorAll('.agent-list-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+}
+
+function selectAgent(agentId, agentName, matricule, email) {
+    selectedAgentData = { id: agentId, name: agentName, matricule: matricule, email: email };
+    
+    // Update UI
+    document.querySelectorAll('.agent-list-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+}
+
+function confirmAgentSelection() {
+    if (!selectedAgentData) {
+        alert('Veuillez sélectionner un agent');
+        return;
+    }
+    
+    // Update hidden input
+    document.getElementById('selected-agent-id').value = selectedAgentData.id;
+    
+    // Pre-fill email
+    document.getElementById('email').value = selectedAgentData.email;
+    
+    // Update display card
+    const card = document.querySelector('.agent-selection-card');
+    const initials = selectedAgentData.name.split(' ').map(n => n[0]).join('').toUpperCase();
+    
+    card.innerHTML = `
+        <div class="agent-avatar-large">
+            ${initials}
+        </div>
+        <div class="agent-name-large">${selectedAgentData.name}</div>
+        <div class="agent-matricule-large">${selectedAgentData.matricule}</div>
+        <button type="button" class="change-agent-btn" onclick="openAgentModal()">
+            <i class="fa-solid fa-pen-to-square mr-2"></i>Changer d'agent
+        </button>
+    `;
+    card.classList.add('selected');
+    
+    // Enable submit button
+    document.getElementById('submit-btn').disabled = false;
+    
+    closeAgentModal();
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('agentModal');
+        if (modal.open) {
+            closeAgentModal();
+        }
+    }
+});
+
+// Enable submit button if agent is pre-selected
+document.addEventListener('DOMContentLoaded', function() {
+    const agentId = document.getElementById('selected-agent-id').value;
+    if (agentId) {
+        document.getElementById('submit-btn').disabled = false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrément Fédération - SI-SEP Sport RDC</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #0036ca 0%, #0052ff 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .greeting strong {
+            color: #0036ca;
+        }
+        .status-box {
+            background-color: #f0f4ff;
+            border-left: 4px solid #0036ca;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .status-box .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-box .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0036ca;
+            margin-top: 5px;
+        }
+        .credentials-box {
+            background-color: #fff9e6;
+            border: 1px solid #FDE015;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .credentials-box h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .credential-item {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .credential-item .label {
+            color: #666;
+            font-weight: 500;
+        }
+        .credential-item .value {
+            color: #0036ca;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        .documents-box {
+            background-color: #f0f4ff;
+            border: 1px solid #0036ca;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .documents-box h3 {
+            margin: 0 0 10px 0;
+            color: #0036ca;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .documents-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .documents-box li {
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        .steps {
+            margin: 20px 0;
+        }
+        .steps h3 {
+            color: #0036ca;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #333;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #0036ca;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .cta-button:hover {
+            background-color: #0052ff;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #666;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .divider {
+            border: none;
+            border-top: 1px solid #e9ecef;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎉 Félicitations !</h1>
+            <p>Votre fédération a été agréée</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Greeting -->
+            <div class="greeting">
+                Bienvenue <strong>{{ federation_sigle }}</strong> !
+            </div>
+
+            <p>Nous avons le plaisir de vous informer que votre fédération <strong>{{ federation_name }}</strong> a été officiellement agréée par le Ministère des Sports et Loisirs de la République Démocratique du Congo.</p>
+
+            <!-- Status -->
+            <div class="status-box">
+                <div class="label">Statut</div>
+                <div class="value">✓ AGRÉÉE</div>
+            </div>
+
+            <p>Votre fédération est maintenant enregistrée dans le système SI-SEP Sport RDC et peut accéder à tous les services disponibles.</p>
+
+            <!-- Credentials -->
+            <div class="credentials-box">
+                <h3>📋 Activation de votre compte</h3>
+                <p style="margin: 0 0 15px 0; font-size: 13px;">Pour activer votre compte et définir votre mot de passe, cliquez sur le bouton ci-dessous :</p>
+                <center>
+                    <a href="{{ activation_url }}" class="cta-button" style="display: inline-block; background-color: #0036ca; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 14px;">Activer mon compte</a>
+                </center>
+                <p style="margin: 15px 0 0 0; font-size: 12px; color: #666; text-align: center;">Ce lien est valide pendant 7 jours</p>
+            </div>
+
+            <!-- Documents -->
+            <div class="documents-box">
+                <h3>📎 Documents joints</h3>
+                <p style="margin: 0 0 10px 0; font-size: 13px;">Les documents suivants sont attachés à cet email :</p>
+                <ul>
+                    <li>Arrêté Ministériel d'Agrément</li>
+                    <li>Certificat d'Homologation Nationale</li>
+                </ul>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="steps">
+                <h3>🚀 Prochaines étapes</h3>
+                <ol>
+                    <li>Cliquez sur le lien d'activation ci-dessus</li>
+                    <li>Définissez votre mot de passe personnel</li>
+                    <li>Connectez-vous au portail SI-SEP Sport RDC</li>
+                    <li>Complétez votre profil de fédération</li>
+                    <li>Commencez à utiliser les services disponibles</li>
+                </ol>
+            </div>
+
+            <!-- CTA Button -->
+            <center>
+                <a href="{{ activation_url }}" class="cta-button">Activer mon compte maintenant</a>
+            </center>
+
+            <hr class="divider">
+
+            <p style="font-size: 13px; color: #666;">Si vous avez des questions ou besoin d'assistance, n'hésitez pas à contacter le Ministère des Sports et Loisirs.</p>
+
+            <p style="font-size: 13px; color: #666; margin-top: 20px;">Cordialement,<br><strong>L'équipe SI-SEP Sport RDC</strong><br>Ministère des Sports et Loisirs</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>SI-SEP Sport RDC © 2026</strong></p>
+            <p>Système Intégré de Suivi-Évaluation et Pilotage du Sport</p>
+            <p>République Démocratique du Congo</p>
+        </div>
+    </div>
+</body>
+</html>

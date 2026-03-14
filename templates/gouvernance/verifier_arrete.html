@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification d'Arrêté Ministériel | SI-SEP Sport RDC</title>
+    <link rel="stylesheet" href="{% static 'assets/css/output.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0036ca 0%, #002080 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Logo et En-tête -->
+        <div class="text-center mb-8">
+            <img src="{% static 'assets/images/logo-rdc.png' %}" alt="RDC" class="h-20 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-white mb-2">Vérification d'Arrêté Ministériel</h1>
+            <p class="text-white/80">Ministère des Sports et Loisirs - République Démocratique du Congo</p>
+        </div>
+
+        <!-- Card de vérification -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {% if institution %}
+            <!-- Arrêté Valide -->
+            <div class="bg-green-50 border-b-4 border-green-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-check text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-green-800">Arrêté Authentique</h2>
+                        <p class="text-green-700">Ce document est officiellement enregistré dans le SI-SEP</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <!-- Informations de l'arrêté -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Numéro d'Arrêté</p>
+                        <p class="text-lg font-bold text-slate-900">{{ institution.numero_arrete }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Date de signature</p>
+                        <p class="text-lg font-bold text-slate-900">{{ institution.date_demande_agrement|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+
+                <!-- Informations de la fédération -->
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Fédération agréée</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Nom officiel</p>
+                            <p class="text-base font-semibold text-slate-900">{{ institution.nom_officiel }}</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Sigle</p>
+                                <p class="text-base font-semibold text-slate-900">{{ institution.sigle }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Code</p>
+                                <p class="text-base font-mono text-slate-900">{{ institution.code }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disciplines -->
+                {% if institution.disciplines.all %}
+                <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Disciplines sportives</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for discipline in institution.disciplines.all %}
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold">
+                            {{ discipline.designation }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Validité -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-blue-700">
+                        <i class="fa-solid fa-info-circle mr-2"></i>
+                        <strong>Validité:</strong> Cet arrêté est valide depuis le {{ institution.date_demande_agrement|date:"d/m/Y" }}
+                    </p>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Arrêté Invalide -->
+            <div class="bg-red-50 border-b-4 border-red-500 p-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-times text-3xl text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-red-800">Arrêté Non Trouvé</h2>
+                        <p class="text-red-700">Ce numéro d'arrêté n'existe pas ou n'est pas valide</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <p class="text-slate-600 text-center">
+                    Veuillez vérifier le numéro d'arrêté et réessayer.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="bg-slate-50 border-t border-slate-200 px-8 py-4 text-center">
+                <p class="text-xs text-slate-500">
+                    SI-SEP Sport RDC © {{ current_year }} — Système Intégré de Suivi-Évaluation et Pilotage du Sport
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

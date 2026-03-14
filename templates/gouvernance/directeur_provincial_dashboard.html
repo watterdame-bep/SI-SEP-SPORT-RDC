@@ -1,0 +1,118 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord Provincial | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Tableau de bord Provincial</h1>
+                <p class="text-sm text-white/80 mt-1">{{ province.designation }} — Gestion des enquêtes de viabilité</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Statistiques principales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Card 1: Enquêtes en attente -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Enquêtes</p>
+                <h3 class="text-3xl font-bold text-orange-600 mt-1">{{ stats.enquetes_en_attente }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">En attente</p>
+            </div>
+            <div class="bg-orange-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-folder-magnifying-glass text-xl text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Fédérations Implantées -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
+                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ stats.federations_implantees }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Implantées</p>
+            </div>
+            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
+                <i class="fa-solid fa-building text-xl text-rdc-blue"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Validations Acceptées -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
+                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ stats.validations_acceptees }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Validées</p>
+            </div>
+            <div class="bg-green-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-check-circle text-xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 4: Validations Rejetées -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Rejetées</p>
+                <h3 class="text-3xl font-bold text-red-600 mt-1">{{ stats.validations_rejetees }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Non conformes</p>
+            </div>
+            <div class="bg-red-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-ban text-xl text-red-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations Division -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-map-location-dot text-rdc-blue"></i>
+        Division Provinciale
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Province</p>
+            <p class="text-sm font-semibold text-slate-800">{{ province.designation }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Code</p>
+            <p class="text-sm font-semibold text-slate-800 font-mono">{{ division.code }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Chef de Division</p>
+            <p class="text-sm font-semibold text-slate-800">
+                {% if division.chef %}
+                    {{ division.chef.personne.nom_complet }}
+                {% else %}
+                    <span class="text-slate-400">Non assigné</span>
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1">Statut</p>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 {% if division.statut == 'ACTIVE' %}bg-green-100 text-green-700{% else %}bg-slate-100 text-slate-700{% endif %} text-xs font-semibold rounded-full">
+                {% if division.statut == 'ACTIVE' %}
+                    <i class="fa-solid fa-check-circle"></i>Actif
+                {% else %}
+                    <i class="fa-solid fa-circle-xmark"></i>Inactif
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,1810 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>MorFin Enroll Web Test</title>
+    <style type="text/css">
+        body {
+            font-family: 'verdana';
+            background-color: #ffffff;
+            margin: 0px 5px 5px 5px;
+            padding: 0px 5px 5px 5px;
+            color: #555;
+            font-size: 12px;
+            zoom: 100%;
+        }
+
+
+        .panel {
+            background-color: #FFFFFF;
+            -moz-user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            margin: 12px 12px;
+            padding: 6px 12px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #428BCA;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 6px #999;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn-50 {
+            width: 112px;
+        }
+
+        .btn-100 {
+            width: 160px; /*100px;*/
+        }
+
+        .btn-150 {
+            width: 150px;
+        }
+
+        .btn-200 {
+            width: 205px;
+        }
+
+        .btn-primary {
+            color: #FFF;
+            background-color: #428BCA;
+            border-color: #357EBD;
+        }
+
+            .btn-primary:hover {
+                color: #FFF;
+                background-color: #357EBD;
+                border-color: #428BCA;
+            }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            height: 24px;
+            padding: 3px 6px;
+            font-size: 12px;
+            color: #555;
+            background-color: #FFF;
+            background-image: none;
+            border: 1px solid #bdbdbd;
+            border-radius: 4px;
+            box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
+            transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+        }
+
+        textarea.form-control {
+            height: auto;
+        }
+
+        .text-bold {
+            font-weight: bold;
+        }
+
+        .img {
+            /*min-width: 260px;
+            min-height: 155px;*/
+            width: 730px;
+            height: 155px;
+            border-radius: 4px;
+            box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
+            background-color: #FFFFFF;
+        }
+
+        img {
+            width: 100%;
+            height: 263px;
+        }
+
+        .img1 {
+            width: 60%;
+            height: 150px;
+            margin-bottom: -4px;
+        }
+
+        .bts {
+            color: #080808;
+            /* background-color: #428BCA; */
+            /* border-color: #26292c; */
+            display: inline-block;
+            padding: 6px 17px;
+            font-size: 11px;
+            font-weight: 400;
+            line-height: 1.42857;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -moz-user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            /* font-size: xx-large; */
+            font-weight: bolder;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            height: 35px;
+            padding: 5px 10px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%);
+            box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .ths {
+            border: 1px black solid;
+            background-color: #1b629f;
+            color: white;
+        }
+
+        .chkboxFinger {
+            margin-top: 2px;
+        }
+    </style>
+    <script src="jquery-1.8.2.js"></script>
+    <script src="morfinenroll.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        const publicKeyPEM = "-----BEGIN PUBLIC KEY-----\n" +
+"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr1Q1NkfC780XfHDMUR86\n" +
+"L8lOTdwS13BDMy/wv4GOFDaqpbJG5a9pb2dZyFSOpfG+u4MXFnqhm765ahMguCsM\n" +
+"zRYxyuHWx7oTg9HCLfym1ZFNL0nLunPP6wKmJo28ZuDsFCTF70JmNxso2Yn4eImE\n" +
+"N6m5Sy6ilfwgFuhCvneY3/1ASoSWej7jPH2eloNfCclf8MjjzlKL8/QIAj8UWj0E\n" +
+"NJwYXqEIVxO1DIWj44GO9Xlk8UrqQYTwkz9Gy/svU4zxD8aCEwTUpczvnq4/GZD6\n" +
+"d4SN7l3+Vthj9tjIImqJSSx7NnidQabF5PfbnDTjEXrb70TEb7PH6xG/ykPRsPr6\n" +
+"3QIDAQAB\n" +
+"-----END PUBLIC KEY-----";
+
+        var timeout = 10; // seconds (minimum=10, recommended=50)
+        var slap = 0;
+        var NFIQ_Quality = 0;
+
+        var fingerPosition = {
+            LEFT_LITTLE: false,
+            LEFT_RING: false,
+            LEFT_MIDDLE: false,
+            LEFT_INDEX: false,
+
+            RIGHT_INDEX: false,
+            RIGHT_MIDDLE: false,
+            RIGHT_RING: false,
+            RIGHT_LITTLE: false,
+
+            LEFT_THUMB: false,
+            RIGHT_THUMB: false
+        };
+
+        $(document).ready(function () {
+
+            MorFinEnrollUnInit();
+
+            ReadonlyText();
+            ClearData();
+
+            var selectedVal = $("#ddlSlap").find(':selected').val();
+            if (selectedVal == "0") {
+                $("#Lefttable").css("display", "block")
+                $("#Righttable").css("display", "none")
+                $("#Thumbtable").css("display", "none")
+                $('#spnLittle').text('Left');
+                $('#spnRing').text('Left');
+                $('#spnMiddle').text('Left');
+                $('#spnIndex').text('Left');
+                $('#txtslapheader').text('LEFT HAND');
+            }
+
+            $("#ddlFingerType").on("change", function () {
+                var selectedVal = $(this).find(':selected').val();
+                if (selectedVal == "1") {
+                    $("#ddlSlap").val(3);
+
+                    $("#Lefttable").css("display", "none");
+                    $("#Righttable").css("display", "none");
+                    $("#Thumbtable").css("display", "none");
+                    $('#txtslapheader').text('');
+
+                    //Exception finger manage
+                    $("#chkFing1").css("display", "none")
+                    $("#chkFing2").css("display", "none")
+                    $("#chkFing3").css("display", "none");
+                    $("#chkFing4").css("display", "none");
+
+                    $("#lblChkFinger1").css("display", "none");
+                    $("#lblChkFinger1").text("Left");
+
+                    $("#lblChkFinger2").css("display", "none");
+                    $("#lblChkFinger2").text("Right");
+
+                    $("#lblChkFinger3").css("display", "none");
+                    $("#lblChkFinger3").text("");
+
+                    $("#lblChkFinger4").css("display", "none");
+                    $("#lblChkFinger4").text("");
+
+                    ClearFingerData();
+
+                    $("#tblSegment").css("display", "none");
+                }
+                else {
+                    $("#ddlSlap").val(0).change();
+                    $("#tblSegment").css("display", "block");
+                }
+            });
+
+            $("#ddlSlap").on("change", function () {
+                var selectedVal = $(this).find(':selected').val();
+                var selectedText = $(this).find(':selected').text();
+
+                ClearFingerData();
+                ClearCheckBox();
+
+                if (selectedVal == "0") {
+                    $("#Lefttable").css("display", "block");
+                    $("#Righttable").css("display", "none");
+                    $("#Thumbtable").css("display", "none");
+                    $('#spnLittle').text('Left');
+                    $('#spnRing').text('Left');
+                    $('#spnMiddle').text('Left');
+                    $('#spnIndex').text('Left');
+                    $('#txtslapheader').text('LEFT HAND');
+
+                    //Exception finger manage
+                    $("#chkFing1").css("display", "block");
+                    $("#chkFing2").css("display", "block");
+                    $("#chkFing3").css("display", "block");
+                    $("#chkFing4").css("display", "block");
+
+                    $("#lblChkFinger1").css("display", "block");
+                    $("#lblChkFinger1").text("Little");
+
+                    $("#lblChkFinger2").css("display", "block");
+                    $("#lblChkFinger2").text("Ring");
+
+                    $("#lblChkFinger3").css("display", "block");
+                    $("#lblChkFinger3").text("Middle");
+
+                    $("#lblChkFinger4").css("display", "block");
+                    $("#lblChkFinger4").text("Index");
+                    //
+                }
+                else if (selectedVal == "1") {
+                    $("#Lefttable").css("display", "none");
+                    $("#Righttable").css("display", "block");
+                    $("#Thumbtable").css("display", "none");
+                    $('#spnLittle').text('Right');
+                    $('#spnRing').text('Right');
+                    $('#spnMiddle').text('Right');
+                    $('#spnIndex').text('Right');
+                    $('#txtslapheader').text('RIGHT HAND');
+
+                    //Exception finger manage
+                    $("#chkFing1").css("display", "block");
+                    $("#chkFing2").css("display", "block");
+                    $("#chkFing3").css("display", "block");
+                    $("#chkFing4").css("display", "block");
+
+                    $("#lblChkFinger1").css("display", "block");
+                    $("#lblChkFinger1").text("Index");
+
+                    $("#lblChkFinger2").css("display", "block");
+                    $("#lblChkFinger2").text("Middle");
+
+                    $("#lblChkFinger3").css("display", "block");
+                    $("#lblChkFinger3").text("Ring");
+
+                    $("#lblChkFinger4").css("display", "block");
+                    $("#lblChkFinger4").text("Little");
+                    //
+                }
+                else if (selectedVal == "2") {
+                    $("#Lefttable").css("display", "none");
+                    $("#Righttable").css("display", "none");
+                    $("#Thumbtable").css("display", "block");
+                    $('#txtslapheader').text('THUMB');
+
+                    //Exception finger manage
+                    $("#chkFing1").css("display", "block")
+                    $("#chkFing2").css("display", "block")
+                    $("#chkFing3").css("display", "none");
+                    $("#chkFing4").css("display", "none");
+
+                    $("#lblChkFinger1").css("display", "block");
+                    $("#lblChkFinger1").text("Left");
+
+                    $("#lblChkFinger2").css("display", "block");
+                    $("#lblChkFinger2").text("Right");
+
+                    $("#lblChkFinger3").css("display", "none");
+                    $("#lblChkFinger3").text("");
+
+                    $("#lblChkFinger4").css("display", "none");
+                    $("#lblChkFinger4").text("");
+                    //
+                }
+                else if (selectedVal == "3") {
+                    $("#Lefttable").css("display", "none");
+                    $("#Righttable").css("display", "none");
+                    $("#Thumbtable").css("display", "none");
+                    $('#txtslapheader').text('');
+
+                    //Exception finger manage
+                    $("#chkFing1").css("display", "none")
+                    $("#chkFing2").css("display", "none")
+                    $("#chkFing3").css("display", "none");
+                    $("#chkFing4").css("display", "none");
+
+                    $("#lblChkFinger1").css("display", "none");
+                    $("#lblChkFinger1").text("Left");
+
+                    $("#lblChkFinger2").css("display", "none");
+                    $("#lblChkFinger2").text("Right");
+
+                    $("#lblChkFinger3").css("display", "none");
+                    $("#lblChkFinger3").text("");
+
+                    $("#lblChkFinger4").css("display", "none");
+                    $("#lblChkFinger4").text("");
+                    //
+                }
+
+            });
+        });
+        function GetInfo() {
+
+            try {
+                document.getElementById('tdSerialNo').innerHTML = "";
+                document.getElementById('tdFirmware').innerHTML = "";
+                document.getElementById('tdMake').innerHTML = "";
+                document.getElementById('tdModel').innerHTML = "";
+                document.getElementById('tdWidth').innerHTML = "";
+                document.getElementById('tdHeight').innerHTML = "";
+
+                document.getElementById('txtStatus').value = "";
+                var clientKey = $("#txtDECKey").val();
+                var res;
+                DisabledButton(true);
+                res = GetMorFinEnrollInfo($("#ddlFingerType").val(), clientKey);
+                if (res.httpStaus) {
+
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+
+                    if (res.data.ErrorCode == "0") {
+                        if ($("#ddlFingerType").val() == 0) {
+                            isInitFinger = 1;
+                            isInitRoll = 0;
+                        }
+                        else {
+                            isInitRoll = 1;
+                            isInitFinger = 0;
+                        }
+
+                        document.getElementById('tdSerialNo').innerHTML = res.data.DeviceInfo.SerialNo;
+                        document.getElementById('tdFirmware').innerHTML = res.data.DeviceInfo.Firmware;
+                        document.getElementById('tdMake').innerHTML = res.data.DeviceInfo.Make;
+                        document.getElementById('tdModel').innerHTML = res.data.DeviceInfo.Model;
+                        document.getElementById('tdWidth').innerHTML = res.data.DeviceInfo.Width;
+                        document.getElementById('tdHeight').innerHTML = res.data.DeviceInfo.Height;
+                    }
+                }
+                else {
+                    alert(res.err);
+                }
+            }
+            catch (e) {
+                alert(e);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function CheckDevice() {
+            var res;
+            DisabledButton(true);
+            res = MorFinEnrollCheckDevice();
+
+            if (res.httpStaus) {
+                document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+            }
+            else {
+                alert(res.err);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function GetSupportedDevice() {
+            var res;
+            DisabledButton(true);
+            res = MorFinEnrollGetSupportedDevice();
+
+            if (res.httpStaus) {
+                document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+            }
+            else {
+                alert(res.err);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function GetConnectedDevice() {
+            var res;
+            DisabledButton(true);
+            res = MorFinEnrollGetConnectedDevice();
+
+            if (res.httpStaus) {
+                document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+            }
+            else {
+                alert(res.err);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function ClearFingerData() {
+            document.getElementById('imgLeftFull').src = "";
+
+            //Left
+            document.getElementById('imgLeftIndex').src = "";
+            document.getElementById('imgLeftMiddle').src = "";
+            document.getElementById('imgLeftRing').src = "";
+            document.getElementById('imgLeftLittle').src = "";
+            //
+
+            //Right
+            document.getElementById('imgRightIndex').src = "";
+            document.getElementById('imgRightMiddle').src = "";
+            document.getElementById('imgRightRing').src = "";
+            document.getElementById('imgRightLittle').src = "";
+            //
+            //Thumb
+            document.getElementById('imgThumbLeft').src = "";
+            document.getElementById('imgThumbRight').src = "";
+            //
+
+            document.getElementById('txtImgDataIndex').value = "";
+            document.getElementById('txtImgDataMiddle').value = "";
+            document.getElementById('txtImgDataRing').value = "";
+            document.getElementById('txtImgDataLittle').value = "";
+
+            document.getElementById('txtImgDataLeftthumb').value = "";
+            document.getElementById('txtImgDataRightthumb').value = "";
+
+            //Left Clear Quality and Nfiq
+            document.getElementById('spnLeftNfiq1').innerText = "";
+            document.getElementById('spnLeftNfiq2').innerText = "";
+            document.getElementById('spnLeftNfiq3').innerText = "";
+            document.getElementById('spnLeftNfiq4').innerText = "";
+
+            //Right Clear Quality and Nfiq
+            document.getElementById('spnRightNfiq1').innerText = "";
+            document.getElementById('spnRightNfiq2').innerText = "";
+            document.getElementById('spnRightNfiq3').innerText = "";
+            document.getElementById('spnRightNfiq4').innerText = "";
+
+            //Thumb Clear Quality and Nfiq
+            document.getElementById('spnLeftThumbNfiq1').innerText = "";
+            document.getElementById('spnRightThumbNfiq2').innerText = "";
+        }
+        function ClearCheckBox() {
+            //Clear all checkbox for exception finger
+            $('#chkFing1').prop('checked', false);
+            $('#chkFing2').prop('checked', false);
+            $('#chkFing3').prop('checked', false);
+            $('#chkFing4').prop('checked', false);
+        }
+        function UnInit() {
+            document.getElementById('tdSerialNo').innerHTML = "";
+            document.getElementById('tdFirmware').innerHTML = "";
+            document.getElementById('tdMake').innerHTML = "";
+            document.getElementById('tdModel').innerHTML = "";
+            document.getElementById('tdWidth').innerHTML = "";
+            document.getElementById('tdHeight').innerHTML = "";
+			
+			//Clear Template box after uninit
+            document.getElementById('txtGallaryTemplate').value = "";
+            document.getElementById('txtProbTemplate').value = 
+		
+			//Clear key after uninit
+			document.getElementById('txtClientKey').value = "";
+			document.getElementById('txtDECKey').value = "";
+			
+			//Set Defualt NFIQ - Timeout - C_Ratio after uninit
+			document.getElementById('txtQuality').value = "30";
+			document.getElementById('txtTimeout').value = "50";
+			document.getElementById('txtCompressionRatio').value = "10";
+			
+			//Set as default all dropdown box after uninit
+			document.getElementById('ddlImageFormat').value = "0";
+			$("#ddlSlap").val(0).change();
+			document.getElementById('ddlTemplateFormat').value = "0";
+			document.getElementById('ddlFingerType').value = "0";
+			$("#tblSegment").css("display", "block");
+            ClearFingerData();
+            ClearCheckBox();
+
+            var res;
+            DisabledButton(true);
+            res = MorFinEnrollUnInit();
+
+            if (res.httpStaus) {
+                document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+            }
+            else {
+                alert(res.err);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function SetExceptionFinger(slap) {
+            if (slap == 0) {
+                fingerPosition.LEFT_LITTLE = $("#chkFing1").is(':checked');
+                fingerPosition.LEFT_RING = $("#chkFing2").is(':checked');
+                fingerPosition.LEFT_MIDDLE = $("#chkFing3").is(':checked');
+                fingerPosition.LEFT_INDEX = $("#chkFing4").is(':checked');
+            }
+            else if (slap == 1) {
+                fingerPosition.RIGHT_INDEX = $("#chkFing1").is(':checked');
+                fingerPosition.RIGHT_MIDDLE = $("#chkFing2").is(':checked');
+                fingerPosition.RIGHT_RING = $("#chkFing3").is(':checked');
+                fingerPosition.RIGHT_LITTLE = $("#chkFing4").is(':checked');
+            }
+            else if (slap == 2) {
+                fingerPosition.LEFT_THUMB = $("#chkFing1").is(':checked');
+                fingerPosition.RIGHT_THUMB = $("#chkFing2").is(':checked');
+            }
+        }
+        function ValidateExceptionFinger(slap) {
+            if (slap == 0) {
+                if ($("#chkFing1").is(':checked') && $("#chkFing2").is(':checked') && $("#chkFing3").is(':checked') && $("#chkFing4").is(':checked')) {
+                    return false;
+                }
+                return true;
+            }
+            else if (slap == 1) {
+                if ($("#chkFing1").is(':checked') && $("#chkFing2").is(':checked') && $("#chkFing3").is(':checked') && $("#chkFing4").is(':checked')) {
+                    return false;
+                }
+                return true;
+            }
+            else if (slap == 2) {
+                if ($("#chkFing1").is(':checked') && $("#chkFing2").is(':checked')) {
+                    return false;
+                }
+                return true;
+            }
+            else if (slap == 3) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        var isInitFinger = 0;
+        var isInitRoll = 0;
+        var delayInMilliseconds = 300; //0.1 second
+
+        function Capture() {
+            try {
+                DisabledButton(true);
+                //$("#btnUnInit").off("click", "**");
+                document.getElementById('txtStatus').value = "";
+                document.getElementById('imgLeftFull').src = "data:image/bmp;base64,";
+                document.getElementById('imgLeftIndex').src = "data:image/bmp;base64,";
+                document.getElementById('imgLeftMiddle').src = "data:image/bmp;base64,";
+                document.getElementById('imgLeftRing').src = "data:image/bmp;base64,";
+                document.getElementById('imgLeftLittle').src = "data:image/bmp;base64,";
+                document.getElementById('txtImgDataIndex').value = "";
+                document.getElementById('txtImgDataMiddle').value = "";
+                document.getElementById('txtImgDataRing').value = "";
+                document.getElementById('txtImgDataLittle').value = "";
+
+                ClearFingerData();
+                slap = $("#ddlSlap").val();
+                NFIQ_Quality = $("#txtQuality").val();
+                timeout = $("#txtTimeout").val();
+                if (timeout == "") {
+                    alert("Timeout must not be null");
+                    DisabledButton(false);
+                    return false;
+                }
+                if (timeout >= 10 && timeout % 1 == 0) {
+
+                }
+                else {
+                    alert("Invalid timeout or timeout should be greater or equal to 10");
+                    DisabledButton(false);
+                    return false;
+                }
+
+                if (NFIQ_Quality == "") {
+                    alert("Quality must not be null");
+                    DisabledButton(false);
+                    return false;
+                }
+                if (NFIQ_Quality >= 0 && NFIQ_Quality < 101 && NFIQ_Quality % 1 == 0) {
+
+                }
+                else {
+                    alert("Invalid quality or quality should be between 1 to 100");
+                    DisabledButton(false);
+                    return false;
+                }
+                DisabledButton(true);
+                SetExceptionFinger(slap);
+
+                if (!ValidateExceptionFinger(slap)) {
+                    alert("Invalid exception finger");
+                    DisabledButton(false);
+                    return;
+                }
+
+                if (slap == 3) {
+                    if ($("#ddlFingerType").val() != 1) {
+                        alert("You can not select Roll Finger Slap in Flat Finger Type");
+                        DisabledButton(false);
+                        return;
+                    }
+                }
+                else {
+                    if ($("#ddlFingerType").val() != 0) {
+                        alert("You can not select Flat Finger Slap in Roll Finger Type");
+                    }
+                }
+
+                if (isInitFinger == 0 && isInitRoll == 0) {
+                    document.getElementById('txtStatus').value = "Device not Initialized in Selected FingerType";
+                    DisabledButton(false);
+                    return;
+                }
+
+                if (isInitFinger == 1) {
+                    if ($("#ddlFingerType").val() != 0) {
+                        document.getElementById('txtStatus').value = "Device not Initialized in Selected FingerType";
+                        DisabledButton(false);
+                        return;
+                    }
+                    document.getElementById('txtStatus').value = "Capture is in progress......";
+                }
+                else if (isInitRoll == 1) {
+                    if ($("#ddlFingerType").val() == 0) {
+                        document.getElementById('txtStatus').value = "Device not Initialized in Selected FingerType";
+                        DisabledButton(false);
+                        return;
+                    }
+                    document.getElementById('txtStatus').value = "Capture is in progress......";
+                }
+
+
+                //objfingerPosition
+                setTimeout(function () {
+                    var res = CaptureFinger(timeout, slap, fingerPosition, NFIQ_Quality);
+                    if (res.httpStaus) {
+                        //document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                        if (slap == "3" && res != null && res.data != null && res.data.ErrorCode == "0") {
+                            if (res.data.CaptureData.SlapBoxedBmpImage != null) {
+                                document.getElementById('imgLeftFull').src = "data:image/bmp;base64," + res.data.CaptureData.SlapBoxedBmpImage; //Boxed image with quality
+                                document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                            }
+                        }
+                        else if (res != null && res.data != null && res.data.ErrorCode == "0" && res.data.CaptureData.CapturedFingers != null && res.data.CaptureData.CapturedFingers.length > 0) {
+                            if (res.data.CaptureData.SlapBoxedBmpImage != null) {
+                                document.getElementById('imgLeftFull').src = "data:image/bmp;base64," + res.data.CaptureData.SlapBoxedBmpImage; //Boxed image with quality
+                                //document.getElementById('imgLeftFull').src = "data:image/bmp;base64," + res.data.CaptureData.GraphicalPlainBitmap; //Plain image without quality
+                            }
+
+                            if (res.data.CaptureData.FingerCount > 0) {
+                                var Isfinger1Assign = false;
+                                var Isfinger2Assign = false;
+                                var Isfinger3Assign = false;
+                                var Isfinger4Assign = false;
+
+                                for (var i = 0; i < res.data.CaptureData.CapturedFingers.length; i++) {
+                                    if (slap == 0) {
+                                        if (Isfinger1Assign == false && !fingerPosition.LEFT_LITTLE) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgLeftLittle').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnLeftNfiq1').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger2Assign == false && !fingerPosition.LEFT_RING) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgLeftRing').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnLeftNfiq2').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                            }
+
+                                        }
+                                        else if (Isfinger3Assign == false && !fingerPosition.LEFT_MIDDLE) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgLeftMiddle').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnLeftNfiq3').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                                Isfinger3Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger4Assign == false && !fingerPosition.LEFT_INDEX) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgLeftIndex').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnLeftNfiq4').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                                Isfinger3Assign = true;
+                                                Isfinger4Assign = true;
+                                            }
+                                        }
+                                    }
+                                    else if (slap == 1) {
+                                        if (Isfinger1Assign == false && !fingerPosition.RIGHT_INDEX) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgRightIndex').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnRightNfiq1').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger2Assign == false && !fingerPosition.RIGHT_MIDDLE) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgRightMiddle').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnRightNfiq2').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger3Assign == false && !fingerPosition.RIGHT_RING) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgRightRing').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnRightNfiq3').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                                Isfinger3Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger4Assign == false && !fingerPosition.RIGHT_LITTLE) {
+
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgRightLittle').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnRightNfiq4').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                                Isfinger3Assign = true;
+                                                Isfinger4Assign = true;
+                                            }
+                                        }
+                                    }
+                                    else if (slap == 2) {
+                                        if (Isfinger1Assign == false && !fingerPosition.LEFT_THUMB) {
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgThumbLeft').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnLeftThumbNfiq1').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                            }
+                                        }
+                                        else if (Isfinger2Assign == false && !fingerPosition.RIGHT_THUMB) {
+                                            if (res.data.CaptureData.CapturedFingers[i].FingerBitmapStr != null) {
+                                                document.getElementById('imgThumbRight').src = "data:image/bmp;base64," + res.data.CaptureData.CapturedFingers[i].FingerBitmapStr;
+                                                document.getElementById('spnRightThumbNfiq2').innerText = res.data.CaptureData.CapturedFingers[i].NFIQ;
+                                                Isfinger1Assign = true;
+                                                Isfinger2Assign = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + "Capture Success";
+                        }
+                        else {
+                            document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                            alert(res.data.ErrorDescription);
+                        }
+                    }
+                    else {
+                        document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode;
+                        alert(res.err);
+                    }
+                }, delayInMilliseconds);
+            }
+            catch (e) {
+                alert(e);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function GetImageByFormat() {
+            try {
+                document.getElementById('txtStatus').value = "";
+                document.getElementById('txtImgDataIndex').value = "";
+                document.getElementById('txtImgDataMiddle').value = "";
+                document.getElementById('txtImgDataRing').value = "";
+                document.getElementById('txtImgDataLittle').value = "";
+
+                document.getElementById('txtImgDataLeftthumb').value = "";
+                document.getElementById('txtImgDataRightthumb').value = "";
+
+                var imgFormat = $("#ddlImageFormat").val();
+                compressionRatio = $("#txtCompressionRatio").val();
+
+                if (compressionRatio == "") {
+                    alert("Compression Ratio must not be null");
+                    DisabledButton(false);
+                    return false;
+                }
+
+                compressionRatio = parseInt(document.getElementById("txtCompressionRatio").value, 10);
+                if (compressionRatio < 1 || compressionRatio > 10 || isNaN(compressionRatio)) {
+                    alert("Please enter a compressionRatio between 1 and 10.");
+                    DisabledButton(false);
+                    return false; 
+                }
+
+                DisabledButton(true);
+                var res = GetImage(imgFormat, compressionRatio);
+                if (res.httpStaus) {
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+
+                    if (res.data != null && res.data.ErrorCode == "0") {
+
+                        if (res.data.Fingers.FingerCount > 0) {
+                            var Isfinger1Assign = false;
+                            var Isfinger2Assign = false;
+                            var Isfinger3Assign = false;
+                            var Isfinger4Assign = false;
+
+                            if (slap == 3) {
+                                if (res.data.Fingers.fingerbase64[0] != null) {
+                                    document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[0];
+                                    Isfinger1Assign = true;
+                                }
+                            }
+
+
+                            for (var i = 1; i <= res.data.Fingers.FingerCount; i++) {
+                                if (slap == 0) {
+                                    if (Isfinger1Assign == false && !fingerPosition.LEFT_LITTLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLittle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.LEFT_RING) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRing').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger3Assign == false && !fingerPosition.LEFT_MIDDLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataMiddle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger4Assign == false && !fingerPosition.LEFT_INDEX) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                            Isfinger4Assign = true;
+                                        }
+                                    }
+                                }
+                                else if (slap == 1) {
+                                    if (Isfinger1Assign == false && !fingerPosition.RIGHT_INDEX) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.RIGHT_MIDDLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataMiddle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger3Assign == false && !fingerPosition.RIGHT_RING) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRing').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger4Assign == false && !fingerPosition.RIGHT_LITTLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLittle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                            Isfinger4Assign = true;
+                                        }
+                                    }
+                                }
+                                else if (slap == 2) {
+                                    if (Isfinger1Assign == false && !fingerPosition.LEFT_THUMB) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLeftthumb').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.RIGHT_THUMB) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRightthumb').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    else {
+                        document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                        alert(res.data.ErrorDescription);
+                    }
+
+                }
+                else {
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                    alert(res.err);
+                }
+            }
+            catch (e) {
+                alert(e);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function GetTemplateByFormat() {
+            try {
+                document.getElementById('txtStatus').value = "";
+
+                document.getElementById('txtImgDataIndex').value = "";
+                document.getElementById('txtImgDataMiddle').value = "";
+                document.getElementById('txtImgDataRing').value = "";
+                document.getElementById('txtImgDataLittle').value = "";
+                document.getElementById('txtImgDataLeftthumb').value = "";
+                document.getElementById('txtImgDataRightthumb').value = "";
+
+                var Format = $("#ddlTemplateFormat").val();
+
+                DisabledButton(true);
+                var res = GetTemplate(Format);
+                if (res.httpStaus) {
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+
+                    if (res.data != null && res.data.ErrorCode == "0") {
+
+                        if (res.data.Fingers.FingerCount > 0) {
+                            var Isfinger1Assign = false;
+                            var Isfinger2Assign = false;
+                            var Isfinger3Assign = false;
+                            var Isfinger4Assign = false;
+
+                            if (slap == 3) {
+                                if (res.data.Fingers.fingerbase64[0] != null) {
+                                    document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[0];
+                                    Isfinger1Assign = true;
+                                }
+                            }
+
+                            for (var i = 1; i <= res.data.Fingers.FingerCount; i++) {
+                                if (slap == 0) {
+                                    if (Isfinger1Assign == false && !fingerPosition.LEFT_LITTLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLittle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.LEFT_RING) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRing').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger3Assign == false && !fingerPosition.LEFT_MIDDLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataMiddle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger4Assign == false && !fingerPosition.LEFT_INDEX) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                            Isfinger4Assign = true;
+                                        }
+                                    }
+                                }
+                                else if (slap == 1) {
+                                    if (Isfinger1Assign == false && !fingerPosition.RIGHT_INDEX) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataIndex').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.RIGHT_MIDDLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataMiddle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger3Assign == false && !fingerPosition.RIGHT_RING) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRing').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger4Assign == false && !fingerPosition.RIGHT_LITTLE) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLittle').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                            Isfinger3Assign = true;
+                                            Isfinger4Assign = true;
+                                        }
+                                    }
+                                }
+                                else if (slap == 2) {
+                                    if (Isfinger1Assign == false && !fingerPosition.LEFT_THUMB) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataLeftthumb').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                        }
+                                    }
+                                    else if (Isfinger2Assign == false && !fingerPosition.RIGHT_THUMB) {
+                                        if (res.data.Fingers.fingerbase64[i] != null) {
+                                            document.getElementById('txtImgDataRightthumb').value = res.data.Fingers.fingerbase64[i];
+                                            Isfinger1Assign = true;
+                                            Isfinger2Assign = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                        alert(res.data.ErrorDescription);
+                    }
+
+                }
+                else {
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                    alert(res.err);
+                }
+            }
+            catch (e) {
+                alert(e);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function MatchTemplate() {
+            try {
+                document.getElementById('txtStatus').value = "";
+                var gallaryTemp = $("#txtGallaryTemplate").val();
+                var probTemp = $("#txtProbTemplate").val();
+                var tempFormat = $("#ddlTemplateFormat").val();
+
+                if (probTemp == "" || probTemp == null) {
+                    alert("probTemp Is Not Available");
+                    return true;
+                }
+                if (gallaryTemp == "" || gallaryTemp == null) {
+                    alert("gallaryTemp Is Not Available");
+                    return true;
+                }
+
+                var res;
+                DisabledButton(true);
+                res = MorFinEnrollMatchTemplate(gallaryTemp, probTemp, tempFormat);
+                if (res.httpStaus) {
+                    if (res.data.ErrorCode == "0") {
+                        document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription + " Match Score : " + res.data.MatchScore;
+                    }
+                    else {
+                        document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + res.data.ErrorDescription;
+                    }
+                }
+                else {
+                    document.getElementById('txtStatus').value = "ErrorCode: " + res.data.ErrorCode + " ErrorDescription: " + "";
+                }
+            }
+            catch (e) {
+                alert(e);
+            }
+            DisabledButton(false);
+            return false;
+        }
+        function DisabledButton(isDisabled) {
+            if (isDisabled == false) {
+                setTimeout(function () {
+                    $('#btnInfo').prop('disabled', isDisabled);
+                    $('#btnCapture').prop('disabled', isDisabled);
+                    $('#btnGetImage').prop('disabled', isDisabled);
+                    $('#btnCheckDevice').prop('disabled', isDisabled);
+                    $('#btnGetSupportedDevice').prop('disabled', isDisabled);
+                    $('#btnGetConnctedDevice').prop('disabled', isDisabled);
+                    $('#btnUnInit').prop('disabled', isDisabled);
+                    $('#btnMatchTemplate').prop('disabled', isDisabled);
+                    $('#btnGetTemplate').prop('disabled', isDisabled);
+                }, 300);
+            }
+            else {
+                $('#btnInfo').prop('disabled', isDisabled);
+                $('#btnCapture').prop('disabled', isDisabled);
+                $('#btnGetImage').prop('disabled', isDisabled);
+                $('#btnCheckDevice').prop('disabled', isDisabled);
+                $('#btnGetSupportedDevice').prop('disabled', isDisabled);
+                $('#btnGetConnctedDevice').prop('disabled', isDisabled);
+                $('#btnUnInit').prop('disabled', isDisabled);
+                $('#btnMatchTemplate').prop('disabled', isDisabled);
+                $('#btnGetTemplate').prop('disabled', isDisabled);
+            }
+        }
+        function ReadonlyText() {
+            $('#txtStatus').attr('readonly', true);
+            //$('#txtImageInfo').attr('readonly', true);
+            $('#txtImgDataIndex').attr('readonly', true);
+            $('#txtImgDataMiddle').attr('readonly', true);
+            $('#txtImgDataRing').attr('readonly', true);
+            $('#txtImgDataLittle').attr('readonly', true);
+
+            $('#txtImgDataLeftthumb').attr('readonly', true);
+            $('#txtImgDataRightthumb').attr('readonly', true);
+        }
+        function ClearData() {
+            document.getElementById('tdSerialNo').innerHTML = "";
+            document.getElementById('tdFirmware').innerHTML = "";
+            document.getElementById('tdMake').innerHTML = "";
+            document.getElementById('tdModel').innerHTML = "";
+            document.getElementById('tdWidth').innerHTML = "";
+            document.getElementById('tdHeight').innerHTML = "";
+            document.getElementById('imgLeftFull').src = "";
+
+            document.getElementById('imgLeftIndex').src = "";
+            document.getElementById('imgLeftMiddle').src = "";
+            document.getElementById('imgLeftRing').src = "";
+            document.getElementById('imgLeftRing').src = "";
+            //document.getElementById('txtImageInfo').value = "";
+
+            document.getElementById('txtImgDataIndex').value = "";
+            document.getElementById('txtImgDataMiddle').value = "";
+            document.getElementById('txtImgDataRing').value = "";
+            document.getElementById('txtImgDataLittle').value = "";
+        }
+        function encryptClientKey() {
+            const txtDECKey = document.getElementById("txtDECKey");
+            const clientKey = document.getElementById('txtClientKey').value.trim();
+
+            if (clientKey == "") {
+                alert("Client Key can not be null");
+                return false;
+            }
+
+            const payload = new TextEncoder().encode(getClientKeyPayload(clientKey));
+
+            importPublicKey(publicKeyPEM)
+                .then(function (key) {
+                    return crypto.subtle.encrypt(
+                        { name: "RSA-OAEP" },
+                        key,
+                        payload
+                    );
+                })
+                .then(function (encrypted) {
+                    const encryptedArray = Array.from(new Uint8Array(encrypted));
+                    const encryptedBase64 = btoa(encryptedArray.map(function (byte) {
+                        return String.fromCharCode(byte);
+                    }).join(''));
+                    document.getElementById('txtDECKey').value = encryptedBase64;
+                })
+                .catch(function (err) {
+                    document.getElementById('txtStatus').value = "Encryption Failed , Invalid Key";
+                });
+        }
+        function importPublicKey(pem) {
+            try {
+                const binaryDer = pemToArrayBuffer(pem);
+                return crypto.subtle.importKey(
+                    "spki",
+                    binaryDer,
+                    {
+                        name: "RSA-OAEP",
+                        hash: { name: "SHA-256" }
+                    },
+                    false,
+                    ["encrypt"]
+                );
+            } catch (err) {
+                return Promise.reject("Error importing public key: " + err);
+            }
+        }
+        function pemToArrayBuffer(pem) {
+            const b64Lines = pem.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
+            const b64Decoded = atob(b64Lines);
+            const arrayBuffer = new Uint8Array(b64Decoded.length);
+            for (let i = 0; i < b64Decoded.length; i++) {
+                arrayBuffer[i] = b64Decoded.charCodeAt(i);
+            }
+            return arrayBuffer.buffer;
+        }
+        function getClientKeyPayload(clientKey) {
+            clientKey = clientKey || ""; // Use empty string if clientKey is undefined or null
+            var timestamp = Math.floor(Date.now() / 1000).toString();
+            return clientKey ? timestamp + clientKey : timestamp;
+        }
+    </script>
+</head>
+<body>
+    <table width="100%">
+        <tr>
+            <td colspan="3" align="center" style="width: 100%; text-align: center; color: #fff;height:40px; font-size: 28px; font-weight: bold; background-color: #428BCA">
+                MORFIN-ENROLL
+            </td>
+        </tr>
+        <tr>
+            <td width="50%">
+                <fieldset style="border: 1px black solid;height:250px;">
+                    <legend style="color: #428BCA; font-weight: bold; font-size: 14px;">Capture Settings</legend>
+                    <table align="left" border="0" width="100%">
+                        <tr>
+                            <td>
+                                <span style="font-weight:bold;" class="">Select Image Format</span>
+                            </td>
+                            <td>
+
+                                <select style="width: 150px;" id="ddlImageFormat" class="form-control">
+                                    <option value="0">BMP</option>
+                                    <option value="1">JPEG2000</option>
+                                    <option value="2">WSQ</option>
+                                    <option value="3">RAW</option>
+                                    <option value="4">FIR_V2011</option>
+                                    <option value="5">FIR_WSQ_V2011</option>
+                                    <option value="6">FIR_JPEG2000_V2011</option>
+                                    <option value="7">FIR_V2005</option>
+                                    <option value="8">FIR_JPEG2000_V2005</option>
+                                </select>
+                            </td>
+                            <td>  
+							
+                                <span style="font-weight: bold; width: 200px;" class="">Slap Selection</span>
+                            </td>
+                            <td>
+                                <select style="width:150px;" id="ddlSlap" class="form-control">
+                                    <option value="0">Left Hand</option>
+                                    <option value="1">Right Hand</option>
+                                    <option value="2">Thumb</option>
+                                    <option value="3">Roll Finger</option>
+
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span style="font-weight:bold;" class="">Select Template Format</span>
+                            </td>
+                            <td>
+
+                                <select style="width: 150px;" id="ddlTemplateFormat" class="form-control">
+                                    <option value="0">FMR_V2005</option>
+                                    <option value="1">FMR_V2011</option>
+                                    <option value="2">ANSI_V378</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span style="font-weight: bold; width: 200px;" class="">Select Finger Type</span>
+                            </td>
+                            <td>
+                                <select style="width:150px;" id="ddlFingerType" class="form-control">
+                                    <option value="0">Flat Finger</option>
+                                    <option value="1">Roll Finger</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding-top: 5px;">
+                                <span style="font-weight: bold; width: 60%" class="">Exception</span>
+                            </td>
+                            <td style="padding-top: 8px;">
+                                <table align="left" border="0" width="100%">
+                                    <tr>
+                                        <td style="display: inline-flex;">
+                                            <input type="checkbox" id="chkFing1" name="little" value="finger1">
+                                            <label class="chkboxFinger" id="lblChkFinger1" for="finger1">Little</label>
+                                        </td>
+
+                                        <td style="display: inline-flex;">
+                                            <input type="checkbox" id="chkFing2" name="ring" value="finger2">
+                                            <label class="chkboxFinger" id="lblChkFinger2" for="finger2">Ring</label>
+                                        </td>
+
+                                        <td style="display: inline-flex;">
+                                            <input type="checkbox" id="chkFing3" name="middle" value="finger3">
+                                            <label class="chkboxFinger" id="lblChkFinger3" for="finger3" style="margin-left:1px">Middle</label>
+                                        </td>
+
+                                        <td style="display: inline-flex;">
+                                            <input type="checkbox" id="chkFing4" name="index" value="finger4">
+                                            <label class="chkboxFinger" id="lblChkFinger4" for="finger4">Index</label>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <table style="width:100%">
+                                    <tr>
+                                        <td>
+                                            <label style="font-weight:bold;" for="txtQuality"> NFIQ 2.0 :</label>
+                                            <input type="text" maxlength="3" id="txtQuality" style=" width:40px" value="30">
+                                        </td>
+                                        <td>
+                                            <label style="font-weight:bold;" for="txtTimeout">Timeout(second):</label>
+                                            <input type="text" maxlength="5" id="txtTimeout" style=" width:40px" value="50">
+                                        </td>
+                                        <td>
+                                            <label style="font-weight:bold;" for="txtCompressionRatio"> Compression Ratio:</label>
+                                            <input type="number" maxlength="5" id="txtCompressionRatio" min="1" max="10" style=" width:40px" value="10">
+                                        </td>
+                                    </tr>
+                                </table>  
+                            </td>
+
+                        </tr>
+                        <tr style="font-weight:bold;">
+                            <td colspan="4">
+                                <table style="width: 100%; padding-top: 10px;">
+                                    <tr>
+                                        <td>
+                                            <label for="txtClientKey">Enter Client Key</label>
+                                            <textarea id="txtClientKey" class="form-control" style="height: 40px; width:80%; resize: none;"></textarea>
+                                        </td>
+                                        <td>
+                                            <input type="submit" id="btnGetKey" style="" value="Get Key" class="btn btn-primary" onclick="return encryptClientKey()" />
+                                        </td>
+                                        <td>
+                                            <label id="lblDECKey" for="txtDECKey">Derived Encrypted Client Key</label>
+                                            <textarea id="txtDECKey" class="form-control" style="height: 40px; width: 80%;"></textarea>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+
+                        </tr>
+                    </table>
+                </fieldset>
+            </td>
+            <td rowspan="2">
+                <fieldset style="border: 1px black solid;margin-top:8px;height:472px;">
+                    <table align="left" border="0" width="100%">
+                        <tr>
+                            <td>
+                                <img id="imgLeftFull" style="max-width: 630px; max-width: 640px; max-height: 350px; height: 345px;" alt="Finger Image" />
+                                <!--<iframe name="foo"></iframe>-->
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td>
+                            <fieldset style="border: 1px black solid;">
+                                <legend style="color: #428BCA; font-weight: bold; font-size: 14px;">Actions</legend>
+                                <table align="left" border="0" width="100%">
+                                    <tr>
+                                        <td>
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnGetSupportedDevice" value="Get Supported Device" class="btn btn-primary btn-100" onclick="return GetSupportedDevice()" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnGetConnctedDevice" value="Get Connected Device" class="btn btn-primary btn-100" onclick="return GetConnectedDevice()" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnCheckDevice" value="Check Device" class="btn btn-primary btn-50" onclick="return CheckDevice()" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnInfo" value="Get Info" class="btn btn-primary btn-50" onclick="return GetInfo()" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnCapture" value="Start Capture" class="btn btn-primary btn-50" onclick="return Capture()" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnGetImage" value="Get Image" class="btn btn-primary btn-50" onclick="return GetImageByFormat()" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnMatchTemplate" value="Match Template" class="btn btn-primary btn-50" onclick="return MatchTemplate()" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="submit" style="width:160px;" id="btnGetTemplate" value="Get Template" class="btn btn-primary btn-50" onclick="return GetTemplateByFormat()" />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="2">
+                                                        <input type="submit" style="width:160px;" id="btnUnInit" value="UnInit" class="btn btn-primary btn-50" onclick="return UnInit()" />
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </fieldset>
+                        </td>
+                        <td>
+                            <fieldset style="border: 1px black solid; height: 214px; width: 350px;">
+                                <legend style="color: #428BCA; font-weight: bold; font-size: 14px;">Device Info</legend>
+                                <table align="left" style="width:65.35%;margin-left: -0.9%;border-collapse: collapse !important;color: black;">
+                                    <tbody>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 80px;height:20px;margin-top:1px">Serial No:</th>
+                                            <td align="left" style="width: 80px;" id="tdSerialNo"></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 70px;height:20px">Firmware:</th>
+                                            <td align="left" id="tdFirmware" style="width: 70px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 70px;height:20px">Make:</th>
+                                            <td align="left" id="tdMake" style="width: 70px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 70px;height:20px">Model:</th>
+                                            <td align="left" id="tdModel" style="width: 70px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 70px;height:20px">Width:</th>
+                                            <td align="left" id="tdWidth" style="width: 70px;"></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" align="left" style="width: 70px;height:21px">Height:</th>
+                                            <td align="left" id="tdHeight" style="width: 70px;"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </fieldset>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <table width="100%" style="padding-top:0px;" id="tblSegment">
+        <tr>
+            <td>
+                <fieldset style="border: 1px black solid;margin-top:-8px">
+                    <legend style="color: #428BCA; font-weight: bold; font-size: 14px;"><span id="txtslapheader"></span></legend>
+                    <table align="left" border="0" width="100%" id="Lefttable" style="display:none">
+                        <thead>
+                            <tr>
+                                <th class="ths">Little</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Ring</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Middle</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Index</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgLeftLittle" class="img1" width="145px" height="188px" alt="Left Little Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgLeftRing" class="img1" width="145px" height="188px" alt="Left Ring Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgLeftMiddle" class="img1" width="145px" height="188px" alt="Left Middle Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgLeftIndex" class="img1" width="145px" height="188px" alt="Left Index Image" style="border:1px solid black" />
+                                </td>
+                            </tr>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnLeftNfiq1"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnLeftNfiq2"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnLeftNfiq3"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnLeftNfiq4"></span></th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <table align="left" border="0" width="100%" id="Righttable" style="display:none">
+                        <thead>
+                            <tr>
+                                <th class="ths">Index</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Middle</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Ring</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Little</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgRightIndex" class="img1" width="145px" height="188px" alt="Right Index Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgRightMiddle" class="img1" width="145px" height="188px" alt="Right Middle Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgRightRing" class="img1" width="145px" height="188px" alt="Right Ring Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgRightLittle" class="img1" width="145px" height="188px" alt="Right Little Image" style="border:1px solid black" />
+                                </td>
+
+                            </tr>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnRightNfiq1"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnRightNfiq2"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnRightNfiq3"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnRightNfiq4"></span></th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <table align="left" border="0" width="100%" id="Thumbtable" style="display:none">
+                        <thead>
+                            <tr>
+                                <th class="ths">Left</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths">Right</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgThumbLeft" width="145px" height="188px" alt="Left Thumb Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="130px" height="150px" align="center" class="img">
+                                    <img id="imgThumbRight" width="145px" height="188px" alt="Right Thumb Image" style="border:1px solid black" />
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td width="1065px" height="150px" align="center"></td>
+                                <td width="1065px" height="150px" align="center"></td>
+                            </tr>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnLeftThumbNfiq1"></span></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th class="ths"><span>NFIQ 2.0 :</span>&nbsp;&nbsp;<span id="spnRightThumbNfiq2"></span></th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                </fieldset>
+            </td>
+        </tr>
+    </table>
+    <fieldset style="border: 1px black solid;margin-top:8px;">
+        <div class="panel">
+            <table width="100%">
+                <tr>
+                    <td width="220px" style="font-weight: bold; font-size: 14px">
+                        Status:
+                    </td>
+                    <td>
+                        <input type="text" value="" id="txtStatus" class="form-control" />
+                    </td>
+                </tr>
+                <tr id="txtLittle" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Index data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataIndex" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtRing" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Middle data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataMiddle" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtMiddle" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Ring data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataRing" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtIndex" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Little data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataLittle" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtLeftthumb" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Left Thumb data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataLeftthumb" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtRightthumb" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Base64Encoded Right Thumb data:
+                    </td>
+                    <td>
+                        <textarea id="txtImgDataRightthumb" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtRightthumb" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Gallery Template
+                    </td>
+                    <td>
+                        <textarea id="txtGallaryTemplate" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+                <tr id="txtRightthumb" style="font-weight: bold; font-size: 14px">
+                    <td>
+                        Prob Template
+                    </td>
+                    <td>
+                        <textarea id="txtProbTemplate" style="width: 100%; height:50px;" class="form-control"></textarea>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+    </fieldset>
+</body>
+</html>

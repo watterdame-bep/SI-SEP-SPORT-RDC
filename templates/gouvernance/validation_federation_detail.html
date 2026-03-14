@@ -1,0 +1,621 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Inspection de Viabilité | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% if sg_verifier %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'gouvernance:enquetes_viabilite' %}{% endif %}" 
+               class="flex h-12 w-12 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-all">
+                <i class="fa-solid fa-arrow-left text-xl text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">{% if sg_verifier %}Vérifier l'inspection{% else %}Inspection de Viabilité{% endif %}</h1>
+                <p class="text-sm text-white/80 mt-1">{{ federation.nom_officiel }} — {{ province.designation }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="message-container" class="mb-6 space-y-3"></div>
+
+<!-- Informations Principales & Responsables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Informations Fédération -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-building text-rdc-blue"></i>
+            Informations de la Fédération
+        </h2>
+        
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Code</p>
+                    <p class="text-sm font-mono text-slate-900">{{ federation.code }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Sigle</p>
+                    <p class="text-sm font-mono text-slate-900">{{ federation.sigle }}</p>
+                </div>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Nom Officiel</p>
+                <p class="text-sm text-slate-900">{{ federation.nom_officiel }}</p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Statut Juridique</p>
+                <p class="text-sm text-slate-900">{{ federation.statut_juridique|default:"—" }}</p>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Type d'Agrément Sollicité</p>
+                <p class="text-sm text-slate-900">
+                    {% if federation.type_agrement_sollicite %}
+                        {{ federation.get_type_agrement_sollicite_display }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Responsables -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user-tie text-rdc-blue"></i>
+            Responsables
+        </h2>
+        
+        <div class="space-y-4">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Président/Mandataire</p>
+                <p class="text-sm font-semibold text-slate-900">{{ federation.nom_president|default:"—" }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Téléphone</p>
+                <p class="text-sm text-slate-900">{{ federation.telephone_president|default:"—" }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Email Officiel</p>
+                <p class="text-sm text-slate-900">{{ federation.email_officiel|default:"—" }}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Site Web</p>
+                {% if federation.site_web %}
+                <a href="{{ federation.site_web }}" target="_blank" class="text-sm text-rdc-blue hover:underline">
+                    {{ federation.site_web }}
+                </a>
+                {% else %}
+                <p class="text-sm text-slate-500">—</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disciplines & Implantation + Documents Joints -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Disciplines & Implantation -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-futbol text-rdc-blue"></i>
+            Disciplines & Implantation
+        </h2>
+        
+        <div class="space-y-4">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase mb-2">Disciplines</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for discipline in federation.disciplines.all %}
+                    <span class="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                        {{ discipline.designation }}
+                    </span>
+                    {% empty %}
+                    <span class="text-sm text-slate-500">Non définie</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase mb-2">Provinces d'Implantation</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for province_impl in federation.provinces_implantation.all %}
+                    <span class="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                        {{ province_impl.designation }}
+                    </span>
+                    {% empty %}
+                    <span class="text-sm text-slate-500">Non renseigné</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Personnel Admin</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ federation.nombre_pers_admin }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Personnel Tech</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ federation.nombre_pers_tech }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Documents Joints -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+        <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf text-rdc-blue"></i>
+            Documents Joints
+        </h2>
+        
+        <div class="space-y-3">
+            <!-- Statuts -->
+            {% if federation.document_statuts %}
+            <a href="{{ federation.document_statuts.url }}" target="_blank" 
+               class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-rdc-blue transition-all cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-rdc-blue text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-900">Statuts de la Fédération</p>
+                    <p class="text-xs text-slate-500">Statuts constitutifs</p>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 text-sm"></i>
+            </a>
+            {% else %}
+            <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50 opacity-50">
+                <i class="fa-solid fa-file-pdf text-slate-300 text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-500">Statuts de la Fédération</p>
+                    <p class="text-xs text-slate-400">Non disponible</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- PV AG -->
+            {% if federation.document_pv_ag %}
+            <a href="{{ federation.document_pv_ag.url }}" target="_blank" 
+               class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-rdc-blue transition-all cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-rdc-blue text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-900">PV de l'AG Constitutive</p>
+                    <p class="text-xs text-slate-500">Procès-verbal d'assemblée générale</p>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 text-sm"></i>
+            </a>
+            {% else %}
+            <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50 opacity-50">
+                <i class="fa-solid fa-file-pdf text-slate-300 text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-500">PV de l'AG Constitutive</p>
+                    <p class="text-xs text-slate-400">Non disponible</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Liste Membres -->
+            {% if federation.document_liste_membres %}
+            <a href="{{ federation.document_liste_membres.url }}" target="_blank" 
+               class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-rdc-blue transition-all cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-rdc-blue text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-900">Liste des Membres du Comité</p>
+                    <p class="text-xs text-slate-500">Composition du bureau</p>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 text-sm"></i>
+            </a>
+            {% else %}
+            <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50 opacity-50">
+                <i class="fa-solid fa-file-pdf text-slate-300 text-xl"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-slate-500">Liste des Membres du Comité</p>
+                    <p class="text-xs text-slate-400">Non disponible</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Statut Validation -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 mb-6">
+    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-clipboard-check text-rdc-blue"></i>
+        Statut de Validation
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 bg-slate-50 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Province</p>
+            <p class="text-sm font-semibold text-slate-900">{{ province.designation }}</p>
+        </div>
+        
+        <div class="p-4 bg-slate-50 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Statut Validation</p>
+            {% if validation.statut == 'EN_ATTENTE' %}
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+                <i class="fa-solid fa-clock"></i>En attente
+            </span>
+            {% elif validation.statut == 'VALIDEE' %}
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                <i class="fa-solid fa-check-circle"></i>Validée
+            </span>
+            {% elif validation.statut == 'REJETEE' %}
+            <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                <i class="fa-solid fa-ban"></i>Rejetée
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="p-4 bg-slate-50 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Date Création</p>
+            <p class="text-sm text-slate-900">
+                {% if validation.date_creation %}
+                    {{ validation.date_creation|date:"d/m/Y" }}
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Formulaire de Validation -->
+{% if validation.statut == 'EN_ATTENTE' %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-magnifying-glass text-rdc-blue"></i>
+        Critères d'Inspection
+    </h2>
+    
+    <form id="form-validation" method="POST" action="{% url 'gouvernance:validation_submit' validation.uid %}">
+        {% csrf_token %}
+        
+        <div class="space-y-4 mb-6">
+            <!-- Existence Physique -->
+            <div class="p-4 border border-slate-200 rounded-lg hover:bg-blue-50 transition-all cursor-pointer">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" name="existence_physique" 
+                           class="w-5 h-5 text-rdc-blue rounded focus:ring-2 focus:ring-rdc-blue cursor-pointer mt-1">
+                    <div class="flex-1">
+                        <p class="font-semibold text-slate-900">Existence Physique</p>
+                        <p class="text-sm text-slate-600 mt-1">
+                            La fédération dispose-t-elle d'un bureau/siège physique dans cette province?
+                        </p>
+                    </div>
+                </label>
+            </div>
+            
+            <!-- Activité Réelle -->
+            <div class="p-4 border border-slate-200 rounded-lg hover:bg-blue-50 transition-all cursor-pointer">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" name="activite_reelle" 
+                           class="w-5 h-5 text-rdc-blue rounded focus:ring-2 focus:ring-rdc-blue cursor-pointer mt-1">
+                    <div class="flex-1">
+                        <p class="font-semibold text-slate-900">Activité Réelle</p>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Y a-t-il des athlètes, entraînements et compétitions réguliers?
+                        </p>
+                    </div>
+                </label>
+            </div>
+            
+            <!-- Conformité Dirigeants -->
+            <div class="p-4 border border-slate-200 rounded-lg hover:bg-blue-50 transition-all cursor-pointer">
+                <label class="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" name="conformite_dirigeants" 
+                           class="w-5 h-5 text-rdc-blue rounded focus:ring-2 focus:ring-rdc-blue cursor-pointer mt-1">
+                    <div class="flex-1">
+                        <p class="font-semibold text-slate-900">Conformité des Dirigeants</p>
+                        <p class="text-sm text-slate-600 mt-1">
+                            Les dirigeants sont-ils crédibles et connus dans le milieu sportif?
+                        </p>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Observations -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Observations et Commentaires</label>
+            <textarea name="observations" rows="4"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                      placeholder="Détails de votre inspection, remarques importantes..."></textarea>
+        </div>
+        
+        <!-- Boutons d'Action -->
+        <div class="flex gap-3">
+            <button type="button" onclick="openConfirmModal('valider', 'Êtes-vous sûr de vouloir approuver cette inspection?', 'Approuver')"
+                    class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check-circle"></i>
+                <span>Approuver l'Inspection</span>
+            </button>
+            <button type="button" onclick="openConfirmModal('rejeter', 'Êtes-vous sûr de vouloir rejeter cette inspection?', 'Rejeter')"
+                    class="flex-1 px-6 py-3 bg-rdc-red hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-ban"></i>
+                <span>Rejeter</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-check-double text-rdc-blue"></i>
+        Résultat de l'Inspection
+    </h2>
+    
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-slate-50 rounded-lg">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Existence Physique</p>
+                <p class="text-sm">
+                    {% if validation.existence_physique %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-check"></i>Validée
+                    </span>
+                    {% elif validation.existence_physique is False %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-ban"></i>Rejetée
+                    </span>
+                    {% else %}
+                    <span class="text-slate-500">—</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="p-4 bg-slate-50 rounded-lg">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Activité Réelle</p>
+                <p class="text-sm">
+                    {% if validation.activite_reelle %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-check"></i>Validée
+                    </span>
+                    {% elif validation.activite_reelle is False %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-ban"></i>Rejetée
+                    </span>
+                    {% else %}
+                    <span class="text-slate-500">—</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="p-4 bg-slate-50 rounded-lg">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Conformité Dirigeants</p>
+                <p class="text-sm">
+                    {% if validation.conformite_dirigeants %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-check"></i>Validée
+                    </span>
+                    {% elif validation.conformite_dirigeants is False %}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                        <i class="fa-solid fa-ban"></i>Rejetée
+                    </span>
+                    {% else %}
+                    <span class="text-slate-500">—</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        {% if validation.observations %}
+        <div class="p-4 bg-slate-50 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Observations</p>
+            <p class="text-sm text-slate-900 whitespace-pre-wrap">{{ validation.observations }}</p>
+        </div>
+        {% endif %}
+        
+        {% if validation.date_validation %}
+        <div class="p-4 bg-slate-50 rounded-lg">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Date Validation</p>
+            <p class="text-sm text-slate-900">{{ validation.date_validation|date:"d/m/Y H:i" }}</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Bouton Transférer au Ministre (visible seulement pour SG) -->
+    {% if user_role == 'sg' or user.profil_sisep.role == 'INSTITUTION_ADMIN' %}
+    <div class="mt-6 pt-6 border-t border-slate-200">
+        <button type="button" onclick="openConfirmModal('transferer', 'Êtes-vous sûr de vouloir transférer cette inspection au Ministre?', 'Transférer', '{{ validation.uid }}')"
+                class="w-full px-6 py-3 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-arrow-right"></i>
+            <span>Transférer au Ministre</span>
+        </button>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 500px; width: 90%; margin: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <!-- Modal Header -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: #1e293b; margin: 0;">
+                <i class="fa-solid fa-exclamation-circle text-blue-600 mr-2"></i>Confirmation
+            </h3>
+            <button type="button" onclick="closeConfirmModal()" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div style="padding: 1.5rem;">
+            <p id="confirmMessage" style="margin: 0; color: #1e293b; font-size: 0.95rem; line-height: 1.5;"></p>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding: 1.5rem; border-top: 1px solid #e2e8f0;">
+            <button type="button" onclick="closeConfirmModal()" style="padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-size: 0.9rem; background: #e2e8f0; color: #1e293b;">
+                <i class="fa-solid fa-times"></i>Annuler
+            </button>
+            <button type="button" id="confirmButton" onclick="submitConfirmAction()" style="padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-size: 0.9rem; background: #0036ca; color: white;">
+                <i class="fa-solid fa-check"></i>Confirmer
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showMessage(message, type = 'success') {
+    const container = document.getElementById('message-container');
+    const alertClass = type === 'success' ? 'bg-green-50 border-green-400 text-green-800' : 'bg-red-50 border-red-400 text-red-800';
+    const iconClass = type === 'success' ? 'fa-check-circle text-green-400' : 'fa-exclamation-circle text-red-400';
+    
+    const alert = document.createElement('div');
+    alert.className = `${alertClass} border-l-4 p-4 rounded-lg flex items-start gap-3`;
+    alert.innerHTML = `
+        <i class="fa-solid ${iconClass} text-xl mt-0.5"></i>
+        <div class="flex-1">
+            <p class="text-sm font-semibold">${message}</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-current opacity-50 hover:opacity-100">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    `;
+    
+    container.appendChild(alert);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => alert.remove(), 8000);
+}
+
+async function submitForm(action) {
+    const form = document.getElementById('form-validation');
+    if (!form) return;
+    
+    const buttons = form.querySelectorAll('button[type="button"]');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    try {
+        const formData = new FormData(form);
+        formData.append('action', action);
+        
+        const url = form.getAttribute('action');
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 2000);
+        } else {
+            showMessage(data.message, 'error');
+            buttons.forEach(btn => btn.disabled = false);
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showMessage('Une erreur est survenue: ' + error.message, 'error');
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+let currentAction = null;
+let currentValidationUid = null;
+
+function openConfirmModal(action, message, buttonText, validationUid = null) {
+    currentAction = action;
+    currentValidationUid = validationUid;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmButton').textContent = buttonText;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+    currentAction = null;
+    currentValidationUid = null;
+}
+
+async function submitConfirmAction() {
+    if (currentAction === 'valider') {
+        await submitForm('valider');
+    } else if (currentAction === 'rejeter') {
+        await submitForm('rejeter');
+    } else if (currentAction === 'transferer') {
+        await transferToMinister(currentValidationUid);
+    }
+    closeConfirmModal();
+}
+
+async function transferToMinister(validationUid) {
+    try {
+        const response = await fetch(`/gouvernance/validations/${validationUid}/transfer/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 2000);
+        } else {
+            showMessage(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showMessage('Une erreur est survenue', 'error');
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeConfirmModal();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

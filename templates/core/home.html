@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Accueil | SI-SEP Sport RDC</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/vendors/css/vendors.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/theme.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/theme-rdc-override.css' %}">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4">Bienvenue, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        <p class="text-muted">Vous êtes connecté au SI-SEP Sport RDC.</p>
+        <a href="{% url 'core:logout' %}" class="btn btn-outline-primary">Se déconnecter</a>
+    </div>
+</body>
+</html>

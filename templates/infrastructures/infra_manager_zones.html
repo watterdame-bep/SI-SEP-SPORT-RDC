@@ -1,0 +1,118 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Zones du stade | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Zones du stade</h1>
+                <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Billetterie (Tribune d'honneur, Latérale, Pourtour…)</p>
+            </div>
+            <a href="{% url 'infrastructures:infra_manager_dashboard' %}"
+               class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Retour au tableau de bord</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="rounded-lg border-l-4 p-4 flex items-start gap-3 {% if message.tags == 'success' %}bg-green-50 border-green-500 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-500 text-red-800{% elif message.tags == 'warning' %}bg-amber-50 border-amber-500 text-amber-800{% else %}bg-blue-50 border-blue-500 text-blue-800{% endif %}">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl flex-shrink-0 mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Formulaire : ajouter une zone -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200">
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-rdc-blue"></i>
+                    Ajouter une zone
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Ex. Tribune d'honneur, Tribune latérale, Pourtour</p>
+            </div>
+            <form method="post" class="p-5 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                <div>
+                    <label for="nom" class="block text-sm font-medium text-slate-700 mb-1">Nom de la zone <span class="text-red-500">*</span></label>
+                    <input type="text" id="nom" name="nom" required maxlength="100" placeholder="Ex. Tribune d'honneur"
+                           class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+                </div>
+                <div>
+                    <label for="ordre" class="block text-sm font-medium text-slate-700 mb-1">Ordre d'affichage</label>
+                    <input type="number" id="ordre" name="ordre" min="0" value="{{ zones.count }}"
+                           class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+                </div>
+                <button type="submit" class="w-full py-2.5 px-4 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    Créer la zone
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des zones -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-rdc-blue"></i>
+                    Zones enregistrées
+                </h2>
+                <span class="text-sm font-medium text-slate-500">{{ zones|length }} zone(s)</span>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% if zones %}
+                {% for zone in zones %}
+                <div class="px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-rdc-blue/10 flex items-center justify-center text-rdc-blue font-bold text-sm">
+                            {{ zone.ordre }}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-900">{{ zone.nom }}</p>
+                            <p class="text-xs text-slate-500">Ordre : {{ zone.ordre }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        {% if zone.evenements_tarifs.exists %}
+                        <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">Utilisée par des événements</span>
+                        {% else %}
+                        <form method="post" onsubmit="return confirm('Supprimer la zone « {{ zone.nom }} » ?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="zone_uid" value="{{ zone.uid }}">
+                            <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                                <i class="fa-solid fa-trash text-sm"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="px-5 py-12 text-center text-slate-500">
+                    <i class="fa-solid fa-layer-group text-4xl text-slate-300 mb-3"></i>
+                    <p class="font-medium">Aucune zone enregistrée</p>
+                    <p class="text-sm mt-1">Ajoutez des zones (Tribune d'honneur, Latérale, Pourtour) pour la billetterie.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Calendrier Provincial - SI-SEP Sport RDC{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- En-tête -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Calendrier Provincial</h1>
+                    <p class="mt-2 text-slate-600">Sélectionnez une compétition pour accéder au calendrier</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'gouvernance:ligue_rencontres_billetterie' %}" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Billetterie</span>
+                    </a>
+                    <a href="{% url 'gouvernance:ligue_competitions_list' %}" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>Gérer Compétitions</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des Compétitions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for competition in competitions %}
+            <a href="{% url 'gouvernance:ligue_calendrier_rencontres' competition_uid=competition.uid %}" 
+               class="block bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-rdc-blue transition-all duration-200 overflow-hidden group">
+                
+                <!-- En-tête de la carte -->
+                <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-white mb-2 group-hover:scale-105 transition-transform">
+                                {{ competition.titre }}
+                            </h3>
+                            <p class="text-white/80 text-sm">
+                                <i class="fa-solid fa-calendar-alt mr-2"></i>{{ competition.saison }}
+                            </p>
+                        </div>
+                        <div class="ml-4">
+                            <i class="fa-solid fa-calendar-days text-3xl text-white/30 group-hover:text-rdc-yellow transition-colors"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corps de la carte -->
+                <div class="p-6">
+                    <div class="space-y-3">
+                        <!-- Type de compétition -->
+                        <div class="flex items-center gap-3 text-sm text-slate-600">
+                            <i class="fa-solid fa-trophy text-rdc-blue w-5"></i>
+                            <span>{{ competition.type_competition.libelle }}</span>
+                        </div>
+
+                        <!-- Nombre de journées -->
+                        {% if competition.nb_journees %}
+                        <div class="flex items-center gap-3 text-sm text-slate-600">
+                            <i class="fa-solid fa-list text-rdc-blue w-5"></i>
+                            <span>{{ competition.nb_journees }} journée{{ competition.nb_journees|pluralize }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Nombre de rencontres -->
+                        {% if competition.nb_rencontres %}
+                        <div class="flex items-center gap-3 text-sm text-slate-600">
+                            <i class="fa-solid fa-futbol text-rdc-blue w-5"></i>
+                            <span>{{ competition.nb_rencontres }} rencontre{{ competition.nb_rencontres|pluralize }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Statut -->
+                        <div class="flex items-center gap-3 text-sm">
+                            {% if competition.actif %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                                <i class="fa-solid fa-circle-pause"></i>
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Bouton d'action -->
+                    <div class="mt-6 pt-4 border-t border-slate-200">
+                        <div class="flex items-center justify-between text-rdc-blue group-hover:text-rdc-blue-dark transition-colors">
+                            <span class="font-medium text-sm">Voir le calendrier</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="col-span-full">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+                    <i class="fa-solid fa-calendar-xmark text-6xl text-slate-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Aucune compétition active</h3>
+                    <p class="text-slate-600 mb-6">Créez une compétition pour commencer à programmer des rencontres</p>
+                    <a href="{% url 'gouvernance:ligue_competitions_list' %}" 
+                       class="inline-flex items-center gap-2 px-6 py-3 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Créer une compétition</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

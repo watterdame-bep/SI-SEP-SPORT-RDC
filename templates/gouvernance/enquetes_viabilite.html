@@ -1,0 +1,472 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Enquêtes de Viabilité | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+input:focus, select:focus {
+    outline: none !important;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-folder-magnifying-glass text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Enquêtes de Viabilité</h1>
+                <p class="text-sm text-white/80 mt-1">{{ province.designation }} — Validation des demandes d'agrément</p>
+            </div>
+        </div>
+        
+        <!-- Statistiques Fédérations (affichées par défaut) -->
+        <div id="stats-federations" class="stats-section">
+            <p class="text-xs text-white/70 uppercase tracking-wider font-bold mb-3">Fédérations</p>
+            <div class="flex gap-4">
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-clock text-2xl text-orange-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">En attente</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.enquetes_en_attente }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.validations_acceptees }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.validations_rejetees }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistiques Ligues (cachées par défaut) -->
+        <div id="stats-ligues" class="stats-section hidden">
+            <p class="text-xs text-white/70 uppercase tracking-wider font-bold mb-3">Ligues Provinciales</p>
+            <div class="flex gap-4">
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-magnifying-glass text-2xl text-yellow-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">En inspection</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.ligues_en_inspection }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.ligues_validees }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                        <div>
+                            <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                            <p class="text-2xl font-bold text-white">{{ stats.ligues_rejetees }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Onglets (TOUJOURS VISIBLES) -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex gap-2 border-b border-slate-200">
+        <button class="tab-btn active px-4 py-2.5 text-sm font-semibold text-rdc-blue border-b-2 border-rdc-blue" data-tab="federations">
+            <i class="fa-solid fa-building mr-2"></i>Fédérations
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-semibold text-slate-600 border-b-2 border-transparent hover:text-slate-800" data-tab="ligues">
+            <i class="fa-solid fa-map-marked-alt mr-2"></i>Ligues
+        </button>
+    </div>
+</div>
+
+<!-- Barre d'outils Fédérations -->
+<div id="toolbar-federations" class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Statut -->
+        <select id="filter-statut" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="EN_ATTENTE">En attente</option>
+            <option value="VALIDEE">Validée</option>
+            <option value="REJETEE">Rejetée</option>
+        </select>
+    </div>
+</div>
+
+<!-- Barre d'outils Ligues (cachée par défaut) -->
+<div id="toolbar-ligues" class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6 hidden">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input-ligues" placeholder="Rechercher..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Statut pour Ligues -->
+        <select id="filter-statut-ligues" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="EN_INSPECTION">En inspection</option>
+            <option value="INSPECTION_VALIDEE">Validée</option>
+            <option value="INSPECTION_REJETEE">Rejetée</option>
+        </select>
+    </div>
+</div>
+
+<!-- Onglet Fédérations -->
+<div id="tab-federations" class="tab-content active">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100" onclick="sortTable('nom')">
+                        Fédération <i class="fa-solid fa-sort text-slate-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date Réception</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="table-body-federations">
+                {% for validation in validations %}
+                <tr class="hover:bg-slate-50 transition-colors" 
+                    data-nom="{{ validation.federation.nom_officiel|lower }}" 
+                    data-sigle="{{ validation.federation.sigle|lower }}"
+                    data-discipline="{% for disc in validation.federation.disciplines.all %}{{ disc.designation }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                    data-statut="{{ validation.statut }}">
+                    
+                    <!-- Fédération -->
+                    <td class="px-6 py-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">{{ validation.federation.nom_officiel }}</div>
+                                <div class="text-xs text-slate-500 font-bold">{{ validation.federation.sigle }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <!-- Discipline -->
+                    <td class="px-6 py-4">
+                        {% for discipline in validation.federation.disciplines.all %}
+                        <div class="text-sm text-slate-700">
+                            <span>{{ discipline.designation }}</span>
+                        </div>
+                        {% empty %}
+                        <span class="text-xs text-slate-400">Non définie</span>
+                        {% endfor %}
+                    </td>
+                    
+                    <!-- Date Réception -->
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-600">
+                            {% if validation.date_creation %}
+                                {{ validation.date_creation|date:"d/m/Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </td>
+                    
+                    <!-- Statut -->
+                    <td class="px-6 py-4 text-center">
+                        {% if validation.statut == 'EN_ATTENTE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-clock"></i>
+                            En attente
+                        </span>
+                        {% elif validation.statut == 'VALIDEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Validée
+                        </span>
+                        {% elif validation.statut == 'REJETEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-ban"></i>
+                            Rejetée
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                            {{ validation.get_statut_display }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="px-6 py-4">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <!-- Bouton Voir/Inspecter -->
+                            {% if validation.statut == 'EN_ATTENTE' %}
+                            <a href="{% url 'gouvernance:validation_detail' validation.uid %}" 
+                               class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                               title="Inspecter">
+                                <i class="fa-solid fa-magnifying-glass text-base"></i>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'gouvernance:validation_detail' validation.uid %}" 
+                               class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                               title="Voir">
+                                <i class="fa-solid fa-eye text-base"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-16 text-center">
+                        <i class="fa-solid fa-folder-magnifying-glass text-4xl text-slate-300 mb-4"></i>
+                        <p class="text-base font-bold text-slate-900">Aucune enquête de viabilité</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Onglet Ligues -->
+<div id="tab-ligues" class="tab-content hidden">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100">
+                        Ligue <i class="fa-solid fa-sort text-slate-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Fédération</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date Réception</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="table-body-ligues">
+                {% for validation_ligue in validations_ligues %}
+                <tr class="hover:bg-slate-50 transition-colors" 
+                    data-nom="{{ validation_ligue.ligue.nom_officiel|lower }}" 
+                    data-sigle="{{ validation_ligue.ligue.sigle|lower }}"
+                    data-federation="{{ validation_ligue.ligue.institution_tutelle.nom_officiel|lower }}"
+                    data-statut="{{ validation_ligue.statut }}">
+                    
+                    <!-- Ligue -->
+                    <td class="px-6 py-4">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ validation_ligue.ligue.nom_officiel }}</div>
+                            <div class="text-xs text-slate-500 font-bold">{{ validation_ligue.ligue.sigle }}</div>
+                        </div>
+                    </td>
+                    
+                    <!-- Fédération -->
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-700">{{ validation_ligue.ligue.institution_tutelle.nom_officiel }}</span>
+                    </td>
+                    
+                    <!-- Date Réception -->
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-slate-600">
+                            {% if validation_ligue.date_creation %}
+                                {{ validation_ligue.date_creation|date:"d/m/Y" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </td>
+                    
+                    <!-- Statut -->
+                    <td class="px-6 py-4 text-center">
+                        {% if validation_ligue.statut == 'EN_INSPECTION' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            En inspection
+                        </span>
+                        {% elif validation_ligue.statut == 'INSPECTION_VALIDEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Validée
+                        </span>
+                        {% elif validation_ligue.statut == 'INSPECTION_REJETEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-ban"></i>
+                            Rejetée
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                            {{ validation_ligue.get_statut_display }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="px-6 py-4">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <!-- Bouton Inspecter -->
+                            {% if validation_ligue.statut == 'EN_INSPECTION' %}
+                            <a href="{% url 'gouvernance:division_ligue_detail' validation_ligue.uid %}" 
+                               class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                               title="Inspecter">
+                                <i class="fa-solid fa-magnifying-glass text-base"></i>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'gouvernance:division_ligue_detail' validation_ligue.uid %}" 
+                               class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                               title="Voir">
+                                <i class="fa-solid fa-eye text-base"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-16 text-center">
+                        <i class="fa-solid fa-map-marked-alt text-4xl text-slate-300 mb-4"></i>
+                        <p class="text-base font-bold text-slate-900">Aucune ligue à inspecter</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gestion des onglets
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+const toolbarFederations = document.getElementById('toolbar-federations');
+const toolbarLigues = document.getElementById('toolbar-ligues');
+const statsFederations = document.getElementById('stats-federations');
+const statsLigues = document.getElementById('stats-ligues');
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        
+        // Désactiver tous les onglets
+        tabBtns.forEach(b => {
+            b.classList.remove('active', 'text-rdc-blue', 'border-rdc-blue');
+            b.classList.add('text-slate-600', 'border-transparent');
+        });
+        
+        // Masquer tous les contenus
+        tabContents.forEach(content => {
+            content.classList.add('hidden');
+            content.classList.remove('active');
+        });
+        
+        // Activer l'onglet cliqué
+        btn.classList.add('active', 'text-rdc-blue', 'border-rdc-blue');
+        btn.classList.remove('text-slate-600', 'border-transparent');
+        
+        // Afficher le contenu correspondant
+        const activeContent = document.getElementById(`tab-${tabName}`);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('active');
+        }
+        
+        // Afficher/masquer les toolbars appropriées
+        if (tabName === 'federations') {
+            // Afficher toolbar fédérations
+            if (toolbarFederations) toolbarFederations.classList.remove('hidden');
+            if (toolbarLigues) toolbarLigues.classList.add('hidden');
+            // Afficher les stats des fédérations
+            if (statsFederations) statsFederations.classList.remove('hidden');
+            if (statsLigues) statsLigues.classList.add('hidden');
+        } else {
+            // Afficher toolbar ligues
+            if (toolbarFederations) toolbarFederations.classList.add('hidden');
+            if (toolbarLigues) toolbarLigues.classList.remove('hidden');
+            // Afficher les stats des ligues
+            if (statsFederations) statsFederations.classList.add('hidden');
+            if (statsLigues) statsLigues.classList.remove('hidden');
+        }
+    });
+});
+
+// Recherche en temps réel pour Fédérations
+const searchInput = document.getElementById('search-input');
+const filterStatut = document.getElementById('filter-statut');
+
+if (searchInput) searchInput.addEventListener('input', filterTableFederations);
+if (filterStatut) filterStatut.addEventListener('change', filterTableFederations);
+
+function filterTableFederations() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const statutFilter = filterStatut ? filterStatut.value : '';
+    
+    document.querySelectorAll('#table-body-federations tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchStatut) ? '' : 'none';
+    });
+}
+
+// Recherche en temps réel pour Ligues
+const searchInputLigues = document.getElementById('search-input-ligues');
+const filterStatutLigues = document.getElementById('filter-statut-ligues');
+
+if (searchInputLigues) searchInputLigues.addEventListener('input', filterTableLigues);
+if (filterStatutLigues) filterStatutLigues.addEventListener('change', filterTableLigues);
+
+function filterTableLigues() {
+    const searchTerm = searchInputLigues ? searchInputLigues.value.toLowerCase() : '';
+    const statutFilter = filterStatutLigues ? filterStatutLigues.value : '';
+    
+    document.querySelectorAll('#table-body-ligues tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const federation = row.dataset.federation || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm) || federation.includes(searchTerm);
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchStatut) ? '' : 'none';
+    });
+}
+
+function sortTable(column) {
+    console.log('Tri par:', column);
+}
+</script>
+{% endblock %}

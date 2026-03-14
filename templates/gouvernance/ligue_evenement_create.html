@@ -1,0 +1,108 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer un événement | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:ligue_evenements_list' %}" class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-plus text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Créer un événement</h1>
+                <p class="text-sm text-white/80 mt-1">Match, compétition ou événement sportif — {{ ligue.nom_officiel }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 lg:p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="id_infrastructure" class="block text-sm font-medium text-slate-700 mb-1">{{ form.infrastructure.label }}</label>
+                {{ form.infrastructure }}
+                {% if form.infrastructure.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.infrastructure.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_titre" class="block text-sm font-medium text-slate-700 mb-1">{{ form.titre.label }}</label>
+                {{ form.titre }}
+                {% if form.titre.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.titre.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="id_type_evenement" class="block text-sm font-medium text-slate-700 mb-1">{{ form.type_evenement.label }}</label>
+                {{ form.type_evenement }}
+                {% if form.type_evenement.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.type_evenement.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_date_evenement" class="block text-sm font-medium text-slate-700 mb-1">{{ form.date_evenement.label }}</label>
+                    {{ form.date_evenement }}
+                    {% if form.date_evenement.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.date_evenement.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_heure_debut" class="block text-sm font-medium text-slate-700 mb-1">{{ form.heure_debut.label }}</label>
+                    {{ form.heure_debut }}
+                    {% if form.heure_debut.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.heure_debut.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-slate-700 mb-1">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-4">
+                <button type="submit" class="px-5 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-xl transition-colors inline-flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Créer l'événement</span>
+                </button>
+                <a href="{% url 'gouvernance:ligue_evenements_list' %}" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl transition-colors inline-flex items-center gap-2">
+                    <i class="fa-solid fa-times"></i>
+                    <span>Annuler</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
