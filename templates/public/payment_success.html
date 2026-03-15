@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Réussi - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            border-radius: 0 !important;
+        }
+        
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .checkmark-animation {
+            animation: checkmark 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="min-h-screen flex items-center justify-center px-4 py-8">
+        <div class="max-w-2xl w-full">
+            
+            <!-- Success Icon -->
+            <div class="text-center mb-8 checkmark-animation">
+                <div class="inline-flex items-center justify-center w-32 h-32 bg-green-100 border-4 border-green-600 mb-6">
+                    <i class="fa-solid fa-check text-6xl text-green-600"></i>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 mb-3 uppercase">Paiement Réussi!</h1>
+                <p class="text-lg text-slate-600 font-semibold">Votre billet a été généré avec succès</p>
+            </div>
+            
+            <!-- Success Card -->
+            <div class="bg-white shadow-lg border-2 border-slate-200 p-8 mb-6 fade-in-up">
+                
+                <!-- Informations de la rencontre -->
+                {% if payment_success.rencontre %}
+                <div class="mb-8 p-6 bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white">
+                    <h2 class="text-2xl font-black mb-2 uppercase">{{ payment_success.rencontre }}</h2>
+                    <div class="flex items-center gap-4 text-sm flex-wrap">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-calendar"></i>
+                            {{ payment_success.date_match }}
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot"></i>
+                            {{ payment_success.stade }}
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-couch"></i>
+                            {{ payment_success.zone_nom }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Statut du paiement -->
+                {% if payment_success.statut_paiement %}
+                <div class="mb-6 p-4 {% if payment_success.statut_paiement == 'VALIDE' %}bg-green-50 border-2 border-green-200{% elif payment_success.statut_paiement == 'INITIE' %}bg-yellow-50 border-2 border-yellow-200{% else %}bg-red-50 border-2 border-red-200{% endif %}">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-600 uppercase">Statut paiement:</span>
+                        <span class="text-lg font-black {% if payment_success.statut_paiement == 'VALIDE' %}text-green-600{% elif payment_success.statut_paiement == 'INITIE' %}text-yellow-600{% else %}text-red-600{% endif %}">
+                            {% if payment_success.statut_paiement == 'VALIDE' %}
+                                <i class="fa-solid fa-check-circle mr-2"></i>Validé
+                            {% elif payment_success.statut_paiement == 'INITIE' %}
+                                <i class="fa-solid fa-clock mr-2"></i>En attente de confirmation
+                            {% else %}
+                                <i class="fa-solid fa-exclamation-circle mr-2"></i>Échoué
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if payment_success.statut_paiement == 'INITIE' %}
+                    <p class="text-sm text-slate-700 mt-2">
+                        <i class="fa-solid fa-info-circle text-yellow-600 mr-1"></i>
+                        Votre paiement est en cours de traitement. Vous recevrez une confirmation par SMS dès qu'il sera validé.
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Référence de vente -->
+                {% if payment_success.reference %}
+                <div class="mb-6 p-4 bg-slate-100 border-2 border-slate-300">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-slate-600 uppercase">Référence:</span>
+                        <span class="text-lg font-black text-slate-900">{{ payment_success.reference }}</span>
+                    </div>
+                    {% if payment_success.order_number %}
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-sm font-bold text-slate-600 uppercase">Référence Mobile Money:</span>
+                        <span class="text-lg font-black text-rdc-blue">{{ payment_success.order_number }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- QR Codes des billets -->
+                {% if payment_success.tickets %}
+                <div class="mb-8">
+                    <h3 class="text-lg font-black text-slate-900 mb-4 uppercase">Vos Billets</h3>
+                    <div class="grid grid-cols-1 {% if payment_success.quantity > 1 %}md:grid-cols-2{% endif %} gap-4">
+                        {% for ticket in payment_success.tickets %}
+                        <div class="border-2 border-slate-300 p-4 bg-slate-50">
+                            <div class="text-center mb-4">
+                                {% if ticket.qr_code %}
+                                <img src="{{ ticket.qr_code }}" alt="QR Code Billet" class="mx-auto w-48 h-48 border-2 border-slate-300 bg-white">
+                                {% else %}
+                                <div class="w-48 h-48 mx-auto bg-white border-2 border-slate-300 flex items-center justify-center">
+                                    <div class="text-center">
+                                        {% if payment_success.statut_paiement == 'INITIE' %}
+                                        <i class="fa-solid fa-clock text-6xl text-yellow-500 mb-3"></i>
+                                        <p class="text-xs text-slate-600 font-bold">EN ATTENTE</p>
+                                        <p class="text-xs text-slate-500 mt-1">QR CODE SERA GÉNÉRÉ APRÈS VALIDATION</p>
+                                        {% else %}
+                                        <i class="fa-solid fa-qrcode text-6xl text-slate-400 mb-3"></i>
+                                        <p class="text-xs text-slate-600 font-bold">QR CODE</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-bold text-slate-600 mb-1">Billet N°</p>
+                                <p class="text-2xl font-black text-rdc-blue">{{ forloop.counter }}</p>
+                                <p class="text-xs text-slate-500 mt-2 font-mono">{{ ticket.uid }}</p>
+                                {% if payment_success.statut_paiement == 'INITIE' %}
+                                <p class="text-xs text-yellow-600 mt-2 font-semibold">
+                                    <i class="fa-solid fa-clock mr-1"></i>
+                                    En attente de validation
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-sm text-slate-600 font-semibold text-center mt-4">
+                        <i class="fa-solid fa-info-circle text-rdc-blue mr-1"></i>
+                        Présentez ces QR Codes à l'entrée du stade
+                    </p>
+                </div>
+                {% else %}
+                <!-- Fallback si pas de tickets -->
+                <div class="text-center mb-8">
+                    <div class="inline-block p-6 bg-slate-100 border-2 border-slate-300 mb-4">
+                        <div class="w-48 h-48 bg-white border-2 border-slate-300 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fa-solid fa-qrcode text-6xl text-slate-400 mb-3"></i>
+                                <p class="text-xs text-slate-600 font-bold">QR CODE</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-600 font-semibold">Présentez ce QR Code à l'entrée du stade</p>
+                </div>
+                {% endif %}
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Nom:</span>
+                        <span class="font-black text-slate-900">{{ payment_success.nom }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Téléphone:</span>
+                        <span class="font-black text-slate-900">{{ payment_success.telephone }}</span>
+                    </div>
+                    {% if payment_success.email %}
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Email:</span>
+                        <span class="font-black text-slate-900">{{ payment_success.email }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Nombre de billets:</span>
+                        <span class="font-black text-slate-900">{{ payment_success.quantity }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Mode de paiement:</span>
+                        <span class="font-black text-slate-900 uppercase">{{ payment_success.payment_method }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-4 bg-green-50 px-4 border-2 border-green-200">
+                        <span class="text-lg font-black text-slate-900 uppercase">Montant payé:</span>
+                        <span class="text-2xl font-black text-green-600">{{ payment_success.total|floatformat:0 }} CDF</span>
+                    </div>
+                </div>
+                
+                <div class="bg-rdc-yellow p-6 border-2 border-yellow-600 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-mobile-screen-button text-3xl text-rdc-blue"></i>
+                        <div>
+                            <p class="font-black text-rdc-blue uppercase mb-2">
+                                {% if payment_success.statut_paiement == 'INITIE' %}
+                                Confirmation de paiement en cours
+                                {% else %}
+                                Billet envoyé par SMS
+                                {% endif %}
+                            </p>
+                            <p class="text-sm text-slate-900 font-semibold">
+                                {% if payment_success.statut_paiement == 'INITIE' %}
+                                Vous recevrez une confirmation de paiement et votre billet par SMS dès que le paiement sera validé au numéro 
+                                <span class="font-black">{{ payment_success.telephone }}</span>
+                                {% else %}
+                                Vous recevrez votre billet avec le QR Code par SMS dans quelques instants au numéro 
+                                <span class="font-black">{{ payment_success.telephone }}</span>
+                                {% endif %}
+                            </p>
+                            {% if payment_success.payment_phone and payment_success.payment_method in ['MPESA', 'ORANGE_MONEY', 'AIRTEL_MONEY'] %}
+                            <p class="text-xs text-slate-600 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Paiement {{ payment_success.payment_method }} initié depuis {{ payment_success.payment_phone }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="window.print()" class="w-full bg-slate-200 text-slate-900 py-4 font-black text-sm uppercase tracking-wide hover:bg-slate-300 transition-colors">
+                        <i class="fa-solid fa-print mr-2"></i>
+                        Imprimer le billet
+                    </button>
+                    <button onclick="downloadTicket()" class="w-full bg-rdc-blue text-white py-4 font-black text-sm uppercase tracking-wide hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fa-solid fa-download mr-2"></i>
+                        Télécharger PDF
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="bg-white shadow-lg border-2 border-slate-200 p-6 mb-6 fade-in-up" style="animation-delay: 0.2s;">
+                <h2 class="text-xl font-black text-slate-900 mb-4 uppercase flex items-center gap-3">
+                    <i class="fa-solid fa-info-circle text-rdc-blue"></i>
+                    Instructions importantes
+                </h2>
+                <ul class="space-y-3">
+                    <li class="flex items-start gap-3">
+                        <i class="fa-solid fa-check-circle text-green-600 mt-1"></i>
+                        <span class="text-sm text-slate-700 font-semibold">Arrivez au stade au moins 30 minutes avant le début du match</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa-solid fa-check-circle text-green-600 mt-1"></i>
+                        <span class="text-sm text-slate-700 font-semibold">Présentez votre QR Code (SMS ou imprimé) à l'entrée</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa-solid fa-check-circle text-green-600 mt-1"></i>
+                        <span class="text-sm text-slate-700 font-semibold">Munissez-vous d'une pièce d'identité valide</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa-solid fa-check-circle text-green-600 mt-1"></i>
+                        <span class="text-sm text-slate-700 font-semibold">Conservez votre billet jusqu'à la fin du match</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Actions -->
+            <div class="text-center fade-in-up" style="animation-delay: 0.4s;">
+                <a href="{% url 'public:home' %}" class="inline-flex items-center gap-2 px-8 py-4 bg-rdc-yellow text-rdc-blue font-black text-lg uppercase tracking-wide hover:bg-yellow-400 transition-colors">
+                    <i class="fa-solid fa-home"></i>
+                    <span>Retour à l'accueil</span>
+                </a>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        function downloadTicket() {
+            // TODO: Implémenter le téléchargement du PDF
+            alert('Le téléchargement du billet sera disponible prochainement.');
+        }
+        
+        // Auto-scroll to top
+        window.scrollTo(0, 0);
+    </script>
+
+</body>
+</html>

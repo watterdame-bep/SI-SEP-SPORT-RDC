@@ -1,0 +1,967 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Détails de la Ligue | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f8f9fa;
+}
+
+.section-card {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: #0036ca;
+    font-size: 1.25rem;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.info-value.empty {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    width: fit-content;
+}
+
+.badge-green {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-yellow {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-orange {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+.badge-red {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-blue {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-gray {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.document-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.document-card:hover {
+    border-color: #0036ca;
+    box-shadow: 0 4px 12px rgba(0, 54, 202, 0.1);
+}
+
+.document-icon {
+    font-size: 2rem;
+    color: #0036ca;
+    margin-bottom: 0.5rem;
+}
+
+.document-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+
+.document-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #0036ca;
+    color: white;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.document-link:hover {
+    background: #002a9f;
+    text-decoration: none;
+}
+
+.disciplines-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.discipline-tag {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+.btn-primary {
+    background: #0036ca;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #002a9f;
+}
+
+.btn-success {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.observation-box {
+    background: #f0f9ff;
+    border-left: 4px solid #0036ca;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+}
+
+.observation-box p {
+    margin: 0;
+    color: #1e293b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.status-timeline {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.timeline-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #0036ca;
+}
+
+.timeline-separator {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-layer-group text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">{{ ligue.nom_officiel }}</h1>
+                    <p class="text-sm text-white/80 mt-1">{{ ligue.sigle }} • {{ ligue.province_admin.designation }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                {% if ligue.statut_signature == 'SIGNE' %}
+                    <span class="badge badge-green">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Validée
+                    </span>
+                {% elif ligue.statut_signature == 'ATTENTE_SIGNATURE' and ligue.statut_inspection == 'INSPECTION_VALIDEE' %}
+                    <span class="badge badge-orange">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        Attente SG
+                    </span>
+                {% elif ligue.statut_inspection == 'EN_INSPECTION' %}
+                    <span class="badge badge-yellow">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        En Inspection
+                    </span>
+                {% elif ligue.statut_signature == 'REFUSE' %}
+                    <span class="badge badge-red">
+                        <i class="fa-solid fa-times-circle"></i>
+                        Rejetée
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py-6">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-6 space-y-3">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+            <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+            <p class="text-sm font-semibold flex-1">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Section: Informations Générales -->
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-info-circle"></i>
+            Informations Générales
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-field">
+                <span class="info-label">Code</span>
+                <span class="info-value">{{ ligue.code }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Sigle</span>
+                <span class="info-value">{{ ligue.sigle|default:"N/A" }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Numéro de Dossier</span>
+                <span class="info-value">{{ ligue.numero_dossier|default:"N/A" }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Fédération Tutelle</span>
+                <span class="info-value">
+                    {% if federation %}
+                        <i class="fa-solid fa-link text-rdc-blue mr-1"></i>{{ federation.nom_officiel }}
+                    {% else %}
+                        <span class="empty">Non renseignée</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Province Administrative</span>
+                <span class="info-value">
+                    {% if ligue.province_admin %}
+                        <i class="fa-solid fa-map-location-dot text-rdc-blue mr-1"></i>{{ ligue.province_admin.designation }}
+                    {% else %}
+                        <span class="empty">Non renseignée</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Date de Création</span>
+                <span class="info-value">{{ ligue.date_creation|date:"d/m/Y"|default:"N/A" }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Statut Juridique</span>
+                <span class="info-value">{{ ligue.statut_juridique|default:"N/A" }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Type d'Agrément Sollicité</span>
+                <span class="info-value">{{ ligue.get_type_agrement_sollicite_display|default:"N/A" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Responsables et Contacts -->
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-users"></i>
+            Responsables et Contacts
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-field">
+                <span class="info-label">Président/Mandataire</span>
+                <span class="info-value">
+                    {% if ligue.nom_president %}
+                        <i class="fa-solid fa-user text-rdc-blue mr-1"></i>{{ ligue.nom_president }}
+                    {% else %}
+                        <span class="empty">Non renseigné</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Téléphone du Responsable</span>
+                <span class="info-value">
+                    {% if ligue.telephone_president %}
+                        <i class="fa-solid fa-phone text-rdc-blue mr-1"></i>{{ ligue.telephone_president }}
+                    {% else %}
+                        <span class="empty">Non renseigné</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Email Officiel</span>
+                <span class="info-value">
+                    {% if ligue.email_officiel %}
+                        <i class="fa-solid fa-envelope text-rdc-blue mr-1"></i>
+                        <a href="mailto:{{ ligue.email_officiel }}" class="text-rdc-blue hover:underline">{{ ligue.email_officiel }}</a>
+                    {% else %}
+                        <span class="empty">Non renseigné</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Téléphone Officiel</span>
+                <span class="info-value">
+                    {% if ligue.telephone_off %}
+                        <i class="fa-solid fa-phone text-rdc-blue mr-1"></i>{{ ligue.telephone_off }}
+                    {% else %}
+                        <span class="empty">Non renseigné</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Site Web</span>
+                <span class="info-value">
+                    {% if ligue.site_web %}
+                        <i class="fa-solid fa-globe text-rdc-blue mr-1"></i>
+                        <a href="{{ ligue.site_web }}" target="_blank" class="text-rdc-blue hover:underline">{{ ligue.site_web }}</a>
+                    {% else %}
+                        <span class="empty">Non renseigné</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Adresse du Siège</span>
+                <span class="info-value">
+                    {% if ligue.adresse_siege %}
+                        <i class="fa-solid fa-map-pin text-rdc-blue mr-1"></i>{{ ligue.adresse_siege }}
+                    {% else %}
+                        <span class="empty">Non renseignée</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Disciplines Sportives -->
+    {% if disciplines %}
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-trophy"></i>
+            Disciplines Sportives
+        </h2>
+        
+        <div class="disciplines-list">
+            {% for discipline in disciplines %}
+                <span class="discipline-tag">
+                    <i class="fa-solid fa-check-circle mr-1"></i>
+                    {{ discipline.designation }}
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Section: Documents Joints -->
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-file-pdf"></i>
+            Documents Joints
+        </h2>
+        
+        <div class="documents-grid">
+            <!-- Statuts -->
+            {% if ligue.document_statuts %}
+            <a href="{{ ligue.document_statuts.url }}" target="_blank" class="document-card" style="cursor: pointer; text-decoration: none;">
+                <div class="document-icon">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">Statuts de la Ligue</div>
+            </a>
+            {% else %}
+            <div class="document-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="document-icon" style="color: #cbd5e1;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">Statuts de la Ligue</div>
+                <span style="color: #94a3b8; font-size: 0.75rem;">Non fourni</span>
+            </div>
+            {% endif %}
+            
+            <!-- PV AG -->
+            {% if ligue.document_pv_ag %}
+            <a href="{{ ligue.document_pv_ag.url }}" target="_blank" class="document-card" style="cursor: pointer; text-decoration: none;">
+                <div class="document-icon">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">PV de l'AG Constitutive</div>
+            </a>
+            {% else %}
+            <div class="document-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="document-icon" style="color: #cbd5e1;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">PV de l'AG Constitutive</div>
+                <span style="color: #94a3b8; font-size: 0.75rem;">Non fourni</span>
+            </div>
+            {% endif %}
+            
+            <!-- Liste des Membres -->
+            {% if ligue.document_liste_membres %}
+            <a href="{{ ligue.document_liste_membres.url }}" target="_blank" class="document-card" style="cursor: pointer; text-decoration: none;">
+                <div class="document-icon">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">Liste des Membres du Comité</div>
+            </a>
+            {% else %}
+            <div class="document-card" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="document-icon" style="color: #cbd5e1;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="document-name">Liste des Membres du Comité</div>
+                <span style="color: #94a3b8; font-size: 0.75rem;">Non fourni</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section: Validation de la Division Provinciale -->
+    {% if validation_division %}
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-check-double"></i>
+            Validation de la Division Provinciale
+        </h2>
+        
+        <div class="info-row">
+            <div class="info-field">
+                <span class="info-label">Division Provinciale</span>
+                <span class="info-value">{{ validation_division.division_provinciale.nom_officiel }}</span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Statut</span>
+                <span class="info-value">
+                    {% if validation_division.statut == 'VALIDEE' %}
+                        <span class="badge badge-green">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Validée
+                        </span>
+                    {% elif validation_division.statut == 'EN_ATTENTE_SG' %}
+                        <span class="badge badge-yellow">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            En attente - SG doit transférer
+                        </span>
+                    {% elif validation_division.statut == 'EN_INSPECTION' %}
+                        <span class="badge badge-yellow">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            En inspection
+                        </span>
+                    {% elif validation_division.statut == 'INSPECTION_VALIDEE' %}
+                        <span class="badge badge-blue">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Inspection Validée
+                        </span>
+                    {% elif validation_division.statut == 'INSPECTION_REJETEE' %}
+                        <span class="badge badge-red">
+                            <i class="fa-solid fa-times-circle"></i>
+                            Inspection Rejetée
+                        </span>
+                    {% elif validation_division.statut == 'REJETEE' %}
+                        <span class="badge badge-red">
+                            <i class="fa-solid fa-times-circle"></i>
+                            Rejetée
+                        </span>
+                    {% else %}
+                        <span class="badge badge-gray">
+                            <i class="fa-solid fa-circle-question"></i>
+                            {{ validation_division.get_statut_display }}
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="info-field">
+                <span class="info-label">Date de Validation</span>
+                <span class="info-value">{{ validation_division.date_validation|date:"d/m/Y H:i"|default:"N/A" }}</span>
+            </div>
+            
+            {% if validation_division.date_transfert_division %}
+            <div class="info-field">
+                <span class="info-label">Date de Transfert</span>
+                <span class="info-value">{{ validation_division.date_transfert_division|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Critères d'Inspection -->
+        {% if validation_division.statut in 'INSPECTION_VALIDEE,INSPECTION_REJETEE' %}
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+            <h3 style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">
+                <i class="fa-solid fa-list-check text-rdc-blue mr-2"></i>Critères d'Inspection
+            </h3>
+            
+            <div class="info-row">
+                <div class="info-field">
+                    <span class="info-label">Conformité du Mandat</span>
+                    <span class="info-value">
+                        {% if validation_division.conformite_mandat %}
+                            <span class="badge badge-green">
+                                <i class="fa-solid fa-check-circle"></i>
+                                Validé
+                            </span>
+                        {% elif validation_division.conformite_mandat == False %}
+                            <span class="badge badge-red">
+                                <i class="fa-solid fa-times-circle"></i>
+                                Rejeté
+                            </span>
+                        {% else %}
+                            <span class="badge badge-gray">
+                                <i class="fa-solid fa-circle-question"></i>
+                                Non évalué
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-field">
+                    <span class="info-label">Siège Social Provincial</span>
+                    <span class="info-value">
+                        {% if validation_division.siege_social_provincial %}
+                            <span class="badge badge-green">
+                                <i class="fa-solid fa-check-circle"></i>
+                                Validé
+                            </span>
+                        {% elif validation_division.siege_social_provincial == False %}
+                            <span class="badge badge-red">
+                                <i class="fa-solid fa-times-circle"></i>
+                                Rejeté
+                            </span>
+                        {% else %}
+                            <span class="badge badge-gray">
+                                <i class="fa-solid fa-circle-question"></i>
+                                Non évalué
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="info-field">
+                    <span class="info-label">Existence des Clubs</span>
+                    <span class="info-value">
+                        {% if validation_division.existence_clubs %}
+                            <span class="badge badge-green">
+                                <i class="fa-solid fa-check-circle"></i>
+                                Validé
+                            </span>
+                        {% elif validation_division.existence_clubs == False %}
+                            <span class="badge badge-red">
+                                <i class="fa-solid fa-times-circle"></i>
+                                Rejeté
+                            </span>
+                        {% else %}
+                            <span class="badge badge-gray">
+                                <i class="fa-solid fa-circle-question"></i>
+                                Non évalué
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Observations -->
+        {% if validation_division.observations %}
+        <div class="observation-box">
+            <p><strong><i class="fa-solid fa-pen-to-square mr-2"></i>Observations de la Division:</strong></p>
+            <p>{{ validation_division.observations }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Rapport d'Inspection -->
+        {% if validation_division.rapport_inspection %}
+        <div style="margin-top: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 0.375rem; border-left: 4px solid #0036ca;">
+            <p style="margin: 0 0 0.75rem 0; color: #1e293b; font-size: 0.9rem; font-weight: 600;">
+                <i class="fa-solid fa-file-pdf text-rdc-blue mr-2"></i>Rapport d'Inspection Signé
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ validation_division.rapport_inspection.url }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #0036ca; color: white; text-decoration: none; border-radius: 0.375rem; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-eye"></i>Consulter
+                </a>
+                <a href="{{ validation_division.rapport_inspection.url }}" download style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #e2e8f0; color: #1e293b; text-decoration: none; border-radius: 0.375rem; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-download"></i>Télécharger
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Section: Décision du Secrétaire Général -->
+    {% if ligue.statut_signature == 'ATTENTE_SIGNATURE' and validation_division.statut == 'INSPECTION_VALIDEE' %}
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Décision du Secrétaire Général
+        </h2>
+        
+        <div style="background: #f0f9ff; border-left: 4px solid #0036ca; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #1e293b; font-size: 0.9rem; line-height: 1.5;">
+                <i class="fa-solid fa-info-circle text-rdc-blue mr-2"></i>
+                <strong>Important:</strong> Les observations saisies ci-dessous seront visibles par la fédération dans son interface.
+            </p>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-field" style="grid-column: 1 / -1;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i>Observations et Décision
+                </label>
+                <textarea id="observations-sg-display" placeholder="Saisissez vos observations et votre décision concernant cette ligue..." 
+                          style="width: 100%; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 120px; focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue;"></textarea>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #64748b;">
+                    <i class="fa-solid fa-lightbulb mr-1"></i>
+                    Exemple: "Ligue conforme à tous les critères. Recommande l'approbation." ou "Manquements détectés dans la composition du bureau. Recommande le rejet."
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Section: Décision Prise (Affichage après validation/rejet) -->
+    {% if ligue.statut_signature in 'SIGNE,REFUSE' %}
+    <div class="section-card">
+        <h2 class="section-title">
+            <i class="fa-solid fa-check-double"></i>
+            Décision du Secrétaire Général
+        </h2>
+        
+        {% if ligue.statut_signature == 'SIGNE' %}
+        <div style="background: #dcfce7; border-left: 4px solid #16a34a; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #166534; font-size: 0.9rem; font-weight: 600;">
+                <i class="fa-solid fa-check-circle mr-2"></i>
+                <strong>APPROUVÉE</strong> - Ligue validée par le Secrétaire Général
+            </p>
+        </div>
+        {% elif ligue.statut_signature == 'REFUSE' %}
+        <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #991b1b; font-size: 0.9rem; font-weight: 600;">
+                <i class="fa-solid fa-times-circle mr-2"></i>
+                <strong>REJETÉE</strong> - Ligue rejetée par le Secrétaire Général
+            </p>
+        </div>
+        {% endif %}
+        
+        {% if attestation.observations_sg %}
+        <div class="info-row">
+            <div class="info-field" style="grid-column: 1 / -1;">
+                <span class="info-label">Observations du Secrétaire Général</span>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem;">
+                    <p style="margin: 0; color: #1e293b; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">{{ attestation.observations_sg }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if attestation.date_approbation %}
+        <div class="info-row">
+            <div class="info-field">
+                <span class="info-label">Date de Décision</span>
+                <span class="info-value">{{ attestation.date_approbation|date:"d/m/Y à H:i" }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Section: Boutons d'Action -->
+    <div class="section-card">
+        <div class="action-buttons">
+            <a href="{% url 'gouvernance:sg_ligues_en_attente' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i>Retour
+            </a>
+            
+            <!-- Bouton Transférer à Division (si en attente SG) -->
+            {% if validation_division.statut == 'EN_ATTENTE_SG' %}
+            <button type="button" class="btn btn-primary" onclick="openConfirmModal('transferer', 'Êtes-vous sûr de vouloir transférer cette ligue à la Division Provinciale pour inspection?', 'Transférer')">
+                <i class="fa-solid fa-arrow-right"></i>Transférer à Division
+            </button>
+            {% endif %}
+            
+            <!-- Bouton Approuver (si Division a validé) -->
+            {% if ligue.statut_signature == 'ATTENTE_SIGNATURE' and validation_division.statut == 'INSPECTION_VALIDEE' %}
+            <button type="button" class="btn btn-success" onclick="openConfirmModal('approuver', 'Êtes-vous sûr de vouloir approuver cette ligue?', 'Approuver')">
+                <i class="fa-solid fa-check-circle"></i>Approuver
+            </button>
+            
+            <!-- Bouton Rejeter (si Division a validé) -->
+            <button type="button" class="btn btn-danger" onclick="openConfirmModal('rejeter', 'Êtes-vous sûr de vouloir rejeter cette ligue?', 'Rejeter')">
+                <i class="fa-solid fa-times-circle"></i>Rejeter
+            </button>
+            {% endif %}
+            
+            <!-- Bouton Rejeter (si Division a rejeté) -->
+            {% if ligue.statut_signature == 'ATTENTE_SIGNATURE' and validation_division.statut == 'INSPECTION_REJETEE' %}
+            <button type="button" class="btn btn-danger" onclick="openConfirmModal('rejeter', 'Êtes-vous sûr de vouloir rejeter cette ligue?', 'Rejeter')">
+                <i class="fa-solid fa-times-circle"></i>Rejeter
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hidden Forms for Actions -->
+    <form id="form-transferer" method="post" action="{% url 'gouvernance:sg_transferer_ligue_division' ligue.uid %}" style="display: none;">
+        {% csrf_token %}
+    </form>
+    
+    <form id="form-approuver" method="post" action="{% url 'gouvernance:sg_approuver_ligue' ligue.uid %}" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="observations_sg" id="observations-sg-input">
+    </form>
+    
+    <form id="form-rejeter" method="post" action="{% url 'gouvernance:sg_rejeter_ligue' ligue.uid %}" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="observations_sg" id="observations-sg-input-reject">
+    </form>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; flex-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 0.75rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-width: 500px; width: 90%; margin: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <!-- Modal Header -->
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 1.125rem; font-weight: 700; color: #1e293b; margin: 0;">
+                    <i class="fa-solid fa-exclamation-circle text-blue-600 mr-2"></i>Confirmation
+                </h3>
+                <button type="button" onclick="closeConfirmModal()" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div style="padding: 1.5rem;">
+                <p id="confirmMessage" style="margin: 0; color: #1e293b; font-size: 0.95rem; line-height: 1.5;"></p>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding: 1.5rem; border-top: 1px solid #e2e8f0;">
+                <button type="button" onclick="closeConfirmModal()" class="btn btn-secondary">
+                    <i class="fa-solid fa-times"></i>Annuler
+                </button>
+                <button type="button" id="confirmButton" onclick="submitConfirmAction()" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i>Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let currentAction = null;
+    
+    function openConfirmModal(action, message, buttonText) {
+        currentAction = action;
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmButton').textContent = buttonText;
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+    
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+        currentAction = null;
+    }
+    
+    function submitConfirmAction() {
+        if (currentAction === 'transferer') {
+            document.getElementById('form-transferer').submit();
+        } else if (currentAction === 'approuver') {
+            captureObservations();
+            document.getElementById('form-approuver').submit();
+        } else if (currentAction === 'rejeter') {
+            captureObservationsReject();
+            document.getElementById('form-rejeter').submit();
+        }
+        closeConfirmModal();
+    }
+    
+    function captureObservations() {
+        const observationsText = document.getElementById('observations-sg-display');
+        if (observationsText) {
+            document.getElementById('observations-sg-input').value = observationsText.value;
+        }
+    }
+    
+    function captureObservationsReject() {
+        const observationsText = document.getElementById('observations-sg-display');
+        if (observationsText) {
+            document.getElementById('observations-sg-input-reject').value = observationsText.value;
+        }
+    }
+    
+    function captureObservationsRejectAlt() {
+        const observationsText = document.getElementById('observations-sg-display');
+        if (observationsText) {
+            document.getElementById('observations-sg-input-reject-2').value = observationsText.value;
+        }
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('confirmModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeConfirmModal();
+        }
+    });
+    </script>
+    </script>
+</div>
+
+{% endblock %}

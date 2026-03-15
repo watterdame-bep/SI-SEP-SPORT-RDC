@@ -141,16 +141,13 @@ urlpatterns = [
     path('ligue/competitions/<uuid:competition_uid>/calendrier/', views_ligue_secretary.ligue_competition_calendrier, name='ligue_competition_calendrier'),
     path('ligue/competitions/<uuid:competition_uid>/journees/', views_ligue_secretary.ligue_competition_journees, name='ligue_competition_journees'),
     path('ligue/competitions/<uuid:competition_uid>/journees/<uuid:journee_uid>/rencontre/create/', views_ligue_secretary.ligue_rencontre_create, name='ligue_rencontre_create'),
+    path('ligue/rencontres/<uuid:rencontre_uid>/detail/', views_ligue_secretary.ligue_rencontre_detail, name='ligue_rencontre_detail'),
+    path('ligue/rencontres/<uuid:rencontre_uid>/billetterie/', views_ligue_secretary.ligue_rencontre_billetterie_stats, name='ligue_rencontre_billetterie_stats'),
     path('ligue/competitions/<uuid:competition_uid>/rencontres/<uuid:rencontre_uid>/edit/', views_ligue_secretary.ligue_rencontre_edit, name='ligue_rencontre_edit'),
+    path('ligue/calendrier-competition/', views_competitions.ligue_calendrier_competition, name='ligue_calendrier_competition'),
     path('ligue/competitions/<uuid:competition_uid>/calendrier-rencontres/', views_ligue_secretary.ligue_calendrier_rencontres, name='ligue_calendrier_rencontres'),
     path('ligue/competitions/<uuid:competition_uid>/calendrier-rencontres/api/', views_ligue_secretary.ligue_calendrier_rencontres_api, name='ligue_calendrier_rencontres_api'),
     path('ligue/rencontres/<uuid:rencontre_uid>/update/', views_ligue_secretary.ligue_rencontre_update_api, name='ligue_rencontre_update_api'),
-    
-    # Billetterie et Rencontres
-    path('ligue/calendrier-provincial/', views_competitions.ligue_calendrier_competition, name='ligue_calendrier_provincial'),
-    path('ligue/rencontres-billetterie/', views_competitions.ligue_rencontres_billetterie, name='ligue_rencontres_billetterie'),
-    path('ligue/rencontres/<uuid:rencontre_uid>/billetterie/', views_competitions.ligue_rencontre_configurer_billetterie, name='ligue_rencontre_configurer_billetterie'),
-    
     # Événements (matchs, galas ponctuels — séparé des compétitions)
     path('ligue/evenements/', views_ligue_secretary.ligue_evenements_list, name='ligue_evenements_list'),
     path('ligue/evenements/create/', views_ligue_secretary.ligue_evenement_create, name='ligue_evenement_create'),

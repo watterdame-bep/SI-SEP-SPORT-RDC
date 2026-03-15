@@ -3,17 +3,157 @@
 
 {% block title %}Calendrier rencontres — {{ competition.titre }} | SI-SEP Sport RDC{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+<style>
+    /* Personnalisation du calendrier */
+    .fc {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .fc .fc-toolbar-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0036ca;
+    }
+    
+    .fc .fc-button {
+        background-color: #0036ca;
+        border-color: #0036ca;
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-transform: capitalize;
+    }
+    
+    .fc .fc-button:hover {
+        background-color: #002a9e;
+        border-color: #002a9e;
+    }
+    
+    .fc .fc-button-active {
+        background-color: #002a9e !important;
+        border-color: #002a9e !important;
+    }
+    
+    .fc .fc-button:disabled {
+        opacity: 0.5;
+    }
+    
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: #e2e8f0;
+    }
+    
+    .fc-theme-standard td, .fc-theme-standard th {
+        border-color: #e2e8f0;
+    }
+    
+    .fc .fc-col-header-cell {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+        padding: 1rem 0.5rem;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+    
+    .fc .fc-daygrid-day-number {
+        font-weight: 600;
+        color: #1e293b;
+        padding: 0.5rem;
+    }
+    
+    .fc .fc-daygrid-day.fc-day-today {
+        background-color: #dbeafe !important;
+    }
+    
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        background-color: #0036ca;
+        color: white;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .fc-event {
+        border-radius: 0.375rem;
+        border: none;
+        padding: 0.25rem 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .fc-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .fc-event-title {
+        font-weight: 600;
+    }
+    
+    .fc-timegrid-slot {
+        height: 3rem;
+    }
+    
+    .fc-timegrid-slot-label {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    
+    /* Vue liste améliorée */
+    .fc-list-event:hover td {
+        background-color: #f1f5f9;
+    }
+    
+    .fc-list-event-time {
+        font-weight: 600;
+        color: #0036ca;
+    }
+    
+    .fc-list-event-title {
+        font-weight: 500;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .fc .fc-toolbar {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .fc .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block page_header %}
 <div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{% url 'gouvernance:ligue_competition_journees' competition_uid=competition.uid %}" class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0">
+                <a href="{% url 'gouvernance:ligue_competition_journees' competition_uid=competition.uid %}" 
+                   class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 transition-colors">
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
                 <div>
-                    <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Calendrier des matchs</h1>
-                    <p class="text-sm text-white/80 mt-1">{{ competition.titre }} — Glissez-déposez pour modifier date ou créneau</p>
+                    <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Calendrier des Rencontres</h1>
+                    <p class="text-sm text-white/80 mt-1">{{ competition.titre }} — Glissez-déposez pour modifier</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-3">
+                <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                    <p class="text-xs text-white/70">Saison</p>
+                    <p class="text-sm font-bold text-white">{{ competition.saison }}</p>
                 </div>
             </div>
         </div>
@@ -22,11 +162,41 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4">
+
+<!-- Légende -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+    <div class="flex flex-wrap items-center gap-6">
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded bg-blue-600"></div>
+            <span class="text-sm font-medium text-slate-700">Programmé</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded bg-green-600"></div>
+            <span class="text-sm font-medium text-slate-700">En cours</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded bg-slate-600"></div>
+            <span class="text-sm font-medium text-slate-700">Terminé</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded bg-orange-600"></div>
+            <span class="text-sm font-medium text-slate-700">Reporté</span>
+        </div>
+        <div class="ml-auto text-sm text-slate-600">
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            Glissez-déposez les matchs pour modifier la date/heure
+        </div>
+    </div>
+</div>
+
+<!-- Calendrier -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
     <div id="calendar"></div>
 </div>
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/fr.global.min.js"></script>
 <script>
@@ -35,23 +205,64 @@ document.addEventListener('DOMContentLoaded', function() {
     var apiUrl = '{% url "gouvernance:ligue_calendrier_rencontres_api" competition_uid=competition.uid %}';
     var updateUrlPlaceholder = '{% url "gouvernance:ligue_rencontre_update_api" rencontre_uid="00000000-0000-0000-0000-000000000000" %}';
     var csrfToken = '{{ csrf_token }}';
-    function getUpdateUrl(uid) { return updateUrlPlaceholder.replace('00000000-0000-0000-0000-000000000000', uid); }
+    
+    function getUpdateUrl(uid) { 
+        return updateUrlPlaceholder.replace('00000000-0000-0000-0000-000000000000', uid); 
+    }
+    
+    function getEventColor(statut) {
+        switch(statut) {
+            case 'PROGRAMME': return '#2563eb'; // Bleu
+            case 'EN_COURS': return '#16a34a'; // Vert
+            case 'TERMINE': return '#64748b'; // Gris
+            case 'REPORTE': return '#ea580c'; // Orange
+            default: return '#2563eb';
+        }
+    }
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'fr',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+        height: 'auto',
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' 
+        },
+        buttonText: {
+            today: 'Aujourd\'hui',
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour',
+            list: 'Liste'
+        },
+        slotMinTime: '08:00:00',
+        slotMaxTime: '22:00:00',
+        allDaySlot: false,
+        nowIndicator: true,
+        navLinks: true,
         events: function(info, successCallback, failureCallback) {
             fetch(apiUrl)
                 .then(function(r) { return r.json(); })
-                .then(function(events) { successCallback(events); })
-                .catch(function() { failureCallback(); });
+                .then(function(events) { 
+                    // Ajouter les couleurs selon le statut
+                    events.forEach(function(event) {
+                        event.backgroundColor = getEventColor(event.extendedProps.statut);
+                        event.borderColor = getEventColor(event.extendedProps.statut);
+                    });
+                    successCallback(events); 
+                })
+                .catch(function(err) { 
+                    console.error('Erreur chargement événements:', err);
+                    failureCallback(); 
+                });
         },
         editable: true,
         eventDrop: function(info) {
             var id = info.event.id;
             var start = info.event.start;
             if (!start) return;
+            
             var url = getUpdateUrl(id);
             fetch(url, {
                 method: 'POST',
@@ -67,9 +278,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!data.ok) {
                     alert(data.error || 'Erreur lors du déplacement');
                     info.revert();
+                } else {
+                    // Notification de succès
+                    showNotification('Match déplacé avec succès', 'success');
                 }
             })
-            .catch(function() {
+            .catch(function(err) {
+                console.error('Erreur:', err);
+                alert('Erreur de connexion');
                 info.revert();
             });
         },
@@ -77,6 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var id = info.event.id;
             var start = info.event.start;
             if (!start) return;
+            
             var url = getUpdateUrl(id);
             fetch(url, {
                 method: 'POST',
@@ -89,12 +306,50 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (!data.ok) info.revert();
+                if (!data.ok) {
+                    info.revert();
+                } else {
+                    showNotification('Horaire modifié avec succès', 'success');
+                }
             })
-            .catch(function() { info.revert(); });
+            .catch(function() { 
+                info.revert(); 
+            });
+        },
+        eventClick: function(info) {
+            var event = info.event;
+            var props = event.extendedProps;
+            
+            // Afficher les détails dans une alerte (peut être amélioré avec une modale)
+            var details = 'Match: ' + event.title + '\n';
+            details += 'Date: ' + event.start.toLocaleDateString('fr-FR') + '\n';
+            details += 'Heure: ' + event.start.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'}) + '\n';
+            if (props.stade) details += 'Stade: ' + props.stade + '\n';
+            details += 'Statut: ' + props.statut_display;
+            
+            alert(details);
         }
     });
+    
     calendar.render();
+    
+    // Fonction pour afficher les notifications
+    function showNotification(message, type) {
+        // Simple notification (peut être amélioré avec une bibliothèque de toast)
+        var color = type === 'success' ? '#16a34a' : '#dc2626';
+        var notification = document.createElement('div');
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: ' + color + '; color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999; font-weight: 600;';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(function() {
+            notification.style.transition = 'opacity 0.3s';
+            notification.style.opacity = '0';
+            setTimeout(function() {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
 });
 </script>
 {% endblock %}

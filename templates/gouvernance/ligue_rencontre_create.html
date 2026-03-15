@@ -62,28 +62,4 @@
         </form>
     </div>
 </div>
-<script>
-(function() {
-    var selectA = document.getElementById('id_equipe_a');
-    var selectB = document.getElementById('id_equipe_b');
-    if (!selectA || !selectB) return;
-    function syncSelects() {
-        var valA = selectA.value;
-        var valB = selectB.value;
-        [].forEach.call(selectB.options, function(opt) {
-            if (opt.value === '') return;
-            opt.disabled = (opt.value === valA);
-            if (opt.value === valA && valB === valA) selectB.value = '';
-        });
-        [].forEach.call(selectA.options, function(opt) {
-            if (opt.value === '') return;
-            opt.disabled = (opt.value === valB);
-            if (opt.value === valB && valA === valB) selectA.value = '';
-        });
-    }
-    selectA.addEventListener('change', syncSelects);
-    selectB.addEventListener('change', syncSelects);
-    syncSelects();
-})();
-</script>
 {% endblock %}

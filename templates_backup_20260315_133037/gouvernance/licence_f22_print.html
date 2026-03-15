@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Licence F22 — {{ athlete.personne.nom_complet }} — Impression</title>
+    <style>
+        :root {
+            --card-w: 85.6mm;
+            --card-h: 53.98mm;
+            --bleu: #0036ca;
+            --rouge: #ED1C24;
+            /* Positions des zones (à ajuster selon votre visuel recto.png / verso.png) */
+            --recto-photo-left: 3mm;
+            --recto-photo-top: 5mm;
+            --recto-photo-w: 18mm;
+            --recto-photo-h: 22mm;
+            --recto-texte-left: 22mm;
+            --recto-texte-top: 4mm;
+            --recto-texte-right: 58mm;
+            --recto-logo-top: 3mm;
+            --recto-logo-right: 4mm;
+            --recto-logo-w: 14mm;
+            --recto-logo-h: 9mm;
+            --recto-qr-bottom: 3mm;
+            --recto-qr-right: 4mm;
+            --recto-qr-size: 12mm;
+            --verso-zone-padding: 4mm;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: #e5e7eb;
+            min-height: 100vh;
+            padding: 15mm;
+        }
+        .a4-sheet {
+            min-height: 297mm;
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            padding: 20mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 8mm;
+        }
+        .no-print { margin-bottom: 10px; text-align: center; }
+        .no-print p { font-size: 12px; color: #374151; margin-top: 6px; }
+
+        .licence-card {
+            width: var(--card-w);
+            height: var(--card-h);
+            position: relative;
+            overflow: hidden;
+            border-radius: 3.18mm;
+            flex-shrink: 0;
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .licence-recto {
+            background-image: url("{% static 'licence_fichier/recto.png' %}");
+            background-color: #fff;
+        }
+        .licence-verso {
+            background-image: url("{% static 'licence_fichier/verso.png' %}");
+            background-color: #f8f9fa;
+        }
+
+        /* ========== RECTO : zones positionnées en absolu ========== */
+        .recto-overlay { position: absolute; inset: 0; pointer-events: none; }
+        .recto-overlay * { pointer-events: auto; }
+
+        /* Zone 1 : PHOTO (cadre dédié sur le visuel) */
+        .zone-photo {
+            position: absolute;
+            left: var(--recto-photo-left);
+            top: var(--recto-photo-top);
+            width: var(--recto-photo-w);
+            height: var(--recto-photo-h);
+            overflow: hidden;
+            border-radius: 1mm;
+            background: #f3f4f6;
+            border: 0.3px solid var(--bleu);
+        }
+        .zone-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .zone-photo .no-photo {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5px;
+            color: #9ca3af;
+        }
+
+        /* Zone 2 : TEXTES (identité, numéro, dates, discipline, club) */
+        .zone-texte {
+            position: absolute;
+            left: var(--recto-texte-left);
+            top: var(--recto-texte-top);
+            right: var(--recto-texte-right);
+            max-width: 42mm;
+        }
+        .zone-texte .ligne { font-size: 4.2px; color: #1f2937; line-height: 1.3; }
+        .zone-texte .label { color: #6b7280; font-weight: 600; text-transform: uppercase; font-size: 3.2px; }
+        .zone-texte .titre { font-size: 3.8px; color: var(--bleu); font-weight: bold; text-transform: uppercase; }
+        .zone-texte .numero { font-size: 7.5px; font-weight: bold; color: var(--rouge); letter-spacing: 0.02em; }
+        .zone-texte .nom { font-size: 5.2px; font-weight: bold; color: #111; text-transform: uppercase; }
+        .zone-texte .meta { font-size: 3.8px; color: #374151; }
+        .zone-texte .mt-1 { margin-top: 0.6mm; }
+        .zone-texte .mt-2 { margin-top: 1mm; }
+
+        /* Zone 3 : LOGO FÉDÉRATION (en haut à droite) */
+        .zone-logo {
+            position: absolute;
+            top: var(--recto-logo-top);
+            right: var(--recto-logo-right);
+            width: var(--recto-logo-w);
+            height: var(--recto-logo-h);
+            text-align: right;
+        }
+        .zone-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .zone-logo .nom-fed { font-size: 3.2px; color: var(--bleu); font-weight: bold; margin-top: 0.3mm; }
+
+        /* Zone 4 : QR CODE (en bas à droite) */
+        .zone-qr {
+            position: absolute;
+            bottom: var(--recto-qr-bottom);
+            right: var(--recto-qr-right);
+            width: var(--recto-qr-size);
+            height: var(--recto-qr-size);
+            text-align: center;
+        }
+        .zone-qr img { width: 100%; height: 100%; display: block; }
+        .zone-qr .qr-label { font-size: 2.8px; color: #6b7280; margin-top: 0.2mm; }
+
+        /* ========== VERSO : zones texte (identité + adresse) ========== */
+        .verso-overlay {
+            position: absolute;
+            inset: 0;
+            padding: var(--verso-zone-padding);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2mm;
+        }
+        .zone-verso-titre {
+            font-size: 4.5px;
+            font-weight: bold;
+            color: var(--bleu);
+            text-transform: uppercase;
+            margin-bottom: 0.5mm;
+        }
+        .zone-verso-block {
+            font-size: 3.8px;
+            color: #1f2937;
+            line-height: 1.35;
+        }
+        .zone-verso-block strong { font-size: 3.2px; color: #6b7280; text-transform: uppercase; }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .no-print { display: none !important; }
+            .a4-sheet {
+                min-height: auto; max-width: none; padding: 0;
+                box-shadow: none; background: transparent; gap: 0;
+            }
+            .licence-card { page-break-after: always; box-shadow: none; }
+            .licence-card:last-of-type { page-break-after: auto; }
+            @page { size: 85.6mm 53.98mm; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button type="button" onclick="window.print();" style="padding: 10px 20px; background: #0036ca; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            🖨️ Imprimer la licence (format carte)
+        </button>
+        <p>À l'écran : A4. À l'impression : carte 85,6 × 53,98 mm. Recto = zone photo + zones texte ; verso = identité et adresse.</p>
+    </div>
+
+    <div class="a4-sheet">
+        <!-- RECTO : zone photo + zones texte + logo + QR -->
+        <div class="licence-card licence-recto">
+            <div class="recto-overlay">
+                <!-- Zone photo -->
+                <div class="zone-photo">
+                    {% if athlete.personne.photo %}
+                    <img src="{{ athlete.personne.photo.url }}" alt="">
+                    {% else %}
+                    <div class="no-photo">Photo</div>
+                    {% endif %}
+                </div>
+                <!-- Zone textes -->
+                <div class="zone-texte">
+                    <div class="ligne titre">République Démocratique du Congo</div>
+                    <div class="ligne meta mt-1">Licence sportive nationale — F22</div>
+                    <div class="numero mt-2">{{ athlete.numero_licence|default:athlete.numero_sportif|default:"—" }}</div>
+                    <div class="ligne label">N° national sportif</div>
+                    <div class="nom mt-2">{{ athlete.personne.nom_complet|upper|default:"" }}</div>
+                    <div class="meta mt-1">Né(e) le {% if athlete.personne.date_naissance %}{{ athlete.personne.date_naissance|date:"d/m/Y" }}{% else %}—{% endif %}{% if lieu_naissance_texte %} à {{ lieu_naissance_texte }}{% endif %}</div>
+                    <div class="ligne label mt-2">Discipline</div>
+                    <div class="meta">{% if athlete.discipline %}{{ athlete.discipline.designation }}{% else %}—{% endif %}</div>
+                    <div class="ligne label mt-1">Club</div>
+                    <div class="meta">{% if athlete.club %}{{ athlete.club.nom_officiel }}{% else %}—{% endif %}</div>
+                    {% if athlete.date_emission_licence and athlete.date_expiration_licence %}
+                    <div class="meta mt-2">Valide du {{ athlete.date_emission_licence|date:"d/m/Y" }} au {{ athlete.date_expiration_licence|date:"d/m/Y" }}</div>
+                    {% endif %}
+                </div>
+                <!-- Zone logo -->
+                <div class="zone-logo">
+                    {% if federation_logo_url %}
+                    <img src="{{ federation_logo_url }}" alt="">
+                    {% endif %}
+                    <div class="nom-fed">{{ federation_nom|default:"Fédération" }}</div>
+                </div>
+                <!-- Zone QR -->
+                <div class="zone-qr">
+                    {% if qr_data_url %}
+                    <img src="{{ qr_data_url }}" alt="QR">
+                    <div class="qr-label">Scanner pour vérifier</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- VERSO : zones texte identité + adresse -->
+        <div class="licence-card licence-verso">
+            <div class="verso-overlay">
+                <div class="zone-verso-titre">Identité & Adresse</div>
+                <div class="zone-verso-block">
+                    <strong>Nom complet</strong><br>{{ athlete.personne.nom_complet|default:"—" }}
+                </div>
+                <div class="zone-verso-block">
+                    <strong>Né(e) le</strong> {% if athlete.personne.date_naissance %}{{ athlete.personne.date_naissance|date:"d/m/Y" }}{% else %}—{% endif %}
+                    {% if lieu_naissance_texte %}<br><strong>Lieu</strong> {{ lieu_naissance_texte }}{% endif %}
+                </div>
+                {% if adresse_texte %}
+                <div class="zone-verso-block">
+                    <strong>Adresse</strong><br>{{ adresse_texte }}
+                </div>
+                {% endif %}
+                <div class="zone-verso-block">
+                    <strong>N° licence</strong> {{ athlete.numero_licence|default:athlete.numero_sportif|default:"—" }}
+                </div>
+                <div class="zone-verso-block">
+                    <strong>Discipline</strong> {% if athlete.discipline %}{{ athlete.discipline.designation }}{% else %}—{% endif %}
+                    {% if athlete.club %} — {{ athlete.club.nom_officiel }}{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

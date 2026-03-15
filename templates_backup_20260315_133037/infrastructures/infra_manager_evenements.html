@@ -1,0 +1,124 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Rencontres & Billetterie - {{ infrastructure.nom }} - SI-SEP Sport RDC{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- En-tête -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Rencontres & Billetterie</h1>
+                    <p class="mt-2 text-slate-600">{{ infrastructure.nom }}</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'infrastructures:infra_manager_dashboard' %}" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Tableau de bord</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des Rencontres -->
+        <div class="space-y-4">
+            {% for rencontre in rencontres %}
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div class="p-6">
+                    <div class="flex items-start justify-between gap-6">
+                        
+                        <!-- Informations de la rencontre -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rdc-blue/10 text-rdc-blue rounded-full text-xs font-medium">
+                                    <i class="fa-solid fa-trophy"></i>
+                                    {{ rencontre.journee.competition.titre }}
+                                </span>
+                                <span class="text-sm text-slate-500">{{ rencontre.journee.libelle }}</span>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">
+                                {{ rencontre.equipe_a.nom_officiel }} 
+                                <span class="text-slate-400 font-normal">vs</span> 
+                                {{ rencontre.equipe_b.nom_officiel }}
+                            </h3>
+                            
+                            <div class="flex items-center gap-6 text-sm text-slate-600">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-calendar text-rdc-blue"></i>
+                                    <span>{{ rencontre.date_heure|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-clock text-rdc-blue"></i>
+                                    <span>{{ rencontre.date_heure|date:"H:i" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statut Billetterie -->
+                        <div class="flex flex-col items-end gap-3">
+                            {% if rencontre.evenement %}
+                                {% with zones_count=rencontre.evenement.zones_tarifs.count %}
+                                {% if zones_count > 0 %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        Billetterie configurée
+                                    </span>
+                                    <p class="text-xs text-slate-500">{{ zones_count }} zone{{ zones_count|pluralize }} tarifée{{ zones_count|pluralize }}</p>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                        Non configurée
+                                    </span>
+                                {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
+                                    <i class="fa-solid fa-circle-minus"></i>
+                                    Pas d'événement
+                                </span>
+                            {% endif %}
+                            
+                            <a href="{% url 'infrastructures:infra_manager_evenement_billetterie' rencontre_uid=rencontre.uid %}" 
+                               class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors text-sm">
+                                <i class="fa-solid fa-ticket"></i>
+                                <span>Configurer</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+                <i class="fa-solid fa-calendar-xmark text-6xl text-slate-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-slate-900 mb-2">Aucune rencontre programmée</h3>
+                <p class="text-slate-600">Aucune rencontre n'est programmée dans votre infrastructure pour le moment</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

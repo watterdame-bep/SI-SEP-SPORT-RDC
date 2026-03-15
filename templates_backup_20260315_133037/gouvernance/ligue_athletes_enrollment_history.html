@@ -1,0 +1,233 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Historique des enrôlements | {{ ligue.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <a href="{% url 'gouvernance:ligue_athletes_enrollment_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-history text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Historique des enrôlements</h1>
+                <p class="text-sm text-white/80 mt-1">Athlètes enrôlés à la ligue — {{ ligue.nom_officiel }}</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-check text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total enrôlés</p>
+                        <p class="text-2xl font-bold text-white">{{ total }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filtres (date, type, club, discipline) -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <form method="get" action="" class="space-y-4">
+        <h3 class="text-sm font-bold text-slate-700 uppercase flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-filter"></i> Filtres
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date début</label>
+                <input type="date" name="date_debut" value="{{ filters.date_debut }}"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date fin</label>
+                <input type="date" name="date_fin" value="{{ filters.date_fin }}"
+                       class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Type (statut)</label>
+                <select name="type" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+                    <option value="">Tous</option>
+                    <option value="EN_ATTENTE_VALIDATION_LIGUE" {% if filters.type == 'EN_ATTENTE_VALIDATION_LIGUE' %}selected{% endif %}>En attente validation ligue</option>
+                    <option value="CERTIFIE_PROVINCIAL" {% if filters.type == 'CERTIFIE_PROVINCIAL' %}selected{% endif %}>Certifié provincial</option>
+                    <option value="REJETE_LIGUE" {% if filters.type == 'REJETE_LIGUE' %}selected{% endif %}>Rejeté par la ligue</option>
+                    <option value="CERTIFIE_NATIONAL" {% if filters.type == 'CERTIFIE_NATIONAL' %}selected{% endif %}>Certifié national</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Club</label>
+                <select name="club" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+                    <option value="">Tous les clubs</option>
+                    {% for uid, nom in clubs_choices %}
+                    <option value="{{ uid }}" {% if filters.club == uid %}selected{% endif %}>{{ nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Discipline</label>
+                <select name="discipline" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+                    <option value="">Toutes</option>
+                    {% for uid, designation in disciplines_choices %}
+                    <option value="{{ uid }}" {% if filters.discipline == uid %}selected{% endif %}>{{ designation }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark text-sm font-medium">
+                    <i class="fa-solid fa-search mr-1"></i> Appliquer
+                </button>
+                <a href="{% url 'gouvernance:ligue_athletes_enrollment_history' %}" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 text-sm font-medium">
+                    Réinitialiser
+                </a>
+            </div>
+        </div>
+    </form>
+    <div class="mt-4 pt-4 border-t border-slate-200">
+        <input type="text" id="search-input" placeholder="Rechercher dans la liste (nom, club, discipline)..."
+               class="w-full md:max-w-md px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue text-sm">
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    {% if athletes %}
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Catégorie</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date d'enrôlement</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Agent enrôlement</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut actuel</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for athlete in athletes %}
+            <tr class="hover:bg-slate-50 transition-colors"
+                data-nom="{{ athlete.nom_complet|lower }}"
+                data-club="{{ athlete.club.nom_officiel|lower }}"
+                data-discipline="{{ athlete.discipline.designation|default:''|lower }}">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        {% if athlete.personne.photo %}
+                        <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="h-10 w-10 rounded-full object-cover">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ athlete.nom_complet }}</div>
+                            <div class="text-xs text-slate-500 font-mono">{{ athlete.numero_sportif }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-900">{{ athlete.club.nom_officiel }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700">
+                        {{ athlete.get_categorie_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    {{ athlete.date_enrolement|date:"d/m/Y H:i" }}
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    {% if athlete.agent_enrolement %}
+                        {% if athlete.agent_enrolement.agent and athlete.agent_enrolement.agent.personne %}
+                            {{ athlete.agent_enrolement.agent.personne.nom_complet }}
+                        {% elif athlete.agent_enrolement.user %}
+                            {{ athlete.agent_enrolement.user.get_full_name|default:athlete.agent_enrolement.user.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                        {% if athlete.statut_certification == 'EN_ATTENTE_VALIDATION_LIGUE' %}bg-amber-100 text-amber-800 border border-amber-300
+                        {% elif athlete.statut_certification == 'CERTIFIE_PROVINCIAL' %}bg-green-100 text-green-800 border border-green-300
+                        {% elif athlete.statut_certification == 'REJETE_LIGUE' %}bg-red-100 text-red-800 border border-red-300
+                        {% else %}bg-slate-100 text-slate-700 border border-slate-300{% endif %}">
+                        {{ athlete.get_statut_certification_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    {% if athlete.statut_certification == 'EN_ATTENTE_VALIDATION_LIGUE' %}
+                    <a href="{% url 'gouvernance:ligue_athlete_validate' athlete.uid %}" class="inline-flex items-center px-3 py-1.5 bg-rdc-blue text-white text-sm font-medium rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fa-solid fa-gavel mr-2"></i> Valider
+                    </a>
+                    {% else %}
+                    <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete.uid %}" class="inline-flex items-center px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 transition-colors">
+                        <i class="fa-solid fa-eye mr-2"></i> Voir
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="px-6 py-16 text-center">
+        <i class="fa-solid fa-history text-4xl text-slate-300 mb-4"></i>
+        <p class="text-base font-bold text-slate-900">Aucun enrôlement enregistré</p>
+        <p class="text-sm text-slate-600 mt-2">L'historique des enrôlements apparaîtra ici.</p>
+        <a href="{% url 'gouvernance:ligue_athletes_enrollment_list' %}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark text-sm font-medium">
+            <i class="fa-solid fa-user-plus"></i> Voir les athlètes à enrôler
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+(function() {
+    const searchInput = document.getElementById('search-input');
+    const rows = document.querySelectorAll('#table-body tr[data-nom]');
+    if (searchInput && rows.length) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            rows.forEach(row => {
+                const nom = (row.dataset.nom || '');
+                const club = (row.dataset.club || '');
+                const discipline = (row.dataset.discipline || '');
+                const match = !searchTerm || nom.includes(searchTerm) || club.includes(searchTerm) || discipline.includes(searchTerm);
+                row.style.display = match ? '' : 'none';
+            });
+        });
+    }
+})();
+</script>
+{% endblock %}

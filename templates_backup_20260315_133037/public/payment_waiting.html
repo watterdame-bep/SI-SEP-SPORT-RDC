@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>En Attente de Paiement - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            border-radius: 0 !important;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-spin {
+            animation: spin 2s linear infinite;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="min-h-screen flex items-center justify-center px-4 py-8">
+        <div class="max-w-2xl w-full">
+            
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-rdc-yellow border-4 border-rdc-blue mb-6">
+                    <i class="fa-solid fa-clock text-4xl text-rdc-blue animate-pulse-slow"></i>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 mb-3 uppercase">En Attente de Paiement</h1>
+                <p class="text-lg text-slate-600 font-semibold">Votre paiement est en cours de traitement</p>
+            </div>
+            
+            <!-- Carte d'information -->
+            <div class="bg-white shadow-lg border-2 border-slate-200 p-8 mb-6">
+                
+                <!-- Informations de la transaction -->
+                <div class="mb-8 p-6 bg-yellow-50 border-2 border-yellow-300">
+                    <h2 class="text-xl font-black text-rdc-blue mb-4 uppercase flex items-center gap-3">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        Instructions de Paiement
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 border-2 border-yellow-200">
+                            <p class="font-black text-rdc-blue uppercase mb-2">{{ payment_method }}</p>
+                            <p class="text-sm text-slate-700 font-semibold">
+                                {% if payment_method == 'MPESA' %}
+                                1. Composez *123#<br>
+                                2. Choisissez "Paiement Marchand"<br>
+                                3. Entrez le code marchand: <span class="font-black">SISEP-SPORT</span><br>
+                                4. Confirmez le montant: <span class="font-black">{{ total|floatformat:0 }} CDF</span><br>
+                                5. Entrez votre code PIN pour valider
+                                {% elif payment_method == 'ORANGE_MONEY' %}
+                                1. Composez #150#<br>
+                                2. Choisissez "Payer"<br>
+                                3. Entrez le code marchand: <span class="font-black">SISEP-SPORT</span><br>
+                                4. Confirmez le montant: <span class="font-black">{{ total|floatformat:0 }} CDF</span><br>
+                                5. Entrez votre code PIN pour valider
+                                {% elif payment_method == 'AIRTEL_MONEY' %}
+                                1. Composez *501#<br>
+                                2. Choisissez "Paiement Marchand"<br>
+                                3. Entrez le code marchand: <span class="font-black">SISEP-SPORT</span><br>
+                                4. Confirmez le montant: <span class="font-black">{{ total|floatformat:0 }} CDF</span><br>
+                                5. Entrez votre code PIN pour valider
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="bg-white p-4 border-2 border-yellow-200">
+                            <p class="text-sm font-black text-slate-900 mb-2">Référence de transaction:</p>
+                            <p class="text-2xl font-black text-rdc-blue">{{ order_number }}</p>
+                            <p class="text-xs text-slate-600 mt-1">Utilisez cette référence pour le paiement</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statut du paiement -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between p-4 bg-slate-100 border-2 border-slate-300">
+                        <span class="text-sm font-bold text-slate-600 uppercase">Statut actuel:</span>
+                        <span id="payment-status" class="text-lg font-black text-yellow-600">
+                            <i class="fa-solid fa-clock mr-2"></i>
+                            En attente de confirmation
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Informations de l'achat -->
+                <div class="space-y-4 mb-8">
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Événement:</span>
+                        <span class="font-black text-slate-900">{{ rencontre }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Nombre de billets:</span>
+                        <span class="font-black text-slate-900">{{ quantity }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Montant à payer:</span>
+                        <span class="text-2xl font-black text-rdc-blue">{{ total|floatformat:0 }} CDF</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-200">
+                        <span class="text-slate-600 font-bold">Téléphone:</span>
+                        <span class="font-black text-slate-900">{{ payment_phone }}</span>
+                    </div>
+                </div>
+                
+                <!-- Message important -->
+                <div class="bg-rdc-yellow p-6 border-2 border-yellow-600 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-3xl text-rdc-blue"></i>
+                        <div>
+                            <p class="font-black text-rdc-blue uppercase mb-2">Important</p>
+                            <p class="text-sm text-slate-900 font-semibold">
+                                Ne fermez pas cette page pendant le paiement. 
+                                Votre billet sera validé automatiquement dès que nous recevrons la confirmation de l'opérateur.
+                                Vous serez redirigé vers la page de succès avec vos billets.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="window.location.reload()" class="w-full bg-slate-200 text-slate-900 py-4 font-black text-sm uppercase tracking-wide hover:bg-slate-300 transition-colors">
+                        <i class="fa-solid fa-refresh mr-2"></i>
+                        Actualiser
+                    </button>
+                    <button onclick="annulerPaiement()" class="w-full bg-rdc-red text-white py-4 font-black text-sm uppercase tracking-wide hover:bg-red-700 transition-colors">
+                        <i class="fa-solid fa-times mr-2"></i>
+                        Annuler
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Support -->
+            <div class="bg-white shadow-lg border-2 border-slate-200 p-6">
+                <h2 class="text-xl font-black text-slate-900 mb-4 uppercase flex items-center gap-3">
+                    <i class="fa-solid fa-headset text-rdc-blue"></i>
+                    Support Client
+                </h2>
+                <p class="text-sm text-slate-700 font-semibold mb-4">
+                    En cas de problème avec votre paiement, contactez notre support:
+                </p>
+                <div class="space-y-2">
+                    <p class="text-sm font-black text-slate-900">
+                        <i class="fa-solid fa-phone mr-2 text-rdc-blue"></i>
+                        +243 XXX XXX XXX
+                    </p>
+                    <p class="text-sm font-black text-slate-900">
+                        <i class="fa-solid fa-envelope mr-2 text-rdc-blue"></i>
+                        support@sisesp-sport.cd
+                    </p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        const orderNumber = '{{ order_number }}';
+        let checkCount = 0;
+        const maxChecks = 120; // 10 minutes max
+        
+        // Vérifier le statut du paiement toutes les 5 secondes
+        function checkPaymentStatus() {
+            if (checkCount >= maxChecks) {
+                showTimeout();
+                return;
+            }
+            
+            fetch(`/api/paiement/verifier/${orderNumber}/`)
+                .then(response => response.json())
+                .then(data => {
+                    checkCount++;
+                    
+                    if (data.error) {
+                        console.error('Erreur vérification:', data.error);
+                        return;
+                    }
+                    
+                    updateStatus(data.statut_paiement);
+                    
+                    if (data.statut_paiement === 'VALIDE') {
+                        // Rediriger vers la page de succès
+                        window.location.href = '/paiement/succes/';
+                    } else if (data.statut_paiement === 'ECHOUE') {
+                        showPaymentFailed();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+        }
+        
+        function updateStatus(status) {
+            const statusElement = document.getElementById('payment-status');
+            
+            switch(status) {
+                case 'INITIE':
+                    statusElement.innerHTML = '<i class="fa-solid fa-clock mr-2"></i>En attente de confirmation';
+                    statusElement.className = 'text-lg font-black text-yellow-600';
+                    break;
+                case 'VALIDE':
+                    statusElement.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>Paiement validé!';
+                    statusElement.className = 'text-lg font-black text-green-600';
+                    break;
+                case 'ECHOUE':
+                    statusElement.innerHTML = '<i class="fa-solid fa-exclamation-circle mr-2"></i>Paiement échoué';
+                    statusElement.className = 'text-lg font-black text-red-600';
+                    break;
+                default:
+                    statusElement.innerHTML = '<i class="fa-solid fa-spinner mr-2"></i>Vérification...';
+                    statusElement.className = 'text-lg font-black text-slate-600';
+            }
+        }
+        
+        function showTimeout() {
+            document.getElementById('payment-status').innerHTML = '<i class="fa-solid fa-exclamation-triangle mr-2"></i>Délai d\'attente dépassé';
+            document.getElementById('payment-status').className = 'text-lg font-black text-red-600';
+        }
+        
+        function showPaymentFailed() {
+            document.getElementById('payment-status').innerHTML = '<i class="fa-solid fa-times-circle mr-2"></i>Paiement échoué';
+            document.getElementById('payment-status').className = 'text-lg font-black text-red-600';
+            
+            setTimeout(() => {
+                if (confirm('Le paiement a échoué. Les billets ont été libérés. Voulez-vous réessayer?')) {
+                    window.location.href = '/match/';
+                }
+            }, 2000);
+        }
+        
+        function annulerPaiement() {
+            if (confirm('Êtes-vous sûr de vouloir annuler cette transaction? Les billets seront libérés.')) {
+                window.location.href = '/match/';
+            }
+        }
+        
+        // Démarrer la vérification automatique
+        setInterval(checkPaymentStatus, 5000);
+        
+        // Première vérification immédiate
+        checkPaymentStatus();
+    </script>
+
+</body>
+</html>

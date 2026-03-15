@@ -2122,7 +2122,40 @@ def ligue_competition_journees(request, competition_uid):
         messages.error(request, "Vous n'êtes pas associé à une ligue provinciale.")
         return redirect('core:home')
     competition = get_object_or_404(Competition, uid=competition_uid, organisateur=ligue, actif=True)
-    journees = Journee.objects.filter(competition=competition).order_by('ordre', 'libelle').prefetch_related('rencontres')
+    
+    # Récupérer les journées avec leurs rencontres
+    journees = Journee.objects.filter(competition=competition).order_by('ordre', 'libelle').prefetch_related('rencontres__equipe_a', 'rencontres__equipe_b', 'rencontres__stade')
+    
+    # Appliquer les filtres de recherche et statut
+    search_query = request.GET.get('search', '').strip()
+    statut_filter = request.GET.get('statut', '').strip()
+    
+    if search_query or statut_filter:
+        # Filtrer les rencontres dans chaque journée
+        filtered_journees = []
+        for journee in journees:
+            rencontres = journee.rencontres.all()
+            
+            if search_query:
+                from django.db.models import Q
+                rencontres = rencontres.filter(
+                    Q(equipe_a__nom_officiel__icontains=search_query) |
+                    Q(equipe_b__nom_officiel__icontains=search_query) |
+                    Q(equipe_a__sigle__icontains=search_query) |
+                    Q(equipe_b__sigle__icontains=search_query) |
+                    Q(stade__nom__icontains=search_query)
+                )
+            
+            if statut_filter:
+                rencontres = rencontres.filter(statut=statut_filter)
+            
+            # Créer une copie de la journée avec les rencontres filtrées
+            if rencontres.exists() or not (search_query or statut_filter):
+                journee.filtered_rencontres = rencontres
+                filtered_journees.append(journee)
+        
+        journees = filtered_journees
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'generate_journees':
@@ -2213,6 +2246,170 @@ def ligue_rencontre_create(request, competition_uid, journee_uid):
         'user_role': 'ligue_secretary',
     }
     return render(request, 'gouvernance/ligue_rencontre_create.html', context)
+
+
+@login_required
+@require_role('FEDERATION_SECRETARY')
+def ligue_rencontre_detail(request, rencontre_uid):
+    """
+    Détails d'une rencontre avec possibilité de modifier le statut.
+    """
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
+        return redirect('core:home')
+    
+    ligue = profil.institution
+    
+    if not ligue or ligue.niveau_territorial != 'LIGUE':
+        messages.error(request, "Vous n'êtes pas associé à une ligue provinciale.")
+        return redirect('core:home')
+    
+    # Récupérer la rencontre avec toutes les relations
+    rencontre = get_object_or_404(
+        Rencontre.objects.select_related(
+            'journee__competition',
+            'equipe_a',
+            'equipe_b',
+            'stade',
+            'evenement'
+        ),
+        uid=rencontre_uid
+    )
+    
+    # Vérifier que la rencontre appartient à une compétition de la ligue
+    if rencontre.journee.competition.organisateur != ligue:
+        messages.error(request, "Cette rencontre n'appartient pas à votre ligue.")
+        return redirect('core:home')
+    
+    competition = rencontre.journee.competition
+    
+    # Traiter la mise à jour du statut
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'update_statut':
+            new_statut = request.POST.get('statut')
+            if new_statut in dict(Rencontre.STATUT_CHOICES):
+                rencontre.statut = new_statut
+                rencontre.save(update_fields=['statut'])
+                messages.success(request, f"Statut mis à jour: {rencontre.get_statut_display()}")
+                return redirect('gouvernance:ligue_rencontre_detail', rencontre_uid=rencontre.uid)
+    
+    context = {
+        'ligue': ligue,
+        'competition': competition,
+        'rencontre': rencontre,
+        'user_role': 'ligue_secretary',
+    }
+    
+    return render(request, 'gouvernance/ligue_rencontre_detail.html', context)
+
+
+@login_required
+@require_role('FEDERATION_SECRETARY')
+def ligue_rencontre_billetterie_stats(request, rencontre_uid):
+    """
+    Statistiques de billetterie pour une rencontre (lecture seule pour le secrétaire de ligue).
+    """
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
+        return redirect('core:home')
+    
+    ligue = profil.institution
+    
+    if not ligue or ligue.niveau_territorial != 'LIGUE':
+        messages.error(request, "Vous n'êtes pas associé à une ligue provinciale.")
+        return redirect('core:home')
+    
+    # Récupérer la rencontre avec l'événement billetterie
+    rencontre = get_object_or_404(
+        Rencontre.objects.select_related(
+            'journee__competition',
+            'equipe_a',
+            'equipe_b',
+            'stade',
+            'evenement__infrastructure'
+        ),
+        uid=rencontre_uid
+    )
+    
+    # Vérifier que la rencontre appartient à la ligue
+    if rencontre.journee.competition.organisateur != ligue:
+        messages.error(request, "Cette rencontre n'appartient pas à votre ligue.")
+        return redirect('core:home')
+    
+    # Vérifier qu'il y a un événement billetterie
+    if not rencontre.evenement:
+        messages.error(request, "Aucun événement billetterie n'a été créé pour cette rencontre.")
+        return redirect('gouvernance:ligue_rencontre_detail', rencontre_uid=rencontre.uid)
+    
+    evenement = rencontre.evenement
+    
+    # Récupérer les zones configurées avec leurs tarifs
+    from infrastructures.models import ZoneStade, EvenementZone, Ticket, Vente
+    
+    # Récupérer les configurations de zones pour cet événement
+    evenement_zones = EvenementZone.objects.filter(evenement=evenement).select_related('zone_stade')
+    
+    # Calculer les statistiques globales
+    total_tickets = 0
+    tickets_vendus = 0
+    tickets_disponibles = 0
+    
+    for ez in evenement_zones:
+        total_tickets += ez.capacite_max
+        vendus = Ticket.objects.filter(evenement_zone=ez, statut='VENDU').count()
+        tickets_vendus += vendus
+        tickets_disponibles += (ez.capacite_max - vendus)
+    
+    # Calculer le chiffre d'affaires
+    ventes = Vente.objects.filter(evenement=evenement)
+    chiffre_affaires = sum(v.montant_total for v in ventes)
+    nombre_ventes = ventes.count()
+    
+    # Statistiques par zone
+    zones_stats = []
+    for ez in evenement_zones:
+        tickets_zone = Ticket.objects.filter(evenement_zone=ez)
+        vendus_zone = tickets_zone.filter(statut='VENDU').count()
+        total_zone = ez.capacite_max
+        disponibles_zone = total_zone - vendus_zone
+        
+        # Calculer le CA pour cette zone
+        ventes_zone = Vente.objects.filter(tickets__evenement_zone=ez).distinct()
+        ca_zone = sum(v.montant_total for v in ventes_zone)
+        
+        zones_stats.append({
+            'zone': ez.zone_stade,
+            'prix': ez.prix_unitaire,
+            'total': total_zone,
+            'vendus': vendus_zone,
+            'disponibles': disponibles_zone,
+            'taux_remplissage': round((vendus_zone / total_zone * 100) if total_zone > 0 else 0, 1),
+            'chiffre_affaires': ca_zone,
+            'nombre_ventes': ventes_zone.count(),
+        })
+    
+    context = {
+        'ligue': ligue,
+        'rencontre': rencontre,
+        'evenement': evenement,
+        'total_tickets': total_tickets,
+        'tickets_vendus': tickets_vendus,
+        'tickets_disponibles': tickets_disponibles,
+        'taux_remplissage': round((tickets_vendus / total_tickets * 100) if total_tickets > 0 else 0, 1),
+        'chiffre_affaires': chiffre_affaires,
+        'nombre_ventes': nombre_ventes,
+        'zones_stats': zones_stats,
+        'user_role': 'ligue_secretary',
+        'readonly': True,  # Mode lecture seule
+    }
+    
+    return render(request, 'gouvernance/ligue_rencontre_billetterie_stats.html', context)
 
 
 @login_required
@@ -2323,8 +2520,10 @@ def ligue_calendrier_rencontres_api(request, competition_uid):
             'end': end.isoformat(),
             'extendedProps': {
                 'stade_id': str(r.stade.uid) if r.stade else None,
-                'stade_nom': r.stade.nom if r.stade else '',
+                'stade': r.stade.nom if r.stade else '',
                 'journee': r.journee.libelle,
+                'statut': r.statut,
+                'statut_display': r.get_statut_display(),
             },
         })
     return JsonResponse(events, safe=False)

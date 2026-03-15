@@ -1,0 +1,224 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Courriers à Signer | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-pen-to-square text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Courriers à Signer</h1>
+                <p class="text-sm text-white/80 mt-1">Dossiers transmis par le Secrétariat Général</p>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">En attente</p>
+                        <p class="text-2xl font-bold text-white">{{ courriers|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Signés ce mois</p>
+                        <p class="text-2xl font-bold text-white">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-times-circle text-2xl text-red-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Refusés</p>
+                        <p class="text-2xl font-bold text-white">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg">
+        <p class="text-sm font-semibold">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Type -->
+        <select id="filter-type" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les types</option>
+            <option value="PROVISOIRE">Provisoire</option>
+            <option value="DEFINITIF">Définitif</option>
+        </select>
+    </div>
+</div>
+
+{% if courriers %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Institution</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Type d'agrément</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date de transmission</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for courrier in courriers %}
+            <tr class="hover:bg-slate-50 transition-colors"
+                data-nom="{{ courrier.nom_officiel|lower }}"
+                data-sigle="{{ courrier.sigle|lower }}"
+                data-type="{{ courrier.type_agrement_sollicite }}">
+                
+                <!-- Institution -->
+                <td class="px-6 py-4">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-900">{{ courrier.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500 font-bold">{{ courrier.sigle }}</div>
+                    </div>
+                </td>
+                
+                <!-- Discipline -->
+                <td class="px-6 py-4">
+                    {% for discipline in courrier.disciplines.all %}
+                    <div class="flex items-center gap-2 text-sm text-slate-700">
+                        <i class="fa-solid fa-futbol text-rdc-blue"></i>
+                        <span>{{ discipline.designation }}</span>
+                    </div>
+                    {% empty %}
+                    <span class="text-xs text-slate-400">Non définie</span>
+                    {% endfor %}
+                </td>
+                
+                <!-- Type d'agrément -->
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                        {{ courrier.get_type_agrement_sollicite_display }}
+                    </span>
+                </td>
+                
+                <!-- Date -->
+                <td class="px-6 py-4">
+                    <div class="text-sm text-slate-700">
+                        {% if courrier.date_demande_agrement %}
+                            {{ courrier.date_demande_agrement|date:"d/m/Y" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        {% if courrier.date_demande_agrement %}
+                            {{ courrier.date_demande_agrement|timesince }}
+                        {% endif %}
+                    </div>
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <a href="{% url 'core:minister_parapheur' courrier.uid %}" 
+                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           title="Examiner">
+                            <i class="fa-solid fa-eye text-base"></i>
+                        </a>
+                        <a href="{% url 'core:minister_parapheur' courrier.uid %}" 
+                           class="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all" 
+                           title="Signer">
+                            <i class="fa-solid fa-pen-to-square text-base"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-4"></i>
+                    <p class="text-base font-bold text-slate-900">Aucun courrier en attente</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow border border-slate-200 p-12 text-center">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+        <i class="fa-solid fa-check-circle text-3xl text-green-500"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-slate-700 mb-2">Aucun courrier en attente</h3>
+    <p class="text-sm text-slate-500">Tous les dossiers ont été traités.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Recherche et filtres en temps réel
+const searchInput = document.getElementById('search-input');
+const filterType = document.getElementById('filter-type');
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (filterType) filterType.addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const typeFilter = filterType ? filterType.value : '';
+    
+    document.querySelectorAll('#table-body tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const type = row.dataset.type || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
+        const matchType = !typeFilter || type === typeFilter;
+        
+        row.style.display = (matchSearch && matchType) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

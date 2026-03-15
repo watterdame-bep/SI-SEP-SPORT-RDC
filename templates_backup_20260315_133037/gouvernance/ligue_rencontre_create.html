@@ -1,0 +1,107 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Nouvelle rencontre — {{ journee.libelle }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:ligue_competition_journees' competition_uid=competition.uid %}" class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Nouvelle rencontre</h1>
+                <p class="text-sm text-white/80 mt-1">{{ journee.libelle }} — {{ competition.titre }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
+        <p class="text-sm text-slate-600 mb-4">Le stade ne peut pas recevoir deux rencontres à la même heure. Un événement billetterie sera créé automatiquement pour le gestionnaire du stade.</p>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_equipe_a" class="block text-sm font-medium text-slate-700 mb-1">{{ form.equipe_a.label }}</label>
+                    {{ form.equipe_a }}
+                    {% if form.equipe_a.errors %}<p class="mt-1 text-sm text-red-600">{{ form.equipe_a.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="id_equipe_b" class="block text-sm font-medium text-slate-700 mb-1">{{ form.equipe_b.label }}</label>
+                    {{ form.equipe_b }}
+                    {% if form.equipe_b.errors %}<p class="mt-1 text-sm text-red-600">{{ form.equipe_b.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+            <div>
+                <label for="id_stade" class="block text-sm font-medium text-slate-700 mb-1">{{ form.stade.label }}</label>
+                {{ form.stade }}
+                {% if form.stade.errors %}<p class="mt-1 text-sm text-red-600">{{ form.stade.errors.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_date_heure" class="block text-sm font-medium text-slate-700 mb-1">{{ form.date_heure.label }}</label>
+                {{ form.date_heure }}
+                {% if form.date_heure.errors %}<p class="mt-1 text-sm text-red-600">{{ form.date_heure.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="px-5 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-xl">Créer la rencontre</button>
+                <a href="{% url 'gouvernance:ligue_competition_journees' competition_uid=competition.uid %}" class="px-5 py-2.5 border border-slate-300 rounded-xl text-slate-700 font-medium hover:bg-slate-50">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+(function() {
+    var selectA = document.getElementById('id_equipe_a');
+    var selectB = document.getElementById('id_equipe_b');
+    if (!selectA || !selectB) return;
+    function syncSelects() {
+        var valA = selectA.value;
+        var valB = selectB.value;
+        [].forEach.call(selectB.options, function(opt) {
+            if (opt.value === '') return;
+            opt.disabled = (opt.value === valA);
+            if (opt.value === valA && valB === valA) selectB.value = '';
+        });
+        [].forEach.call(selectA.options, function(opt) {
+            if (opt.value === '') return;
+            opt.disabled = (opt.value === valB);
+            if (opt.value === valB && valA === valB) selectA.value = '';
+        });
+    }
+    selectA.addEventListener('change', syncSelects);
+    selectB.addEventListener('change', syncSelects);
+    syncSelects();
+})();
+</script>
+{% endblock %}

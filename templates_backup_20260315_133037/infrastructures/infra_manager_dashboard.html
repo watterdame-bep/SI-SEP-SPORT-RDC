@@ -1,0 +1,291 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord | Gestionnaire Infrastructure | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Tableau de bord</h1>
+                <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Gestion opérationnelle quotidienne</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                    <p class="text-xs text-white/70">Code</p>
+                    <p class="text-sm font-bold text-white">{{ infrastructure.code_homologation|default:"En attente" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Statistiques principales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Card 1: Réservations semaine -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Réservations</p>
+                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ reservations_week }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Cette semaine</p>
+            </div>
+            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
+                <i class="fa-solid fa-calendar-week text-xl text-rdc-blue"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Taux présence -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Taux présence</p>
+                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ taux_presence }}%</h3>
+                <p class="text-xs text-slate-500 mt-0.5">7 derniers jours</p>
+            </div>
+            <div class="bg-green-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-user-check text-xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Maintenances -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Maintenances</p>
+                <h3 class="text-3xl font-bold text-orange-600 mt-1">{{ recent_maintenance|length }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Récentes</p>
+            </div>
+            <div class="bg-orange-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-wrench text-xl text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 4: Photos -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Galerie</p>
+                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ photos_count }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Photos</p>
+            </div>
+            <div class="bg-purple-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-images text-xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations Infrastructure -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-building text-rdc-blue"></i>
+        Informations Infrastructure
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-location-dot text-rdc-blue"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Localisation</p>
+                <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ infrastructure.province_admin.designation|default:"—" }}</p>
+                <p class="text-xs text-slate-500">{{ infrastructure.territoire.designation|default:"" }}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-users text-green-600"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Capacité</p>
+                <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ infrastructure.capacite_spectateurs|default:"—" }} places</p>
+                <p class="text-xs text-slate-500">{{ infrastructure.surface_sportive|default:"Surface non spécifiée" }}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-layer-group text-purple-600"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Type de Sol</p>
+                <p class="text-sm font-semibold text-slate-800 mt-0.5">
+                    {% if infrastructure.type_sol == 'SYNTHETIQUE' %}Synthétique
+                    {% elif infrastructure.type_sol == 'GAZON' %}Gazon naturel
+                    {% elif infrastructure.type_sol == 'TERRE_BATTUE' %}Terre battue
+                    {% elif infrastructure.type_sol == 'BETON' %}Béton
+                    {% else %}{{ infrastructure.type_sol|default:"Non spécifié" }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <div class="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-circle-info text-yellow-600"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">État</p>
+                {% if infrastructure.etat_viabilite == 'OPERATIONNEL' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mt-0.5">
+                    <i class="fa-solid fa-check-circle"></i>Opérationnel
+                </span>
+                {% elif infrastructure.etat_viabilite == 'EN_TRAVAUX' %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full mt-0.5">
+                    <i class="fa-solid fa-triangle-exclamation"></i>En travaux
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full mt-0.5">
+                    <i class="fa-solid fa-ban"></i>Impraticable
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Réservations Aujourd'hui -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-calendar-day text-rdc-blue"></i>
+        Réservations Aujourd'hui
+    </h2>
+    
+    {% if reservations_today %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Horaire</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for reservation in reservations_today %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-rdc-blue/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-building text-sm text-rdc-blue"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-slate-800">{{ reservation.club.nom_officiel|default:"Club non spécifié" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="text-sm text-slate-600">
+                            <i class="fa-solid fa-clock mr-1"></i>
+                            {{ reservation.heure_debut|time:"H:i" }} - {{ reservation.heure_fin|time:"H:i" }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        {% if reservation.present %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>Présent
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-clock"></i>En attente
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mb-3">
+            <i class="fa-solid fa-calendar-xmark text-xl text-slate-400"></i>
+        </div>
+        <p class="text-sm font-semibold text-slate-700">Aucune réservation aujourd'hui</p>
+        <p class="text-xs text-slate-500 mt-1">Les réservations du jour apparaîtront ici.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Maintenances Récentes -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-wrench text-rdc-blue"></i>
+            Maintenances Récentes
+        </h2>
+        <a href="{% url 'infrastructures:infra_manager_maintenance' %}" 
+           class="text-xs text-rdc-blue hover:text-rdc-blue-dark font-semibold inline-flex items-center gap-1">
+            Voir tout <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    
+    {% if recent_maintenance %}
+    <div class="space-y-2">
+        {% for log in recent_maintenance %}
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-wrench text-sm text-orange-600"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ log.type_intervention }}</p>
+                <p class="text-xs text-slate-500">{{ log.date_intervention|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-sm text-slate-500 py-6">Aucune maintenance enregistrée</p>
+    {% endif %}
+</div>
+
+{% endblock %}

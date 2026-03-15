@@ -400,8 +400,8 @@
                 <span class="font-medium text-sm">Événements</span>
             </a>
             
-            <a href="{% url 'gouvernance:ligue_calendrier_provincial' %}" 
-               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_calendrier_provincial' %}bg-white/15 text-white shadow-lg{% endif %}">
+            <a href="{% url 'gouvernance:ligue_calendrier_competition' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ligue_calendrier_competition' or request.resolver_match.url_name == 'ligue_calendrier_rencontres' %}bg-white/15 text-white shadow-lg{% endif %}">
                 <i class="fa-solid fa-calendar-days text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
                 <span class="font-medium text-sm">Calendrier Provincial</span>
             </a>
@@ -643,8 +643,8 @@
                 <span class="font-medium text-sm">Zones du stade</span>
             </a>
             
-            <a href="{% url 'infrastructures:infra_manager_evenements' %}" 
-               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_evenements' %}bg-white/15 text-white shadow-lg{% endif %}">
+            <a href="{% url 'infrastructures:infra_manager_rencontres_list' %}" 
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'infra_manager_rencontres_list' or request.resolver_match.url_name == 'infra_manager_rencontre_configurer_billetterie' %}bg-white/15 text-white shadow-lg{% endif %}">
                 <i class="fa-solid fa-ticket text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
                 <span class="font-medium text-sm">Rencontres & Billetterie</span>
             </a>

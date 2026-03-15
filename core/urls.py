@@ -9,7 +9,7 @@ app_name = 'core'
 urlpatterns = [
     path('', views.home, name='home'),
     path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('logout/', LogoutView.as_view(next_page='/auth/login/'), name='logout'),
     path('password-reset/', PasswordResetView.as_view(
         template_name='core/password_reset_form.html',
         email_template_name='core/password_reset_email.html',

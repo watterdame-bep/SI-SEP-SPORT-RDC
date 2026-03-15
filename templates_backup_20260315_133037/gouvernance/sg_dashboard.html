@@ -1,0 +1,324 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Tableau de bord | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Tableau de bord</h1>
+            <p class="text-sm text-white/80 mt-1">Secrétaire Général — Vue d'ensemble et gestion administrative</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Statistiques principales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Card 1: Fédérations actives -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
+                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ fed_actives }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Agréées</p>
+            </div>
+            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
+                <i class="fa-solid fa-flag text-xl text-rdc-blue"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Ligues provinciales -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Ligues</p>
+                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ ligues_count }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Provinciales</p>
+            </div>
+            <div class="bg-purple-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-building text-xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Clubs -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Clubs</p>
+                <h3 class="text-3xl font-bold text-indigo-600 mt-1">{{ clubs_count }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Sportifs</p>
+            </div>
+            <div class="bg-indigo-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-users text-xl text-indigo-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 4: Athlètes -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Athlètes</p>
+                <h3 class="text-3xl font-bold text-emerald-600 mt-1">{{ athletes_count }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Certifiés</p>
+            </div>
+            <div class="bg-emerald-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-running text-xl text-emerald-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 5: Infrastructures -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Infrastructures</p>
+                <h3 class="text-3xl font-bold text-cyan-600 mt-1">{{ infrastructures_count }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Validées</p>
+            </div>
+            <div class="bg-cyan-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-building-columns text-xl text-cyan-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 6: Dossiers en attente -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Dossiers</p>
+                <h3 class="text-3xl font-bold text-orange-600 mt-1">{{ dossiers_attente }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">En attente</p>
+            </div>
+            <div class="bg-orange-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-hourglass-end text-xl text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 7: Alertes mandats -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Alertes</p>
+                <h3 class="text-3xl font-bold text-red-600 mt-1">{{ alertes_mandats }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Mandats expirant</p>
+            </div>
+            <div class="bg-red-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-bell text-xl text-red-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 8: Utilisateurs actifs -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Utilisateurs</p>
+                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ users_actifs }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Actifs</p>
+            </div>
+            <div class="bg-green-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-users text-xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 9: Fédérations refusées -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
+                <h3 class="text-3xl font-bold text-red-600 mt-1">{{ federations_refusees|length }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Refusées</p>
+            </div>
+            <div class="bg-red-100 p-2.5 rounded-lg">
+                <i class="fa-solid fa-ban text-xl text-red-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Validations complétées - À transférer au Ministre -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-clipboard-check text-rdc-blue"></i>
+        Inspections Complétées - À Transférer au Ministre
+    </h2>
+    
+    {% if validations_completes %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Fédération</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Décision</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase">Date Validation</th>
+                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for validation in validations_completes %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3">
+                        <div class="text-sm font-semibold text-slate-800">{{ validation.federation.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500">{{ validation.federation.sigle }}</div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="text-sm text-slate-600">{{ validation.province.designation }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        {% if validation.statut == 'VALIDEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>Validée
+                        </span>
+                        {% elif validation.statut == 'REJETEE' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-ban"></i>Rejetée
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="text-sm text-slate-600">
+                            {% if validation.date_validation %}
+                                {{ validation.date_validation|date:"d/m/Y H:i" }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="flex items-center justify-center gap-2 flex-wrap">
+                            <a href="{% url 'gouvernance:sg_validation_verifier' validation.uid %}" 
+                               class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1">
+                                <i class="fa-solid fa-eye"></i>
+                                Vérifier
+                            </a>
+                            <button onclick="transferToMinister('{{ validation.uid }}')" 
+                                    class="px-3 py-1.5 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-right"></i>
+                                Transférer
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-8">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mb-3">
+            <i class="fa-solid fa-inbox text-xl text-slate-400"></i>
+        </div>
+        <p class="text-sm font-semibold text-slate-700">Aucune inspection complétée</p>
+        <p class="text-xs text-slate-500 mt-1">Les inspections complétées par les Directeurs Provinciaux apparaîtront ici.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Parapheur technique -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-file-contract text-rdc-blue"></i>
+        Parapheur technique
+    </h2>
+    
+    {% if parapheur %}
+    <div class="space-y-2">
+        {% for item in parapheur %}
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-rdc-blue/10 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-file text-sm text-rdc-blue"></i>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ item.nom_officiel }}</p>
+                <p class="text-xs text-slate-500 font-mono">{{ item.code }}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-semibold">
+                    {{ item.type_institution.designation }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-sm text-slate-500 py-6">Aucun dossier dans le parapheur</p>
+    {% endif %}
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+async function transferToMinister(validationUid) {
+    if (!confirm('Êtes-vous sûr de vouloir transférer cette inspection au Ministre ?')) return;
+    try {
+        const response = await fetch('/gouvernance/validations/' + validationUid + '/transfer/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert(data.message);
+            window.location.href = data.redirect_url || window.location.href;
+        } else {
+            alert('Erreur : ' + (data.message || 'Une erreur est survenue'));
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Une erreur est survenue');
+    }
+}
+</script>
+{% endblock %}

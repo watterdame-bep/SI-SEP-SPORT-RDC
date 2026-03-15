@@ -36,6 +36,12 @@ urlpatterns = [
     
     # Billetterie — Vérification ticket (QR / UUID) anti-fraude
     path('verifier-ticket/<uuid:ticket_uid>/', views_billetterie.verifier_ticket, name='verifier_ticket'),
+    
+    # Billetterie — Gestionnaire d'infrastructure
+    path('manager/rencontres/', views_billetterie.infra_manager_rencontres_list, name='infra_manager_rencontres_list'),
+    path('manager/rencontres/<uuid:rencontre_uid>/configurer/', views_billetterie.infra_manager_rencontre_configurer_billetterie, name='infra_manager_rencontre_configurer_billetterie'),
+    path('manager/rencontres/<uuid:rencontre_uid>/statistiques/', views_billetterie.infra_manager_rencontre_statistiques, name='infra_manager_rencontre_statistiques'),
+    path('manager/zones/<uuid:zone_evenement_uid>/detail/', views_billetterie.infra_manager_zone_detail, name='infra_manager_zone_detail'),
 
     # Type infrastructure management (SG only)
     path('types/', views_types.type_infrastructure_list, name='type_infrastructure_list'),

@@ -1,0 +1,84 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer une compétition | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:ligue_competitions_list' %}" class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Créer une compétition</h1>
+                <p class="text-sm text-white/80 mt-1">Saison / année sportive — {{ ligue.nom_officiel }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+<div class="mb-6 space-y-2">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl {% if message.tags == 'warning' %}bg-amber-50 border border-amber-200 text-amber-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-2xl">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6 lg:p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label for="id_type_competition" class="block text-sm font-medium text-slate-700 mb-1">{{ form.type_competition.label }}</label>
+                {{ form.type_competition }}
+                {% if form.type_competition.errors %}<p class="mt-1 text-sm text-red-600">{{ form.type_competition.errors.0 }}</p>{% endif %}
+                <p class="mt-1 text-xs text-slate-500"><a href="{% url 'gouvernance:ligue_types_competition_list' %}" class="text-rdc-blue hover:underline">Enregistrer un type de compétition</a></p>
+            </div>
+            <div>
+                <label for="id_saison" class="block text-sm font-medium text-slate-700 mb-1">{{ form.saison.label }}</label>
+                {{ form.saison }}
+                {% if form.saison.errors %}<p class="mt-1 text-sm text-red-600">{{ form.saison.errors.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_categorie" class="block text-sm font-medium text-slate-700 mb-1">{{ form.categorie.label }}</label>
+                {{ form.categorie }}
+            </div>
+            <div>
+                <label for="id_titre" class="block text-sm font-medium text-slate-700 mb-1">{{ form.titre.label }}</label>
+                {{ form.titre }}
+                {% if form.titre.errors %}<p class="mt-1 text-sm text-red-600">{{ form.titre.errors.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-slate-700 mb-1">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+            <div class="flex flex-wrap gap-3 pt-4">
+                <button type="submit" class="px-5 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white font-semibold rounded-xl">Créer et ouvrir le calendrier</button>
+                <a href="{% url 'gouvernance:ligue_competitions_list' %}" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

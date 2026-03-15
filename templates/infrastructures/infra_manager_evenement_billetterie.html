@@ -1,0 +1,788 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Billetterie - {{ infrastructure.nom }} - SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50 py-8">
+    <div class="px-4 sm:px-6 lg:px-8">
+        
+        <!-- En-tête -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <a href="{% url 'infrastructures:infra_manager_evenements' %}" 
+                   class="inline-flex items-center justify-center w-10 h-10 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold text-slate-900">Billetterie</h1>
+                    <p class="mt-1 text-slate-600">{{ infrastructure.nom }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations de la Rencontre -->
+        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark rounded-xl shadow-lg p-6 mb-8 text-white">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-3 flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-xs font-medium">
+                            <i class="fa-solid fa-trophy"></i>
+                            {{ rencontre.journee.competition.titre }}
+                        </span>
+                        <span class="text-white/80 text-sm">{{ rencontre.journee.libelle }}</span>
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold mb-3">
+                        {{ rencontre.equipe_a.nom_officiel }} 
+                        <span class="text-white/60 font-normal">vs</span> 
+                        {{ rencontre.equipe_b.nom_officiel }}
+                    </h2>
+                    
+                    <div class="flex items-center gap-6 text-sm flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-calendar"></i>
+                            <span>{{ rencontre.date_heure|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>{{ rencontre.date_heure|date:"H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if infrastructure.capacite_spectateurs %}
+                <div class="text-right">
+                    <p class="text-white/80 text-sm mb-1">Capacité totale</p>
+                    <p class="text-3xl font-bold">{{ infrastructure.capacite_spectateurs|floatformat:0 }}</p>
+                    <p class="text-white/80 text-xs">places</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if is_configured and not edit_mode %}
+        <!-- Dashboard Mode - Affichage des statistiques -->
+        <div class="space-y-6">
+            
+            {% if stats.total_billets == 0 %}
+            <!-- Alerte: Billets non générés -->
+            <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-lg flex items-start gap-3">
+                <i class="fa-solid fa-exclamation-triangle text-xl text-orange-600 mt-0.5"></i>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-orange-800 text-sm">Tarifs configurés - Billets non générés</h3>
+                    <p class="text-sm text-orange-700 mt-1">Les tarifs ont été configurés avec succès. Vous devez maintenant générer les billets pour cette rencontre.</p>
+                    <form method="post" class="mt-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="generer_billets">
+                        <button type="submit" 
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Générer les billets maintenant</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Résumé de la configuration -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-cog text-rdc-blue"></i>
+                        Configuration des Tarifs
+                    </h3>
+                    <a href="?edit=true" 
+                       class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold">
+                        <i class="fa-solid fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for tarif in tarifs_existants %}
+                    <div class="border border-slate-200 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-3 h-3 rounded-full bg-rdc-blue"></div>
+                            <h4 class="font-semibold text-slate-900">{{ tarif.zone_stade.nom }}</h4>
+                        </div>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Prix:</span>
+                                <span class="font-semibold text-slate-900">{{ tarif.prix_unitaire|floatformat:0 }} CDF</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Capacité:</span>
+                                <span class="font-semibold text-slate-900">{{ tarif.capacite_max }} billets</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-slate-200">
+                                <span class="text-slate-600">Recette potentielle:</span>
+                                <span class="font-semibold text-emerald-600">{% widthratio tarif.capacite_max 1 tarif.prix_unitaire as recette_pot %}{{ recette_pot|floatformat:0 }} CDF</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            
+            <!-- Statistiques Globales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Total Billets -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total Billets</p>
+                            <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ stats.total_billets }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Générés</p>
+                        </div>
+                        <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
+                            <i class="fa-solid fa-ticket text-xl text-rdc-blue"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billets Vendus -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Vendus</p>
+                            <h3 class="text-3xl font-bold text-green-600 mt-1">{{ stats.total_vendus }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ stats.taux_vente }}% du total</p>
+                        </div>
+                        <div class="bg-green-100 p-2.5 rounded-lg">
+                            <i class="fa-solid fa-check-circle text-xl text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billets Utilisés -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Utilisés</p>
+                            <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ stats.total_utilises }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ stats.taux_utilisation }}% des vendus</p>
+                        </div>
+                        <div class="bg-purple-100 p-2.5 rounded-lg">
+                            <i class="fa-solid fa-qrcode text-xl text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recette Totale -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Recette</p>
+                            <h3 class="text-3xl font-bold text-emerald-600 mt-1">{{ stats.recette_totale|floatformat:0 }}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">CDF</p>
+                        </div>
+                        <div class="bg-emerald-100 p-2.5 rounded-lg">
+                            <i class="fa-solid fa-coins text-xl text-emerald-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques et Détails -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                
+                <!-- Graphique Circulaire - Répartition -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-rdc-blue"></i>
+                        Répartition des Billets
+                    </h3>
+                    <div class="relative" style="height: 300px;">
+                        <canvas id="chartRepartition"></canvas>
+                    </div>
+                </div>
+
+                <!-- Graphique Barres - Par Zone -->
+                <div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-rdc-blue"></i>
+                        Ventes par Zone
+                    </h3>
+                    <div class="relative" style="height: 300px;">
+                        <canvas id="chartZones"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Détails par Zone -->
+            <div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-table text-rdc-blue"></i>
+                        Détails par Zone
+                    </h3>
+                    <a href="?edit=true" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors text-sm font-semibold">
+                        <i class="fa-solid fa-edit"></i>
+                        <span>Modifier les tarifs</span>
+                    </a>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase">Zone</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Prix (CDF)</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Capacité</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Vendus</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Utilisés</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Disponibles</th>
+                                <th class="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase">Recette</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for tarif in tarifs_existants %}
+                            <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location.href='{% url 'infrastructures:infra_manager_ventes_billets_zone' rencontre.uid tarif.zone_stade.uid %}'">
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-rdc-blue"></div>
+                                        <a href="{% url 'infrastructures:infra_manager_ventes_billets_zone' rencontre.uid tarif.zone_stade.uid %}" 
+                                           class="font-semibold text-rdc-blue hover:text-rdc-blue-dark hover:underline">
+                                            {{ tarif.zone_stade.nom }}
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="text-right px-4 py-3 text-slate-700">{{ tarif.prix_unitaire|floatformat:0 }}</td>
+                                <td class="text-right px-4 py-3 text-slate-700">{{ tarif.capacite_max }}</td>
+                                <td class="text-right px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                        {{ tarif.tickets_vendus_count }}
+                                    </span>
+                                </td>
+                                <td class="text-right px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                                        {{ tarif.tickets_utilises_count }}
+                                    </span>
+                                </td>
+                                <td class="text-right px-4 py-3">
+                                    <span class="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">
+                                        {{ tarif.tickets_disponibles_count }}
+                                    </span>
+                                </td>
+                                <td class="text-right px-4 py-3 font-semibold text-slate-900">
+                                    {% widthratio tarif.tickets_vendus_count 1 tarif.prix_unitaire as recette %}
+                                    {{ recette|floatformat:0 }} CDF
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% else %}
+        <!-- Mode Configuration/Édition -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-slate-800">
+                    {% if is_configured %}Modifier les Tarifs{% else %}Configuration des Tarifs{% endif %}
+                </h3>
+                {% if is_configured %}
+                <a href="{% url 'infrastructures:infra_manager_evenement_billetterie' rencontre_uid=rencontre.uid %}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors text-sm font-semibold">
+                    <i class="fa-solid fa-times"></i>
+                    <span>Annuler</span>
+                </a>
+                {% endif %}
+            </div>
+
+            {% if infrastructure.capacite_spectateurs %}
+            <!-- Indicateur de capacité totale -->
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-building text-rdc-blue"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-700">Capacité totale du stade</p>
+                            <p class="text-xs text-slate-600">{{ infrastructure.nom }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-rdc-blue" id="capacite-totale">{{ infrastructure.capacite_spectateurs|floatformat:0 }}</p>
+                        <p class="text-xs text-slate-600">places</p>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-blue-200">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-600">Places attribuées:</span>
+                        <span class="font-semibold text-slate-900" id="total-attribue">0</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-1">
+                        <span class="text-slate-600">Places restantes:</span>
+                        <span class="font-bold" id="places-restantes">{{ infrastructure.capacite_spectateurs|floatformat:0 }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" id="form-tarifs" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="configurer_tarifs">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for zone in zones_stade %}
+                    <div class="border border-slate-200 rounded-lg p-4 hover:border-rdc-blue transition-colors zone-card" data-zone-uid="{{ zone.uid }}">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h4 class="font-semibold text-slate-900">{{ zone.nom }}</h4>
+                                {% if zone.description %}
+                                <p class="text-sm text-slate-500 mt-1">{{ zone.description }}</p>
+                                {% endif %}
+                            </div>
+                            <span class="inline-flex items-center justify-center w-8 h-8 bg-rdc-blue/10 text-rdc-blue rounded-full text-sm font-bold">
+                                {{ forloop.counter }}
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">
+                                    Prix unitaire (CDF)
+                                </label>
+                                <input type="number" 
+                                       name="prix_zone_{{ zone.uid }}" 
+                                       step="0.01"
+                                       min="0"
+                                       {% if zone.prix_existant %}value="{{ zone.prix_existant }}"{% endif %}
+                                       class="prix-input w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
+                                       placeholder="Ex: 50000"
+                                       data-zone-uid="{{ zone.uid }}"
+                                       data-zone-name="{{ zone.nom }}">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">
+                                    Nombre de billets
+                                </label>
+                                <input type="number" 
+                                       name="capacite_zone_{{ zone.uid }}" 
+                                       class="capacite-input w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
+                                       min="1"
+                                       {% if zone.capacite_existante %}value="{{ zone.capacite_existante }}"{% endif %}
+                                       placeholder="Ex: 500"
+                                       data-zone-uid="{{ zone.uid }}"
+                                       data-zone-name="{{ zone.nom }}">
+                                <div class="mt-2 text-xs zone-warning hidden">
+                                    <div class="flex items-start gap-2 p-2 bg-red-50 border border-red-200 rounded text-red-700">
+                                        <i class="fa-solid fa-exclamation-triangle mt-0.5"></i>
+                                        <span class="warning-text"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-2 text-center py-8">
+                        <i class="fa-solid fa-layer-group text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-600">Aucune zone définie pour ce stade</p>
+                        <a href="{% url 'infrastructures:infra_manager_zones' %}" 
+                           class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors text-sm">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Créer des zones</span>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if zones_stade %}
+                <!-- Message d'erreur global -->
+                <div id="error-global" class="hidden p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-exclamation-circle text-xl text-red-600 mt-0.5"></i>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-800 text-sm">Capacité dépassée</h4>
+                            <p class="text-sm text-red-700 mt-1" id="error-message"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                    <button type="submit" 
+                            id="btn-submit"
+                            class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-save"></i>
+                        <span>{% if is_configured %}Mettre à jour{% else %}Sauvegarder{% endif %} les tarifs</span>
+                    </button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% if is_configured and not edit_mode %}
+<script>
+// Graphique Circulaire - Répartition
+const ctxRepartition = document.getElementById('chartRepartition').getContext('2d');
+new Chart(ctxRepartition, {
+    type: 'doughnut',
+    data: {
+        labels: ['Vendus', 'Disponibles', 'Utilisés'],
+        datasets: [{
+            data: [{{ stats.total_vendus }}, {{ stats.total_disponibles }}, {{ stats.total_utilises }}],
+            backgroundColor: ['#10b981', '#f97316', '#a855f7'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Graphique Barres - Par Zone
+const ctxZones = document.getElementById('chartZones').getContext('2d');
+new Chart(ctxZones, {
+    type: 'bar',
+    data: {
+        labels: [{% for tarif in tarifs_existants %}'{{ tarif.zone_stade.nom|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Vendus',
+            data: [{% for tarif in tarifs_existants %}{{ tarif.tickets_vendus_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: '#10b981'
+        }, {
+            label: 'Disponibles',
+            data: [{% for tarif in tarifs_existants %}{{ tarif.tickets_disponibles_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: '#f97316'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+
+{% if not is_configured or edit_mode %}
+<!-- Script de validation dynamique des capacités -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const capaciteTotale = {{ infrastructure.capacite_spectateurs|default:0 }};
+    const capaciteInputs = document.querySelectorAll('.capacite-input');
+    const prixInputs = document.querySelectorAll('.prix-input');
+    const btnSubmit = document.getElementById('btn-submit');
+    const errorGlobal = document.getElementById('error-global');
+    const errorMessage = document.getElementById('error-message');
+    const totalAttribueEl = document.getElementById('total-attribue');
+    const placesRestantesEl = document.getElementById('places-restantes');
+    
+    // Grouper les inputs par zone
+    const zoneInputs = {};
+    capaciteInputs.forEach(input => {
+        const zoneUid = input.dataset.zoneUid;
+        if (!zoneInputs[zoneUid]) {
+            zoneInputs[zoneUid] = {};
+        }
+        zoneInputs[zoneUid].capacite = input;
+    });
+    prixInputs.forEach(input => {
+        const zoneUid = input.dataset.zoneUid;
+        if (!zoneInputs[zoneUid]) {
+            zoneInputs[zoneUid] = {};
+        }
+        zoneInputs[zoneUid].prix = input;
+    });
+    
+    function validerZone(zoneUid) {
+        const inputs = zoneInputs[zoneUid];
+        if (!inputs) return true;
+        
+        const prixValue = inputs.prix ? (inputs.prix.value || '').trim() : '';
+        const capaciteValue = inputs.capacite ? (inputs.capacite.value || '').trim() : '';
+        const zoneName = inputs.capacite ? inputs.capacite.dataset.zoneName : '';
+        
+        const zoneCard = inputs.capacite ? inputs.capacite.closest('.zone-card') : null;
+        const warning = zoneCard ? zoneCard.querySelector('.zone-warning') : null;
+        const warningText = zoneCard ? zoneCard.querySelector('.warning-text') : null;
+        
+        // Réinitialiser les styles
+        if (inputs.prix) {
+            inputs.prix.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+        }
+        if (inputs.capacite) {
+            inputs.capacite.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+        }
+        if (warning) {
+            warning.classList.add('hidden');
+        }
+        
+        // Si l'un est rempli, l'autre doit l'être aussi
+        if ((prixValue && !capaciteValue) || (!prixValue && capaciteValue)) {
+            if (inputs.prix) {
+                inputs.prix.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+            }
+            if (inputs.capacite) {
+                inputs.capacite.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+            }
+            if (warning && warningText) {
+                warningText.textContent = `Pour la zone "${zoneName}", vous devez renseigner à la fois le prix ET le nombre de billets, ou laisser les deux vides.`;
+                warning.classList.remove('hidden');
+            }
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function calculerTotal() {
+        let total = 0;
+        let hasError = false;
+        let hasZoneError = false;
+        
+        // Valider chaque zone
+        Object.keys(zoneInputs).forEach(zoneUid => {
+            if (!validerZone(zoneUid)) {
+                hasZoneError = true;
+            }
+        });
+        
+        // Calculer le total uniquement pour les zones complètes
+        capaciteInputs.forEach(input => {
+            const zoneUid = input.dataset.zoneUid;
+            const inputs = zoneInputs[zoneUid];
+            const prixValue = inputs.prix ? (inputs.prix.value || '').trim() : '';
+            const capaciteValue = (input.value || '').trim();
+            
+            // Compter seulement si les deux champs sont remplis
+            if (prixValue && capaciteValue) {
+                const value = parseInt(capaciteValue) || 0;
+                total += value;
+            }
+        });
+        
+        // Mettre à jour l'affichage
+        if (totalAttribueEl) {
+            totalAttribueEl.textContent = total.toLocaleString('fr-FR');
+        }
+        
+        const restant = capaciteTotale - total;
+        if (placesRestantesEl) {
+            placesRestantesEl.textContent = restant.toLocaleString('fr-FR');
+            
+            // Changer la couleur selon le statut
+            if (restant < 0) {
+                placesRestantesEl.classList.remove('text-green-600', 'text-orange-600');
+                placesRestantesEl.classList.add('text-red-600');
+            } else if (restant === 0) {
+                placesRestantesEl.classList.remove('text-red-600', 'text-orange-600');
+                placesRestantesEl.classList.add('text-green-600');
+            } else {
+                placesRestantesEl.classList.remove('text-red-600', 'text-green-600');
+                placesRestantesEl.classList.add('text-orange-600');
+            }
+        }
+        
+        // Vérifier si le total dépasse la capacité
+        if (capaciteTotale > 0 && total > capaciteTotale) {
+            hasError = true;
+            const depassement = total - capaciteTotale;
+            
+            errorMessage.textContent = `Le total des places attribuées (${total.toLocaleString('fr-FR')}) dépasse la capacité du stade de ${depassement.toLocaleString('fr-FR')} place(s). Veuillez réduire le nombre de billets.`;
+            errorGlobal.classList.remove('hidden');
+        } else {
+            errorGlobal.classList.add('hidden');
+        }
+        
+        // Désactiver le bouton si erreur
+        if (hasError || hasZoneError) {
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            btnSubmit.disabled = false;
+            btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        
+        return hasError || hasZoneError;
+    }
+    
+    // Écouter les changements sur chaque input
+    [...capaciteInputs, ...prixInputs].forEach(input => {
+        input.addEventListener('input', function() {
+            calculerTotal();
+        });
+        
+        input.addEventListener('blur', function() {
+            const zoneUid = this.dataset.zoneUid;
+            validerZone(zoneUid);
+            calculerTotal();
+        });
+    });
+    
+    // Validation avant soumission
+    const form = document.getElementById('form-tarifs');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const hasError = calculerTotal();
+            if (hasError) {
+                e.preventDefault();
+                
+                // Scroll vers le premier champ en erreur
+                const firstError = document.querySelector('.border-red-500');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    errorGlobal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                return false;
+            }
+        });
+    }
+    
+    // Calculer au chargement de la page
+    calculerTotal();
+});
+</script>
+{% endif %}
+
+        <!-- Section Ventes de Billets -->
+        {% if stats.total_vendus > 0 %}
+        <div class="mt-8 bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h3 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-green-600"></i>
+                Dernières Ventes ({{ ventes.count }})
+            </h3>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Date/Heure</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Acheteur</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Téléphone</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Zone(s)</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Nb Billets</th>
+                            <th class="px-4 py-3 text-right text-xs font-bold text-slate-700 uppercase tracking-wider">Montant</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Canal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-200">
+                        {% for vente in ventes %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-900">
+                                {{ vente.date_vente|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">
+                                {{ vente.acheteur_nom|default:"-" }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                                {{ vente.acheteur_telephone|default:"-" }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for ticket in vente.tickets.all %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ ticket.evenement_zone.zone_stade.nom }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                    {{ vente.tickets.count }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-right text-slate-900">
+                                {{ vente.montant_total|floatformat:0 }} CDF
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center">
+                                {% if vente.canal == 'GUICHET' %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fa-solid fa-building mr-1"></i> Guichet
+                                    </span>
+                                {% elif vente.canal == 'MOBILE_MONEY' %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                        <i class="fa-solid fa-mobile-alt mr-1"></i> Mobile Money
+                                    </span>
+                                {% elif vente.canal == 'EN_LIGNE' %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fa-solid fa-globe mr-1"></i> En Ligne
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ vente.canal }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                                <i class="fa-solid fa-inbox text-3xl mb-2"></i>
+                                <p>Aucune vente enregistrée</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if ventes.count >= 20 %}
+            <div class="mt-4 text-center">
+                <a href="{% url 'infrastructures:infra_manager_ventes_billets' rencontre.uid %}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-semibold">
+                    <i class="fa-solid fa-list"></i>
+                    <span>Voir toutes les ventes</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+{% endblock %}
+

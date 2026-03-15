@@ -147,9 +147,8 @@ def infra_manager_zones(request):
 def infra_manager_evenements(request):
     """
     Rencontres / événements prévus dans l'infrastructure.
-    Liste avec colonne Compétition, barre de recherche et filtre par compétition.
+    Le gestionnaire voit les matchs planifiés par la ligue et peut configurer la billetterie (zones, tarifs, tickets).
     """
-    from gouvernance.models import Competition
     infrastructure = _get_infrastructure_for_manager(request)
     if not infrastructure:
         messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
@@ -157,23 +156,10 @@ def infra_manager_evenements(request):
     evenements = Evenement.objects.filter(
         infrastructure=infrastructure,
         actif=True
-    ).select_related('organisateur', 'rencontre__journee__competition').order_by('date_evenement', 'heure_debut')
-    q = (request.GET.get('q') or '').strip()
-    if q:
-        evenements = evenements.filter(titre__icontains=q)
-    competition_uid = request.GET.get('competition')
-    if competition_uid:
-        evenements = evenements.filter(rencontre__journee__competition__uid=competition_uid)
-    competitions_list = Competition.objects.filter(
-        journees__rencontres__evenement__infrastructure=infrastructure,
-        journees__rencontres__evenement__actif=True
-    ).distinct().order_by('-saison', 'titre')
+    ).select_related('organisateur').order_by('date_evenement', 'heure_debut')
     context = {
         'infrastructure': infrastructure,
         'evenements': evenements,
-        'competitions_list': competitions_list,
-        'q': q,
-        'competition_filter': competition_uid,
         'user_role': 'infra_manager',
     }
     return render(request, 'infrastructures/infra_manager_evenements.html', context)

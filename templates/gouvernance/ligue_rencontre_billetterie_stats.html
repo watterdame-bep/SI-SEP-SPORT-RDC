@@ -1,0 +1,249 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Statistiques Billetterie — {{ rencontre.equipe_a.sigle }} vs {{ rencontre.equipe_b.sigle }} | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:ligue_rencontre_detail' rencontre_uid=rencontre.uid %}" 
+               class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="flex-1">
+                <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">Statistiques Billetterie</h1>
+                <p class="text-sm text-white/80 mt-1">{{ rencontre.equipe_a.sigle }} vs {{ rencontre.equipe_b.sigle }} — {{ rencontre.date_heure|date:"d/m/Y" }}</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                <p class="text-xs text-white/70">Mode</p>
+                <p class="text-sm font-bold text-white">Lecture seule</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Statistiques globales -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-slate-600">Total Tickets</h3>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-900">{{ total_tickets }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-slate-600">Tickets Vendus</h3>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
+                <i class="fa-solid fa-check-circle"></i>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-900">{{ tickets_vendus }}</p>
+        <p class="text-sm text-slate-500 mt-1">{{ taux_remplissage }}% de remplissage</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-slate-600">Disponibles</h3>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                <i class="fa-solid fa-circle-dot"></i>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-900">{{ tickets_disponibles }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-slate-600">Chiffre d'Affaires</h3>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-rdc-blue/10 text-rdc-blue">
+                <i class="fa-solid fa-dollar-sign"></i>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-slate-900">{{ chiffre_affaires|floatformat:0 }}</p>
+        <p class="text-sm text-slate-500 mt-1">{{ nombre_ventes }} vente(s)</p>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">Répartition des Tickets</h3>
+        <div style="height: 300px;">
+            <canvas id="ticketsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6">
+        <h3 class="text-lg font-bold text-slate-900 mb-4">Taux de Remplissage</h3>
+        <div style="height: 300px;">
+            <canvas id="remplissageChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques par zone -->
+<div class="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
+    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200">
+        <h2 class="text-lg font-bold text-slate-900">Statistiques par Zone</h2>
+    </div>
+    
+    {% if zones_stats %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Zone</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Prix</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Vendus</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Disponibles</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Taux</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">CA</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for stat in zones_stats %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <span class="text-sm font-semibold text-slate-900">{{ stat.zone.designation }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-slate-900">{{ stat.prix|floatformat:0 }} FC</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-medium text-slate-900">{{ stat.total }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-medium text-green-600">{{ stat.vendus }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-slate-600">{{ stat.disponibles }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 bg-slate-200 rounded-full h-2 max-w-[100px]">
+                                <div class="bg-rdc-blue h-2 rounded-full" style="width: {{ stat.taux_remplissage }}%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-slate-900">{{ stat.taux_remplissage }}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm font-semibold text-slate-900">{{ stat.chiffre_affaires|floatformat:0 }} FC</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-12 text-center">
+        <div class="flex justify-center mb-4">
+            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                <i class="fa-solid fa-ticket text-2xl text-slate-400"></i>
+            </div>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">Aucune zone configurée</h3>
+        <p class="text-sm text-slate-600">Le gestionnaire de l'infrastructure n'a pas encore configuré la billetterie.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Graphique répartition des tickets
+const ticketsCtx = document.getElementById('ticketsChart').getContext('2d');
+new Chart(ticketsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Vendus', 'Disponibles'],
+        datasets: [{
+            data: [{{ tickets_vendus }}, {{ tickets_disponibles }}],
+            backgroundColor: ['#16a34a', '#e2e8f0'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    padding: 20
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = {{ total_tickets }};
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Graphique taux de remplissage
+const remplissageCtx = document.getElementById('remplissageChart').getContext('2d');
+new Chart(remplissageCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for stat in zones_stats %}'{{ stat.zone.designation }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Taux de remplissage (%)',
+            data: [{% for stat in zones_stats %}{{ stat.taux_remplissage }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: '#0036ca',
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Remplissage: ' + context.parsed.y + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

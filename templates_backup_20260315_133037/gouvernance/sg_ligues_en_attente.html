@@ -1,0 +1,320 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Ligues Provinciales - Secrétaire Général{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Badge styling */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.badge-green {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-red {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-yellow {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-orange {
+    background-color: #fed7aa;
+    color: #92400e;
+}
+
+.badge-slate {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-layer-group text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Ligues Provinciales</h1>
+                <p class="text-sm text-white/80 mt-1">Secrétaire Général — Gestion et validation des ligues</p>
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-hourglass-half text-2xl text-yellow-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">En Inspection</p>
+                        <p class="text-2xl font-bold text-white">{{ nombre_en_inspection }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-hourglass-end text-2xl text-orange-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Attente SG</p>
+                        <p class="text-2xl font-bold text-white">{{ nombre_attente_sg }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Approuvées</p>
+                        <p class="text-2xl font-bold text-white">{{ nombre_approuvees }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-times-circle text-2xl text-red-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                        <p class="text-2xl font-bold text-white">{{ nombre_rejetees }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <!-- Recherche -->
+        <input type="text" id="search-input" placeholder="Rechercher une ligue..." 
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+        
+        <!-- Filtre Province -->
+        <select id="filter-province" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Toutes les provinces</option>
+            {% for ligue in ligues %}
+                {% if ligue.province_admin %}
+                    <option value="{{ ligue.province_admin.designation }}">{{ ligue.province_admin.designation }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        
+        <!-- Filtre Statut -->
+        <select id="filter-statut" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="En Inspection">En Inspection</option>
+            <option value="Attente SG">Attente SG</option>
+            <option value="Agréée">Agréée</option>
+            <option value="Refusée">Refusée</option>
+            <option value="Rejetée Division">Rejetée Division</option>
+        </select>
+    </div>
+</div>
+
+<!-- Vue Table -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    {% if ligues %}
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Ligue</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Fédération</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Responsable</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for ligue in ligues %}
+            <tr class="hover:bg-slate-50 transition-colors" 
+                data-nom="{{ ligue.nom_officiel|lower }}" 
+                data-sigle="{{ ligue.sigle|lower }}"
+                data-province="{% if ligue.province_admin %}{{ ligue.province_admin.designation }}{% endif %}"
+                data-statut="{% if ligue.statut_signature == 'SIGNE' %}Agréée{% elif ligue.statut_signature == 'REFUSE' %}Refusée{% elif ligue.statut_inspection == 'EN_INSPECTION' %}En Inspection{% elif ligue.statut_inspection == 'INSPECTION_VALIDEE' %}Attente SG{% elif ligue.statut_inspection == 'INSPECTION_REJETEE' %}Rejetée Division{% else %}Attente SG{% endif %}">
+                
+                <!-- Ligue -->
+                <td class="px-6 py-4">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-900">{{ ligue.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500 font-bold">{{ ligue.sigle }}</div>
+                    </div>
+                </td>
+                
+                <!-- Fédération -->
+                <td class="px-6 py-4">
+                    {% if ligue.institution_tutelle %}
+                    <div class="text-sm text-slate-700">
+                        <i class="fa-solid fa-link text-rdc-blue mr-2"></i>
+                        {{ ligue.institution_tutelle.nom_officiel }}
+                    </div>
+                    {% else %}
+                    <span class="text-xs text-slate-400">Non renseignée</span>
+                    {% endif %}
+                </td>
+                
+                <!-- Province -->
+                <td class="px-6 py-4">
+                    {% if ligue.province_admin %}
+                    <div class="text-sm text-slate-700">
+                        <i class="fa-solid fa-map-location-dot text-rdc-blue mr-2"></i>
+                        {{ ligue.province_admin.designation }}
+                    </div>
+                    {% else %}
+                    <span class="text-xs text-slate-400">Non renseignée</span>
+                    {% endif %}
+                </td>
+                
+                <!-- Responsable -->
+                <td class="px-6 py-4">
+                    <div class="text-sm text-slate-700">
+                        {% if ligue.nom_president %}
+                        <i class="fa-solid fa-user text-slate-400 mr-2"></i>
+                        {{ ligue.nom_president }}
+                        {% else %}
+                        <span class="text-xs text-slate-400">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </td>
+                
+                <!-- Statut -->
+                <td class="px-6 py-4 text-center">
+                    {% if ligue.statut_signature == 'SIGNE' %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Agréée
+                        </span>
+                    {% elif ligue.statut_signature == 'REFUSE' %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-times-circle"></i>
+                            Refusée
+                        </span>
+                    {% elif ligue.statut_inspection == 'EN_INSPECTION' %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            En Inspection
+                        </span>
+                    {% elif ligue.statut_inspection == 'INSPECTION_VALIDEE' %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            Attente SG
+                        </span>
+                    {% elif ligue.statut_inspection == 'INSPECTION_REJETEE' %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-times-circle"></i>
+                            Rejetée Division
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full whitespace-nowrap">
+                            <i class="fa-solid fa-circle-question"></i>
+                            Attente SG
+                        </span>
+                    {% endif %}
+                </td>
+                
+                <!-- Actions -->
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Bouton Voir -->
+                        <a href="{% url 'gouvernance:sg_ligue_detail' ligue.uid %}" 
+                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           title="Voir détails">
+                            <i class="fa-solid fa-eye text-base"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="px-6 py-16 text-center">
+        <i class="fa-solid fa-layer-group text-4xl text-slate-300 mb-4"></i>
+        <p class="text-base font-bold text-slate-900">Aucune ligue provinciale enregistrée</p>
+        <p class="text-sm text-slate-600 mt-2">Les ligues provinciales apparaîtront ici</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Recherche et filtrage en temps réel
+const searchInput = document.getElementById('search-input');
+const filterProvince = document.getElementById('filter-province');
+const filterStatut = document.getElementById('filter-statut');
+
+if (searchInput) searchInput.addEventListener('input', filterTable);
+if (filterProvince) filterProvince.addEventListener('change', filterTable);
+if (filterStatut) filterStatut.addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const provinceFilter = filterProvince ? filterProvince.value : '';
+    const statutFilter = filterStatut ? filterStatut.value : '';
+    
+    document.querySelectorAll('#table-body tr').forEach(row => {
+        const nom = row.dataset.nom || '';
+        const sigle = row.dataset.sigle || '';
+        const province = row.dataset.province || '';
+        const statut = row.dataset.statut || '';
+        
+        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
+        const matchProvince = !provinceFilter || province === provinceFilter;
+        const matchStatut = !statutFilter || statut === statutFilter;
+        
+        row.style.display = (matchSearch && matchProvince && matchStatut) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

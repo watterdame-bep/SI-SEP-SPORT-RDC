@@ -1,0 +1,128 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Validation Nationale des Athlètes | {{ federation.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-certificate text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Certification Nationale</h1>
+                    <p class="text-sm text-white/80 mt-1">Homologation des athlètes au niveau national</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                    <div class="text-xs text-white/80">En attente</div>
+                    <div class="text-2xl font-bold text-white">{{ total_en_attente }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Liste des athlètes -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+        <div class="px-6 py-4 border-b border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900">Athlètes certifiés provincialement</h3>
+            <p class="text-sm text-slate-600 mt-1">Vérifiez qu'il n'y a pas de doublons au niveau national</p>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Athlète</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Club</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Province</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Discipline</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Validation Ligue</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for athlete in athletes %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                {% if athlete.personne.photo %}
+                                <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.personne.nom_complet }}" class="w-12 h-12 rounded-full object-cover">
+                                {% else %}
+                                <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-user text-slate-400"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="font-medium text-slate-900">{{ athlete.personne.nom_complet }}</div>
+                                    <div class="text-xs text-slate-500">{{ athlete.numero_sportif }}</div>
+                                    <div class="text-xs text-slate-500">Né(e) le {{ athlete.personne.date_naissance|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-slate-900">{{ athlete.club.nom_officiel }}</div>
+                            <div class="text-xs text-slate-500">{{ athlete.club.sigle }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-slate-900">{{ athlete.club.institution_tutelle.nom_officiel }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600">{{ athlete.discipline.designation }}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-slate-600">{{ athlete.date_validation_ligue|date:"d/m/Y" }}</div>
+                            <div class="text-xs text-slate-500">Par {{ athlete.validateur_ligue.user.get_full_name }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'gouvernance:federation_athlete_validate' athlete.uid %}" class="inline-flex items-center px-3 py-1.5 bg-rdc-blue text-white text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                                <i class="fa-solid fa-eye mr-2"></i>
+                                Examiner
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-check-circle text-3xl text-slate-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-slate-600 font-medium">Aucun athlète en attente</p>
+                                    <p class="text-sm text-slate-500 mt-1">Tous les athlètes ont été traités</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

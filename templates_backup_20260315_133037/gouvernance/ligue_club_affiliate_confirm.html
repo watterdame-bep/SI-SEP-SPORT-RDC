@@ -1,0 +1,106 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Affilier Club - {{ club.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
+
+{% block content %}
+<div class="px-4 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'gouvernance:ligue_clubs_affiliation' %}" class="text-rdc-blue hover:text-rdc-blue-dark text-sm font-semibold mb-2 inline-flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Retour
+        </a>
+        <h1 class="text-3xl font-bold text-slate-900 mt-4">Affilier le Club</h1>
+        <p class="text-slate-600 mt-1">{{ club.nom_officiel }}</p>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+        <!-- Confirmation Card -->
+        <div class="bg-white rounded-lg shadow-md border border-slate-200 p-8">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <i class="fa-solid fa-check-circle text-green-500 text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Prêt à Affilier</h2>
+                <p class="text-slate-600">Ce club a été validé par la direction provinciale et peut maintenant être affilié officiellement.</p>
+            </div>
+
+            <!-- Club Summary -->
+            <div class="bg-slate-50 rounded-lg p-6 mb-8 border border-slate-200">
+                <h3 class="font-bold text-slate-900 mb-4">Résumé du Club</h3>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Nom Officiel</p>
+                        <p class="text-slate-900 font-medium">{{ club.nom_officiel }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Sigle</p>
+                        <p class="text-slate-900 font-medium">{{ club.sigle }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Code</p>
+                        <p class="text-slate-900 font-medium">{{ club.code }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Statut</p>
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            Validé Provinciale
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Message -->
+            <div class="bg-blue-50 rounded-lg border border-blue-200 p-6 mb-8">
+                <div class="flex gap-4">
+                    <i class="fa-solid fa-info-circle text-blue-500 text-xl mt-1"></i>
+                    <div>
+                        <h4 class="font-bold text-blue-900 mb-2">Qu'est-ce qui se passe après l'affiliation?</h4>
+                        <ul class="text-sm text-blue-800 space-y-2">
+                            <li><i class="fa-solid fa-check text-blue-500 mr-2"></i>Le club devient officiellement affilié à votre ligue</li>
+                            <li><i class="fa-solid fa-check text-blue-500 mr-2"></i>Le club peut commencer à enregistrer des athlètes</li>
+                            <li><i class="fa-solid fa-check text-blue-500 mr-2"></i>Le club peut participer aux compétitions</li>
+                            <li><i class="fa-solid fa-check text-blue-500 mr-2"></i>Le statut du club passera à "AFFILIEE"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <form method="POST" class="flex gap-4">
+                {% csrf_token %}
+                
+                <a href="{% url 'gouvernance:ligue_clubs_affiliation' %}" 
+                   class="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors text-center">
+                    Annuler
+                </a>
+                
+                <button type="submit" 
+                        class="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    Confirmer l'Affiliation
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -230,6 +230,12 @@ def ligue_rencontre_configurer_billetterie(request, rencontre_uid):
         evenement=evenement
     ).select_related('zone_stade')
     
+    # Ajouter les compteurs de tickets à chaque tarif
+    for tarif in tarifs_existants:
+        tarif.tickets_vendus_count = tarif.tickets.filter(statut='VENDU').count()
+        tarif.tickets_utilises_count = tarif.tickets.filter(statut='UTILISE').count()
+        tarif.tickets_disponibles_count = tarif.tickets.filter(statut='DISPONIBLE').count()
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         
@@ -283,27 +289,12 @@ def ligue_rencontre_configurer_billetterie(request, rencontre_uid):
             
             return redirect('gouvernance:ligue_rencontre_configurer_billetterie', rencontre_uid=rencontre_uid)
     
-    # Calculer les statistiques de billetterie
-    stats = {}
-    for tarif in tarifs_existants:
-        nb_tickets = tarif.tickets.count()
-        nb_vendus = tarif.tickets.filter(statut='VENDU').count()
-        nb_utilises = tarif.tickets.filter(statut='UTILISE').count()
-        
-        stats[str(tarif.zone_stade.uid)] = {
-            'total': nb_tickets,
-            'vendus': nb_vendus,
-            'utilises': nb_utilises,
-            'disponibles': nb_tickets - nb_vendus - nb_utilises,
-        }
-    
     context = {
         'ligue': ligue,
         'rencontre': rencontre,
         'evenement': evenement,
         'zones_stade': zones_stade,
         'tarifs_existants': tarifs_existants,
-        'stats': stats,
         'user_role': 'ligue_secretary',
     }
     

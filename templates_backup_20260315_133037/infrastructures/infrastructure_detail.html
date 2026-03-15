@@ -1,0 +1,239 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Détails Infrastructure | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                    {{ infrastructure.nom }}
+                </h1>
+                <p class="text-sm text-white/80 mt-1">
+                    Détails complets de l'infrastructure
+                </p>
+            </div>
+            <a href="{% url 'infrastructures:infrastructure_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold rounded-lg transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Retour</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Détails de l'infrastructure -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Informations générales -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Informations Générales</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Nom</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.nom }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Code</p>
+                    <p class="text-sm text-slate-800 mt-1">
+                        {% if infrastructure.code_homologation %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                                <i class="fa-solid fa-check-circle"></i>{{ infrastructure.code_homologation }}
+                            </span>
+                        {% else %}
+                            <span class="text-slate-500 italic">Non généré</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Type</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.type_infrastructure.designation }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Province</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.province_admin.designation }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">État</p>
+                    <p class="text-sm text-slate-800 mt-1">
+                        {% if infrastructure.etat_viabilite == 'OPERATIONNEL' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-check-circle"></i>Opérationnel
+                        </span>
+                        {% elif infrastructure.etat_viabilite == 'EN_TRAVAUX' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-wrench"></i>En travaux
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                            <i class="fa-solid fa-ban"></i>Impraticable
+                        </span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Type de Sol</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.get_type_sol_display }}</p>
+                </div>
+            </div>
+            
+            {% if infrastructure.description %}
+            <div class="mt-4 pt-4 border-t border-slate-200">
+                <p class="text-xs font-semibold text-slate-600 uppercase">Description</p>
+                <p class="text-sm text-slate-800 mt-1">{{ infrastructure.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Gestionnaire -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Gestionnaire</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Type</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.get_gestionnaire_type_display }}</p>
+                </div>
+                {% if infrastructure.gestionnaire_type == 'PERSONNE' %}
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Prénom</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.gestionnaire_prenom }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">{% if infrastructure.gestionnaire_type == 'ENTREPRISE' %}Nom de l'Entreprise{% else %}Nom{% endif %}</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.gestionnaire_nom }}</p>
+                </div>
+                {% if infrastructure.gestionnaire_type == 'PERSONNE' %}
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Postnom</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.gestionnaire_postnom }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Sexe</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.get_gestionnaire_sexe_display }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Téléphone</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.telephone_gestionnaire|default:"Non fourni" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Email</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.email_gestionnaire|default:"Non fourni" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Localisation -->
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Localisation</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Territoire</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.territoire.designation|default:"Non spécifié" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Secteur</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.secteur.designation|default:"Non spécifié" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Quartier</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.quartier.designation|default:"Non spécifié" }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Avenue</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.avenue|default:"Non spécifié" }}</p>
+                </div>
+                {% if infrastructure.numero %}
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase">Numéro</p>
+                    <p class="text-sm text-slate-800 mt-1">{{ infrastructure.numero }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Photos du Stade -->
+        {% if infrastructure.photos.all %}
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Photos du Stade</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {% for photo in infrastructure.photos.all %}
+                <div class="relative group">
+                    <div class="bg-slate-100 rounded-lg overflow-hidden border border-slate-200 aspect-square">
+                        <img src="{{ photo.photo.url }}" alt="Photo {{ forloop.counter }}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
+                            <a href="{{ photo.photo.url }}" target="_blank" class="opacity-0 group-hover:opacity-100 transition-opacity bg-rdc-blue hover:bg-rdc-blue/90 text-white p-2 rounded-full">
+                                <i class="fa-solid fa-expand text-sm"></i>
+                            </a>
+                        </div>
+                        <div class="absolute top-1 right-1 bg-rdc-blue text-white px-2 py-1 rounded text-xs font-bold">
+                            {{ forloop.counter }}/{{ infrastructure.photos.count }}
+                        </div>
+                    </div>
+                    {% if photo.description %}
+                    <p class="text-xs text-slate-600 mt-1 text-center">{{ photo.description }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Actions -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow border border-slate-200 p-6 sticky top-6">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Actions</h2>
+            
+            {% if is_directeur_provincial %}
+            <div class="space-y-3">
+                <a href="{% url 'infrastructures:infrastructure_edit' infrastructure.uid %}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors shadow hover:shadow-md">
+                    <i class="fa-solid fa-edit"></i>
+                    <span>Modifier</span>
+                </a>
+                
+                <form method="post" action="{% url 'infrastructures:infrastructure_delete' infrastructure.uid %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette infrastructure?');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors shadow hover:shadow-md">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Supprimer</span>
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <div class="text-center py-6">
+                <i class="fa-solid fa-eye text-2xl text-slate-400 mb-2"></i>
+                <p class="text-sm text-slate-600">Consultation uniquement</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

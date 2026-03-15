@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de Paiement - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            border-radius: 0 !important;
+        }
+        
+        .payment-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .payment-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 54, 202, 0.15);
+        }
+        
+        .payment-option.selected {
+            border-color: #0036ca;
+            background-color: rgba(0, 54, 202, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white py-4 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center">
+                <h1 class="text-xl font-black uppercase tracking-tight">Confirmation de Paiement</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Récapitulatif de la commande -->
+        <div class="bg-white shadow-lg border-2 border-slate-200 p-6 mb-6">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase flex items-center gap-3">
+                <i class="fa-solid fa-receipt text-rdc-blue"></i>
+                Récapitulatif de votre commande
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-sm font-black text-slate-600 mb-3 uppercase">Informations personnelles</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-user text-rdc-blue"></i>
+                            <span class="font-semibold">{{ purchase_data.nom }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-phone text-rdc-blue"></i>
+                            <span class="font-semibold">{{ purchase_data.telephone }}</span>
+                        </div>
+                        {% if purchase_data.email %}
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-envelope text-rdc-blue"></i>
+                            <span class="font-semibold">{{ purchase_data.email }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-black text-slate-600 mb-3 uppercase">Détails du billet</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-600 font-bold">Tribune:</span>
+                            <span class="font-black text-slate-900 uppercase">{{ purchase_data.zone }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-600 font-bold">Quantité:</span>
+                            <span class="font-black text-slate-900">{{ purchase_data.quantity }}</span>
+                        </div>
+                        <div class="flex justify-between pt-3 border-t-2 border-slate-200">
+                            <span class="text-lg font-black text-slate-900 uppercase">Total:</span>
+                            <span class="text-2xl font-black text-rdc-blue">{{ purchase_data.total|floatformat:0 }} CDF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Options de paiement -->
+        <div class="bg-white shadow-lg border-2 border-slate-200 p-6 mb-6">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase flex items-center gap-3">
+                <i class="fa-solid fa-credit-card text-rdc-blue"></i>
+                Choisissez votre mode de paiement
+            </h2>
+            
+            <form method="post" action="{% url 'public:process_payment' %}" id="payment-form-main">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- M-Pesa -->
+                    <label class="payment-option border-2 border-slate-200 p-6 text-center cursor-pointer">
+                        <input type="radio" name="payment_method" value="MPESA" required class="mb-4" onchange="updatePaymentInfo('mpesa', this)">
+                        <div class="mb-4">
+                            <i class="fa-solid fa-mobile-screen-button text-5xl text-green-600"></i>
+                        </div>
+                        <h3 class="font-black text-lg uppercase mb-2">M-Pesa</h3>
+                        <p class="text-sm text-slate-600 font-semibold">Vodacom</p>
+                    </label>
+                    
+                    <!-- Orange Money -->
+                    <label class="payment-option border-2 border-slate-200 p-6 text-center cursor-pointer">
+                        <input type="radio" name="payment_method" value="ORANGE_MONEY" required class="mb-4" onchange="updatePaymentInfo('orange', this)">
+                        <div class="mb-4">
+                            <i class="fa-solid fa-mobile-screen-button text-5xl text-orange-600"></i>
+                        </div>
+                        <h3 class="font-black text-lg uppercase mb-2">Orange Money</h3>
+                        <p class="text-sm text-slate-600 font-semibold">Orange RDC</p>
+                    </label>
+                    
+                    <!-- Airtel Money -->
+                    <label class="payment-option border-2 border-slate-200 p-6 text-center cursor-pointer">
+                        <input type="radio" name="payment_method" value="AIRTEL_MONEY" required class="mb-4" onchange="updatePaymentInfo('airtel', this)">
+                        <div class="mb-4">
+                            <i class="fa-solid fa-mobile-screen-button text-5xl text-red-600"></i>
+                        </div>
+                        <h3 class="font-black text-lg uppercase mb-2">Airtel Money</h3>
+                        <p class="text-sm text-slate-600 font-semibold">Airtel RDC</p>
+                    </label>
+                </div>
+                
+                <!-- Instructions de paiement -->
+                <div id="payment-instructions" class="hidden p-6 bg-slate-50 border-2 border-slate-200 mb-6">
+                    <h3 class="font-black text-lg uppercase mb-4">Instructions de paiement</h3>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black">1</div>
+                            <div>
+                                <p class="font-bold text-slate-900">Composez le code USSD</p>
+                                <p class="text-sm text-slate-600 font-semibold" id="ussd-code"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black">2</div>
+                            <div>
+                                <p class="font-bold text-slate-900">Entrez le montant</p>
+                                <p class="text-sm text-slate-600 font-semibold">{{ purchase_data.total|floatformat:0 }} CDF</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black">3</div>
+                            <div>
+                                <p class="font-bold text-slate-900">Entrez le numéro marchand</p>
+                                <p class="text-sm text-slate-600 font-semibold" id="merchant-code"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black">4</div>
+                            <div>
+                                <p class="font-bold text-slate-900">Confirmez avec votre code PIN</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-rdc-yellow p-4 border-2 border-yellow-600 mb-6">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-2xl text-rdc-blue"></i>
+                        <div>
+                            <p class="font-black text-rdc-blue uppercase mb-2">Important</p>
+                            <p class="text-sm text-slate-900 font-semibold">
+                                Une fois le paiement effectué, vous recevrez votre billet par SMS avec un QR Code unique. 
+                                Présentez ce QR Code à l'entrée du stade le jour du match.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-black text-slate-900 mb-2 uppercase">
+                        Numéro de téléphone pour le paiement
+                    </label>
+                    <input type="tel" name="payment_phone"
+                           value="{{ purchase_data.telephone }}"
+                           class="w-full px-4 py-3 border-2 border-slate-300 focus:border-rdc-blue focus:outline-none font-semibold"
+                           placeholder="+243 XXX XXX XXX">
+                    <p class="text-xs text-slate-600 mt-1 font-semibold">Le numéro utilisé pour le paiement mobile</p>
+                </div>
+                
+                <button type="submit" class="w-full bg-rdc-blue text-white py-4 font-black text-lg uppercase tracking-wide hover:bg-rdc-blue-dark transition-colors">
+                    <i class="fa-solid fa-check-circle mr-2"></i>
+                    Confirmer le paiement
+                </button>
+            </form>
+        </div>
+        
+        <!-- Sécurité -->
+        <div class="bg-white shadow-lg border-2 border-slate-200 p-6">
+            <div class="flex items-center gap-4">
+                <i class="fa-solid fa-shield-halved text-4xl text-green-600"></i>
+                <div>
+                    <h3 class="font-black text-lg uppercase mb-1">Paiement 100% Sécurisé</h3>
+                    <p class="text-sm text-slate-600 font-semibold">
+                        Vos informations sont protégées et cryptées. Transaction certifiée par le Ministère des Sports RDC.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const paymentCodes = {
+            'mpesa': {
+                ussd: '*150#',
+                merchant: 'SISEP-SPORT'
+            },
+            'orange': {
+                ussd: '#150#',
+                merchant: 'SISEP-SPORT'
+            },
+            'airtel': {
+                ussd: '*501#',
+                merchant: 'SISEP-SPORT'
+            }
+        };
+        
+        function updatePaymentInfo(method, element) {
+            // Désélectionner toutes les options
+            document.querySelectorAll('.payment-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Sélectionner l'option choisie
+            const paymentOption = element.closest('.payment-option');
+            if (paymentOption) {
+                paymentOption.classList.add('selected');
+            }
+            
+            // Afficher les instructions
+            const instructions = document.getElementById('payment-instructions');
+            if (instructions) {
+                instructions.classList.remove('hidden');
+                
+                // Mettre à jour les codes
+                document.getElementById('ussd-code').textContent = paymentCodes[method].ussd;
+                document.getElementById('merchant-code').textContent = paymentCodes[method].merchant;
+                
+                // Scroll vers les instructions
+                instructions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    </script>
+
+</body>
+</html>

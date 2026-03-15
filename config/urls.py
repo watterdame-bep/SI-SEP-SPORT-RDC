@@ -6,7 +6,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),
+    path('', include('public.urls')),  # Page d'accueil publique
+    path('auth/', include('core.urls')),  # Authentification et dashboards
     path('parametres/', include('parametres.urls')),
     path('parametres-geographiques/', include('referentiel_geo.urls')),
     path('gouvernance/', include('gouvernance.urls')),

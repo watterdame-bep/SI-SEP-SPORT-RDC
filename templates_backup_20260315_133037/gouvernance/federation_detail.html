@@ -1,0 +1,342 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Détails de la Fédération | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+}
+
+.badge-status {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: #0036ca;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #002a9f;
+}
+
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-building text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">{{ federation.nom_officiel }}</h1>
+                <p class="text-sm text-white/80 mt-1">{{ federation.sigle }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Informations générales -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8 mb-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Informations générales</h2>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Code</div>
+                <div class="info-value">{{ federation.code }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Numéro de dossier</div>
+                <div class="info-value">{{ federation.numero_dossier|default:"N/A" }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Type d'institution</div>
+                <div class="info-value">{{ federation.type_institution.designation }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Statut juridique</div>
+                <div class="info-value">{{ federation.statut_juridique|default:"N/A" }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Date de création</div>
+                <div class="info-value">{{ federation.date_creation|date:"d/m/Y"|default:"N/A" }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Statut</div>
+                <div class="info-value">
+                    <span class="badge badge-status">
+                        <i class="fa-solid fa-check-circle"></i>
+                        {{ federation.get_statut_activation_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations de contact -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8 mb-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Informations de contact</h2>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Email officiel</div>
+                <div class="info-value">{{ federation.email_officiel|default:"N/A" }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Téléphone</div>
+                <div class="info-value">{{ federation.telephone_off|default:"N/A" }}</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Site web</div>
+                <div class="info-value">
+                    {% if federation.site_web %}
+                        <a href="{{ federation.site_web }}" target="_blank" class="text-rdc-blue hover:underline">
+                            {{ federation.site_web }}
+                        </a>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disciplines sportives -->
+    {% if federation.disciplines.all %}
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8 mb-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Disciplines sportives</h2>
+        
+        <div class="flex flex-wrap gap-2">
+            {% for discipline in federation.disciplines.all %}
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
+                    {{ discipline.designation }}
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ligues rattachées -->
+    {% if ligues %}
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 lg:p-8 mb-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Ligues rattachées ({{ ligues.count }})</h2>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Nom</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Code</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for ligue in ligues %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-slate-900">{{ ligue.nom_officiel }}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600">{{ ligue.code }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                                {{ ligue.get_statut_activation_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Boutons d'action -->
+    <div class="flex gap-3 mb-6">
+        <a href="{% url 'gouvernance:federations_nationales' %}" class="btn-secondary">
+            <i class="fa-solid fa-arrow-left mr-2"></i>Retour
+        </a>
+        
+        <!-- Bouton Télécharger Documents (si fédération agréée) -->
+        {% if federation.statut_signature == 'SIGNE' %}
+        <button type="button" 
+                onclick="document.getElementById('download-documents-modal').showModal()"
+                class="btn-primary">
+            <i class="fa-solid fa-file-pdf mr-2"></i>Télécharger documents
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modale de téléchargement de documents -->
+{% if federation.statut_signature == 'SIGNE' %}
+<dialog id="download-documents-modal" class="rounded-lg shadow-2xl backdrop:bg-black/50 w-full max-w-md">
+    <div class="p-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Télécharger les documents</h2>
+        
+        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm text-blue-800">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                Sélectionnez le(s) document(s) à télécharger
+            </p>
+        </div>
+        
+        <!-- Options de téléchargement -->
+        <div class="space-y-3 mb-6">
+            <!-- Arrêté -->
+            {% if federation.document_arrete %}
+            <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+                <input type="checkbox" id="download-arrete" class="w-4 h-4 text-rdc-blue rounded" checked>
+                <div class="flex-1">
+                    <p class="font-semibold text-slate-800">Arrêté Ministériel</p>
+                    <p class="text-xs text-slate-600">{{ federation.numero_arrete }}</p>
+                </div>
+                <i class="fa-solid fa-file-pdf text-red-600"></i>
+            </label>
+            {% endif %}
+            
+            <!-- Certificat -->
+            {% if federation.document_certificat_homologation %}
+            <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+                <input type="checkbox" id="download-certificat" class="w-4 h-4 text-rdc-blue rounded" checked>
+                <div class="flex-1">
+                    <p class="font-semibold text-slate-800">Certificat d'Homologation</p>
+                    <p class="text-xs text-slate-600">{{ federation.numero_homologation }}</p>
+                </div>
+                <i class="fa-solid fa-certificate text-green-600"></i>
+            </label>
+            {% endif %}
+        </div>
+        
+        <!-- Boutons d'action -->
+        <div class="flex gap-3">
+            <button type="button" 
+                    onclick="document.getElementById('download-documents-modal').close()"
+                    class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition-colors">
+                Annuler
+            </button>
+            <button type="button" 
+                    onclick="telechargerDocuments('{{ federation.uid }}')"
+                    class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors">
+                <i class="fa-solid fa-download mr-2"></i>Télécharger
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+function telechargerDocuments(federationUid) {
+    const downloadArrete = document.getElementById('download-arrete')?.checked || false;
+    const downloadCertificat = document.getElementById('download-certificat')?.checked || false;
+    
+    if (!downloadArrete && !downloadCertificat) {
+        alert('Veuillez sélectionner au moins un document');
+        return;
+    }
+    
+    // Fermer la modale
+    document.getElementById('download-documents-modal').close();
+    
+    // Télécharger les documents
+    if (downloadArrete) {
+        window.location.href = `/gouvernance/federations/${federationUid}/download-arrete/`;
+    }
+    
+    if (downloadCertificat) {
+        // Attendre un peu avant de télécharger le certificat
+        setTimeout(() => {
+            window.location.href = `/gouvernance/federations/${federationUid}/download-certificat/`;
+        }, 500);
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

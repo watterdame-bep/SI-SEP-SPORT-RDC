@@ -1,0 +1,118 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Ma Galerie de Licences | {{ club.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-id-card text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Ma Galerie de Licences</h1>
+                    <p class="text-sm text-white/80 mt-1">Licence numérique — {{ club.nom_officiel }}</p>
+                </div>
+            </div>
+        </div>
+        <p class="text-white/90 text-sm mt-3 max-w-2xl">
+            Athlètes certifiés au niveau national. Présentez le QR code sur votre téléphone lors d’un contrôle, ou téléchargez le PDF pour une copie hors ligne.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if athletes_with_qr %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    {% for item in athletes_with_qr %}
+    {% with athlete=item.athlete qr_data_url=item.qr_data_url %}
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden flex flex-col">
+        <!-- Carte simplifiée licence (optimisée mobile) -->
+        <div class="p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <!-- Photo -->
+                <div class="flex-shrink-0 mx-auto sm:mx-0">
+                    {% if athlete.personne.photo %}
+                    <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="h-24 w-24 rounded-xl object-cover border-2 border-slate-200 shadow-sm">
+                    {% else %}
+                    <div class="h-24 w-24 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
+                        <i class="fa-solid fa-user text-3xl text-slate-400"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Nom + infos -->
+                <div class="flex-1 text-center sm:text-left min-w-0">
+                    <h3 class="font-bold text-slate-900 text-lg truncate" title="{{ athlete.nom_complet }}">{{ athlete.nom_complet }}</h3>
+                    <p class="text-sm text-slate-600 font-mono mt-0.5">{{ athlete.numero_licence|default:athlete.numero_sportif|default:"—" }}</p>
+                    {% if athlete.discipline %}
+                    <p class="text-xs text-slate-500 mt-1">{{ athlete.discipline.designation }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- QR Code (bien visible sur mobile) -->
+            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col items-center">
+                {% if qr_data_url %}
+                <img src="{{ qr_data_url }}" alt="QR vérification" class="w-28 h-28 sm:w-32 sm:h-32 object-contain bg-white rounded-lg p-1 border border-slate-200">
+                <p class="text-xs text-slate-500 mt-2">Scanner pour vérifier la licence</p>
+                {% else %}
+                <p class="text-xs text-amber-600">QR code non disponible</p>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Bouton Télécharger le PDF -->
+        <div class="p-4 pt-0 mt-auto border-t border-slate-100 bg-slate-50/50">
+            {% if athlete.licence_pdf %}
+            <a href="{% url 'gouvernance:club_athlete_download_licence' athlete.uid %}" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-rdc-blue text-white rounded-xl font-semibold text-sm hover:bg-rdc-blue-dark transition-colors shadow-sm">
+                <i class="fa-solid fa-download"></i>
+                Télécharger le PDF
+            </a>
+            <p class="text-xs text-slate-500 text-center mt-2">Copie numérique pour usage hors ligne</p>
+            {% else %}
+            <button type="button" disabled class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-slate-200 text-slate-500 rounded-xl font-semibold text-sm cursor-not-allowed">
+                <i class="fa-solid fa-file-pdf"></i>
+                PDF en cours de génération
+            </button>
+            <p class="text-xs text-slate-500 text-center mt-2">La licence sera disponible après génération par la fédération.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-8 md:p-12 text-center">
+    <div class="inline-flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-4">
+        <i class="fa-solid fa-id-card text-4xl"></i>
+    </div>
+    <h2 class="text-xl font-bold text-slate-800">Aucune licence pour le moment</h2>
+    <p class="text-slate-600 mt-2 max-w-md mx-auto">
+        Les athlètes certifiés au niveau national par la fédération apparaîtront ici. Vous pourrez afficher leur licence numérique (QR code) et télécharger le PDF.
+    </p>
+    <a href="{% url 'gouvernance:club_athletes_list' %}" class="inline-flex items-center gap-2 mt-6 px-5 py-3 bg-rdc-blue text-white rounded-xl font-semibold text-sm hover:bg-rdc-blue-dark transition-colors">
+        <i class="fa-solid fa-users"></i>
+        Voir les athlètes du club
+    </a>
+</div>
+{% endif %}
+{% endblock %}

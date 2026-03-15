@@ -1,0 +1,109 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Vérification ticket{% if ticket %} — {{ evenement.titre }}{% endif %} | SI-SEP Sport RDC{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 py-8">
+    <div class="text-center mb-6">
+        <h1 class="text-xl font-bold text-slate-800 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-ticket"></i>
+            Vérification ticket
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">Billetterie numérique — Anti-fraude</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4 space-y-2">
+        {% for message in messages %}
+        <div class="rounded-lg border-l-4 p-3 text-sm font-medium {% if message.tags == 'success' %}bg-green-50 border-green-500 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-500 text-red-800{% elif message.tags == 'warning' %}bg-amber-50 border-amber-500 text-amber-800{% else %}bg-blue-50 border-blue-500 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+        {% if ticket %}
+        <div class="p-6 {% if valide %}bg-green-50 border-b-4 border-green-500{% elif deja_utilise %}bg-amber-50 border-b-4 border-amber-500{% else %}bg-red-50 border-b-4 border-red-500{% endif %}">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                {% if valide %}
+                <div class="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center">
+                    <i class="fa-solid fa-check text-2xl text-white"></i>
+                </div>
+                <span class="text-lg font-bold text-green-800">Ticket valide</span>
+                {% elif deja_utilise %}
+                <div class="w-14 h-14 rounded-full bg-amber-500 flex items-center justify-center">
+                    <i class="fa-solid fa-clock-rotate-left text-2xl text-white"></i>
+                </div>
+                <span class="text-lg font-bold text-amber-800">Déjà utilisé</span>
+                {% else %}
+                <div class="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center">
+                    <i class="fa-solid fa-times text-2xl text-white"></i>
+                </div>
+                <span class="text-lg font-bold text-red-800">Ticket invalide</span>
+                {% endif %}
+            </div>
+            <p class="text-center text-slate-700 font-medium">{{ message }}</p>
+        </div>
+        <div class="p-6 space-y-4">
+            <dl class="grid grid-cols-1 gap-3 text-sm">
+                <div><dt class="text-slate-500 font-medium">Événement</dt><dd class="font-semibold text-slate-900">{{ evenement.titre }}</dd></div>
+                <div><dt class="text-slate-500 font-medium">Lieu</dt><dd class="text-slate-800">{{ infrastructure.nom }}</dd></div>
+                <div><dt class="text-slate-500 font-medium">Date</dt><dd class="text-slate-800">{{ evenement.date_evenement|date:"d/m/Y" }}{% if evenement.heure_debut %} — {{ evenement.heure_debut|time:"H:i" }}{% endif %}</dd></div>
+                <div><dt class="text-slate-500 font-medium">Zone</dt><dd class="text-slate-800">{{ zone.nom }}</dd></div>
+                <div><dt class="text-slate-500 font-medium">Code ticket</dt><dd class="font-mono text-slate-800 break-all">{{ ticket.uid }}</dd></div>
+                <div><dt class="text-slate-500 font-medium">Statut</dt><dd class="font-medium">{{ ticket.get_statut_display }}</dd></div>
+                {% if ticket.date_utilisation %}
+                <div><dt class="text-slate-500 font-medium">Utilisé le</dt><dd class="text-slate-800">{{ ticket.date_utilisation|date:"d/m/Y H:i" }}</dd></div>
+                {% endif %}
+            </dl>
+
+            {% if valide and user.is_authenticated %}
+            <form method="post" class="pt-4 border-t border-slate-200">
+                {% csrf_token %}
+                <button type="submit" class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Enregistrer l'entrée
+                </button>
+                <p class="text-xs text-slate-500 mt-2 text-center">Un seul passage par ticket. Le ticket sera marqué comme utilisé.</p>
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="p-6 bg-red-50 border-b-4 border-red-500">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <div class="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center">
+                    <i class="fa-solid fa-question text-2xl text-white"></i>
+                </div>
+                <span class="text-lg font-bold text-red-800">Ticket introuvable</span>
+            </div>
+            <p class="text-center text-slate-700">{{ message }}</p>
+        </div>
+        <div class="p-6 text-center text-sm text-slate-500">
+            Vérifiez le code scanné ou demandez un ticket acheté via les canaux officiels (guichet, Mobile Money).
+        </div>
+        {% endif %}
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-6">SI-SEP Sport RDC — Billetterie sécurisée</p>
+</div>
+{% endblock %}

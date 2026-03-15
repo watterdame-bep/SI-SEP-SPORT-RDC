@@ -1,0 +1,253 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Documents Officiels - {{ ligue.sigle }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">📎 Documents Officiels</h1>
+                <p class="text-sm text-white/80 mt-1">{{ ligue.nom_officiel }} — Vos documents d'agrément et d'homologation</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Statut d'Agrément -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-certificate text-rdc-blue"></i>
+                Statut d'Agrément
+            </h2>
+            <p class="text-sm text-slate-600 mt-1">Votre ligue est officiellement agréée par le Ministère</p>
+        </div>
+        <div class="text-right">
+            {% if attestation and attestation.statut == 'VALIDEE' %}
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 text-sm font-bold rounded-lg">
+                <i class="fa-solid fa-check-circle"></i>
+                AGRÉÉE
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-lg">
+                <i class="fa-solid fa-clock"></i>
+                EN ATTENTE
+            </span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-200">
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Numéro d'Homologation</p>
+            <p class="text-lg font-bold text-rdc-blue mt-1">
+                {% if attestation %}
+                    {{ attestation.numero_attestation }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Code Officiel</p>
+            <p class="text-lg font-bold text-slate-800 mt-1">{{ ligue.code }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Province</p>
+            <p class="text-lg font-bold text-slate-800 mt-1">{{ ligue.province_admin.designation }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Officiels -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Attestation d'Homologation -->
+    {% if attestation %}
+    <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="bg-gradient-to-r from-green-600 to-green-700 p-5 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold">🏅 Attestation d'Homologation</h3>
+                    <p class="text-sm text-white/80 mt-1">De votre Ligue Provinciale</p>
+                </div>
+                <i class="fa-solid fa-file-pdf text-4xl opacity-20"></i>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Numéro d'Attestation</p>
+                    <p class="text-lg font-bold text-green-600 mt-1">{{ attestation.numero_attestation }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Date d'Approbation</p>
+                    <p class="text-lg font-bold text-slate-800 mt-1">
+                        {% if attestation.date_approbation %}
+                            {{ attestation.date_approbation|date:"d/m/Y" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">Validité</p>
+                    <p class="text-sm text-slate-600">
+                        {% if attestation.date_validite %}
+                            Jusqu'au {{ attestation.date_validite|date:"d/m/Y" }}
+                        {% else %}
+                            Permanente
+                        {% endif %}
+                    </p>
+                </div>
+                
+                {% if attestation.document_attestation %}
+                <a href="{{ attestation.document_attestation.url }}" download class="inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors">
+                    <i class="fa-solid fa-download"></i>
+                    Télécharger l'Attestation
+                </a>
+                {% else %}
+                <div class="w-full px-4 py-3 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg text-center">
+                    Document non disponible
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Informations Officielles -->
+    <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div class="bg-rdc-blue p-5 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold">📋 Informations Officielles</h3>
+                    <p class="text-sm text-white/80 mt-1">Détails de votre ligue</p>
+                </div>
+                <i class="fa-solid fa-info-circle text-4xl opacity-20"></i>
+            </div>
+        </div>
+        <div class="p-5">
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Nom Officiel</p>
+                    <p class="text-lg font-bold text-slate-800 mt-1">{{ ligue.nom_officiel }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sigle</p>
+                    <p class="text-lg font-bold text-slate-800 mt-1">{{ ligue.sigle }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Statut</p>
+                    <p class="text-sm font-semibold text-slate-800 mt-1">
+                        {% if ligue.statut_activation == 'ACTIVE' %}
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
+                            ✓ Active
+                        </span>
+                        {% else %}
+                        <span class="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">
+                            Inactive
+                        </span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div>
+                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Email Officiel</p>
+                    <p class="text-sm text-slate-800 mt-1">
+                        {% if ligue.email_officiel %}
+                            <a href="mailto:{{ ligue.email_officiel }}" class="text-rdc-blue hover:underline">{{ ligue.email_officiel }}</a>
+                        {% else %}
+                            <span class="text-slate-500">Non renseigné</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations Utiles -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb text-rdc-yellow"></i>
+        Informations Utiles
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-rdc-blue/10">
+                    <i class="fa-solid fa-check text-rdc-blue"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800 text-sm">Documents Officiels</h3>
+                <p class="text-sm text-slate-600 mt-1">Ces documents sont officiels et peuvent être utilisés pour vos dossiers administratifs, demandes de sponsoring ou de visa.</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-rdc-blue/10">
+                    <i class="fa-solid fa-check text-rdc-blue"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800 text-sm">Attestation d'Homologation</h3>
+                <p class="text-sm text-slate-600 mt-1">L'Attestation d'Homologation prouve l'agrément officiel de votre ligue auprès de l'État congolais.</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-green-100">
+                    <i class="fa-solid fa-check text-green-600"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800 text-sm">Numéro d'Identification</h3>
+                <p class="text-sm text-slate-600 mt-1">Le numéro d'homologation est votre numéro d'identification national unique dans le système SI-SEP Sport RDC.</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <div class="flex-shrink-0">
+                <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-rdc-yellow/20">
+                    <i class="fa-solid fa-check text-rdc-yellow"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-slate-800 text-sm">Conservation</h3>
+                <p class="text-sm text-slate-600 mt-1">Conservez ces documents en lieu sûr et téléchargez-les régulièrement pour vos archives.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

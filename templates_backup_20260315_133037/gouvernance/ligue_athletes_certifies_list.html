@@ -1,0 +1,182 @@
+{% ex
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>tends "core/base.html" %}
+{% load static %}
+
+{% block title %}Athlètes certifiés | {{ ligue.nom_officiel }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-certificate text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Athlètes certifiés</h1>
+                    <p class="text-sm text-white/80 mt-1">Joueurs ayant réussi leur certification — {{ ligue.nom_officiel }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{% url 'gouvernance:ligue_athletes_validation_list' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium text-sm transition-colors border border-white/30">
+                    <i class="fa-solid fa-user-check"></i>
+                    Validation
+                </a>
+                <a href="{% url 'gouvernance:ligue_athletes_validation_history' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium text-sm transition-colors border border-white/30">
+                    <i class="fa-solid fa-history"></i>
+                    Historique validations
+                </a>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Total certifiés</p>
+                        <p class="text-2xl font-bold text-white">{{ total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-flag text-2xl text-green-300"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Certifiés provinciaux</p>
+                        <p class="text-2xl font-bold text-white">{{ total_provincial }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-medal text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white/70 uppercase tracking-wider">Certifiés nationaux</p>
+                        <p class="text-2xl font-bold text-white">{{ total_national }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <input type="text" id="search-input" placeholder="Rechercher par nom, club ou discipline..."
+           class="w-full md:max-w-md px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+</div>
+
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    {% if athletes %}
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut certification</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date certification</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="table-body">
+            {% for athlete in athletes %}
+            <tr class="hover:bg-slate-50 transition-colors"
+                data-nom="{{ athlete.nom_complet|lower }}"
+                data-club="{{ athlete.club.nom_officiel|lower }}"
+                data-discipline="{{ athlete.discipline.designation|default:''|lower }}">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        {% if athlete.personne.photo %}
+                        <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.nom_complet }}" class="h-10 w-10 rounded-full object-cover">
+                        {% else %}
+                        <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="text-sm font-semibold text-slate-900">{{ athlete.nom_complet }}</div>
+                            <div class="text-xs text-slate-500 font-mono">{{ athlete.numero_sportif }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-900">{{ athlete.club.nom_officiel }}</span>
+                    {% if athlete.club.sigle %}<div class="text-xs text-slate-500">{{ athlete.club.sigle }}</div>{% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    {% if athlete.statut_certification == 'CERTIFIE_NATIONAL' %}
+                    <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        <i class="fa-solid fa-medal mr-1"></i> Certifié national
+                    </span>
+                    {% else %}
+                    <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        <i class="fa-solid fa-flag mr-1"></i> Certifié provincial
+                    </span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-600">
+                    {% if athlete.statut_certification == 'CERTIFIE_NATIONAL' and athlete.date_validation_federation %}
+                    {{ athlete.date_validation_federation|date:"d/m/Y" }}
+                    {% elif athlete.date_validation_ligue %}
+                    {{ athlete.date_validation_ligue|date:"d/m/Y" }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="px-6 py-12 text-center">
+        <i class="fa-solid fa-certificate text-4xl text-slate-300 mb-4"></i>
+        <p class="text-slate-600 font-medium">Aucun athlète certifié pour le moment</p>
+        <p class="text-sm text-slate-500 mt-1">Les joueurs apparaîtront ici après validation provinciale ou certification nationale.</p>
+        <a href="{% url 'gouvernance:ligue_athletes_validation_list' %}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark text-sm font-medium">
+            <i class="fa-solid fa-user-check"></i>
+            Voir les athlètes en attente de validation
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+(function() {
+    const searchInput = document.getElementById('search-input');
+    const rows = document.querySelectorAll('#table-body tr[data-nom]');
+    if (!searchInput || !rows.length) return;
+    searchInput.addEventListener('input', function() {
+        const q = (this.value || '').trim().toLowerCase();
+        rows.forEach(function(row) {
+            const match = !q ||
+                (row.getAttribute('data-nom') || '').includes(q) ||
+                (row.getAttribute('data-club') || '').includes(q) ||
+                (row.getAttribute('data-discipline') || '').includes(q);
+            row.style.display = match ? '' : 'none';
+        });
+    });
+})();
+</script>
+{% endblock %}

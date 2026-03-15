@@ -192,9 +192,6 @@ class Rencontre(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        errors = {}
-        
-        # Validation 1: Un stade ne peut pas avoir deux rencontres à la même heure
         if self.stade_id and self.date_heure:
             qs = Rencontre.objects.filter(
                 stade_id=self.stade_id,
@@ -203,38 +200,9 @@ class Rencontre(models.Model):
             if self.pk:
                 qs = qs.exclude(pk=self.pk)
             if qs.exists():
-                errors['date_heure'] = 'Ce stade a déjà une rencontre à cette date et heure.'
-        
-        # Validation 2: Un club ne peut pas avoir deux rencontres le même jour
-        if self.date_heure and (self.equipe_a_id or self.equipe_b_id):
-            date_match = self.date_heure.date()
-            
-            # Vérifier pour l'équipe A
-            if self.equipe_a_id:
-                qs_equipe_a = Rencontre.objects.filter(
-                    date_heure__date=date_match,
-                ).filter(
-                    models.Q(equipe_a_id=self.equipe_a_id) | models.Q(equipe_b_id=self.equipe_a_id)
+                raise ValidationError(
+                    {'date_heure': 'Ce stade a déjà une rencontre à cette date et heure.'}
                 )
-                if self.pk:
-                    qs_equipe_a = qs_equipe_a.exclude(pk=self.pk)
-                if qs_equipe_a.exists():
-                    errors['equipe_a'] = f'{self.equipe_a.nom_officiel} a déjà une rencontre programmée le {date_match.strftime("%d/%m/%Y")}.'
-            
-            # Vérifier pour l'équipe B
-            if self.equipe_b_id:
-                qs_equipe_b = Rencontre.objects.filter(
-                    date_heure__date=date_match,
-                ).filter(
-                    models.Q(equipe_a_id=self.equipe_b_id) | models.Q(equipe_b_id=self.equipe_b_id)
-                )
-                if self.pk:
-                    qs_equipe_b = qs_equipe_b.exclude(pk=self.pk)
-                if qs_equipe_b.exists():
-                    errors['equipe_b'] = f'{self.equipe_b.nom_officiel} a déjà une rencontre programmée le {date_match.strftime("%d/%m/%Y")}.'
-        
-        if errors:
-            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         self.full_clean()
