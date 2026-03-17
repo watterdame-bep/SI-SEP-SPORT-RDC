@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.contrib import messages
 from django.db.models import Q, Count, Sum
+import json
 
 from .models import Ticket, Evenement, ZoneStade, EvenementZone, Vente, Infrastructure
 from gouvernance.models import Rencontre
@@ -126,6 +127,14 @@ def infra_manager_rencontres_list(request):
         'evenement__zones_tarifs__zone_stade'
     ).order_by('-date_heure')
     
+    # Récupérer aussi les réservations (événements de type RESERVATION)
+    from infrastructures.models import Evenement
+    reservations_evenements = Evenement.objects.filter(
+        infrastructure=infrastructure,
+        type_evenement='RESERVATION',
+        actif=True
+    ).select_related('organisateur').order_by('-date_evenement', '-heure_debut')
+    
     # Recherche
     search_query = request.GET.get('search', '').strip()
     if search_query:
@@ -155,13 +164,42 @@ def infra_manager_rencontres_list(request):
                 evenement_zone__evenement=rencontre.evenement,
                 statut='VENDU'
             ).count()
-            rencontre.total_ventes = Vente.objects.filter(
-                evenement=rencontre.evenement
-            ).aggregate(total=Sum('montant_total'))['total'] or 0
-        else:
-            rencontre.billetterie_configuree = False
-            rencontre.tickets_vendus = 0
-            rencontre.total_ventes = 0
+            
+            # Montant total des ventes - SEULEMENT les paiements validés
+            total_ventes_rencontre = 0
+            ventes_rencontre = Vente.objects.filter(evenement=rencontre.evenement)
+            for vente in ventes_rencontre:
+                try:
+                    if vente.notes:
+                        notes_data = json.loads(vente.notes)
+                        statut = notes_data.get('statut_paiement', 'INITIE')
+                        if statut == 'VALIDE':
+                            total_ventes_rencontre += float(vente.montant_total)
+                except (json.JSONDecodeError, TypeError):
+                    continue
+            rencontre.total_ventes = total_ventes_rencontre
+    
+    # Ajouter des statistiques pour chaque réservation
+    for reservation in reservations_evenements:
+        reservation.billetterie_configuree = reservation.zones_tarifs.exists()
+        reservation.tickets_vendus = Ticket.objects.filter(
+            evenement_zone__evenement=reservation,
+            statut='VENDU'
+        ).count()
+        
+        # Montant total des ventes - SEULEMENT les paiements validés
+        total_ventes_reservation = 0
+        ventes_reservation = Vente.objects.filter(evenement=reservation)
+        for vente in ventes_reservation:
+            try:
+                if vente.notes:
+                    notes_data = json.loads(vente.notes)
+                    statut = notes_data.get('statut_paiement', 'INITIE')
+                    if statut == 'VALIDE':
+                        total_ventes_reservation += float(vente.montant_total)
+            except (json.JSONDecodeError, TypeError):
+                continue
+        reservation.total_ventes = total_ventes_reservation
     
     # Statistiques globales
     stats = {
@@ -177,6 +215,7 @@ def infra_manager_rencontres_list(request):
     context = {
         'infrastructure': infrastructure,
         'rencontres': rencontres,
+        'reservations_evenements': reservations_evenements,  # Ajouter les réservations
         'stats': stats,
         'search_query': search_query,
         'statut_filter': statut_filter,
@@ -250,10 +289,8 @@ def infra_manager_rencontre_configurer_billetterie(request, rencontre_uid):
                         prix_decimal = float(prix)
                         capacite_int = int(capacite)
                         
-                        # Vérifier que la capacité ne dépasse pas la capacité de la zone
-                        if zone.capacite and capacite_int > zone.capacite:
-                            messages.warning(request, f"La capacité pour {zone.nom} dépasse la capacité de la zone ({zone.capacite} places).")
-                            continue
+                        # Pas de vérification de capacité maximale de zone (ZoneStade n'a pas de champ capacite)
+                        # La capacité est définie par événement dans EvenementZone
                         
                         # Créer ou mettre à jour le tarif
                         EvenementZone.objects.update_or_create(
@@ -345,19 +382,60 @@ def infra_manager_rencontre_statistiques(request, rencontre_uid):
     tickets_utilises = Ticket.objects.filter(evenement_zone__evenement=evenement, statut='UTILISE').count()
     tickets_disponibles = Ticket.objects.filter(evenement_zone__evenement=evenement, statut='DISPONIBLE').count()
     
-    # Montant total des ventes
-    total_ventes = Vente.objects.filter(evenement=evenement).aggregate(
-        total=Sum('montant_total')
-    )['total'] or 0
+    # Montant total des ventes - SEULEMENT les paiements validés
+    total_ventes = 0
+    ventes_evenement = Vente.objects.filter(evenement=evenement)
+    for vente in ventes_evenement:
+        try:
+            if vente.notes:
+                notes_data = json.loads(vente.notes)
+                statut = notes_data.get('statut_paiement', 'INITIE')
+                if statut == 'VALIDE':
+                    total_ventes += float(vente.montant_total)
+        except (json.JSONDecodeError, TypeError):
+            continue
     
-    # Nombre de ventes
-    nb_ventes = Vente.objects.filter(evenement=evenement).count()
+    # Nombre de ventes validées
+    nb_ventes = 0
+    for vente in ventes_evenement:
+        try:
+            if vente.notes:
+                notes_data = json.loads(vente.notes)
+                statut = notes_data.get('statut_paiement', 'INITIE')
+                if statut == 'VALIDE':
+                    nb_ventes += 1
+        except (json.JSONDecodeError, TypeError):
+            continue
     
-    # Ventes par canal
-    ventes_par_canal = Vente.objects.filter(evenement=evenement).values('canal').annotate(
-        count=Count('uid'),
-        montant=Sum('montant_total')
-    ).order_by('-montant')
+    # Ventes par canal - SEULEMENT les paiements validés
+    ventes_par_canal = []
+    canaux_data = Vente.objects.filter(evenement=evenement).values('canal')
+    
+    for canal_info in canaux_data:
+        canal = canal_info['canal']
+        ventes_canal = Vente.objects.filter(evenement=evenement, canal=canal)
+        
+        montant_valide = 0
+        count_valide = 0
+        for vente in ventes_canal:
+            try:
+                if vente.notes:
+                    notes_data = json.loads(vente.notes)
+                    statut = notes_data.get('statut_paiement', 'INITIE')
+                    if statut == 'VALIDE':
+                        montant_valide += float(vente.montant_total)
+                        count_valide += 1
+            except (json.JSONDecodeError, TypeError):
+                continue
+        
+        if count_valide > 0:
+            ventes_par_canal.append({
+                'canal': canal,
+                'count': count_valide,
+                'montant': montant_valide
+            })
+    
+    ventes_par_canal.sort(key=lambda x: x['montant'], reverse=True)
     
     # Statistiques par zone
     for zone in zones_configurees:
@@ -372,18 +450,37 @@ def infra_manager_rencontre_statistiques(request, rencontre_uid):
         else:
             zone.pourcentage_vente = 0
         
-        # Montant des ventes pour cette zone
-        zone.montant_ventes = Vente.objects.filter(
-            tickets__evenement_zone=zone
-        ).aggregate(total=Sum('montant_total'))['total'] or 0
+        # Montant des ventes pour cette zone - SEULEMENT les paiements validés
+        zone.montant_ventes = 0
+        ventes_zone = Vente.objects.filter(tickets__evenement_zone=zone)
+        for vente in ventes_zone:
+            try:
+                if vente.notes:
+                    notes_data = json.loads(vente.notes)
+                    statut = notes_data.get('statut_paiement', 'INITIE')
+                    if statut == 'VALIDE':
+                        zone.montant_ventes += float(vente.montant_total)
+            except (json.JSONDecodeError, TypeError):
+                continue
     
-    # Ventes récentes (dernières 10)
+    # Ventes récentes (dernières 10) - SEULEMENT les paiements validés
     ventes_recentes = Vente.objects.filter(
         evenement=evenement
     ).select_related('caissier').order_by('-date_vente')[:10]
     
+    # Filtrer pour n'afficher que les ventes avec paiement validé
+    ventes_recentes_valides = []
+    for vente in ventes_recentes:
+        try:
+            if vente.notes:
+                notes_data = json.loads(vente.notes)
+                statut = notes_data.get('statut_paiement', 'INITIE')
+                if statut == 'VALIDE':
+                    ventes_recentes_valides.append(vente)
+        except (json.JSONDecodeError, TypeError):
+            continue  # Ignorer les ventes avec notes invalides
+    
     # Données pour les graphiques (format JSON)
-    import json
     
     # Graphique par zone (ventes)
     zones_labels = [z.zone_stade.nom for z in zones_configurees]
@@ -417,7 +514,7 @@ def infra_manager_rencontre_statistiques(request, rencontre_uid):
         'total_ventes': total_ventes,
         'nb_ventes': nb_ventes,
         'ventes_par_canal': ventes_par_canal,
-        'ventes_recentes': ventes_recentes,
+        'ventes_recentes': ventes_recentes_valides,  # Utiliser les ventes validées
         'graphique_zones_json': json.dumps(graphique_zones),
         'graphique_canaux_json': json.dumps(graphique_canaux),
         'user_role': 'infra_manager',

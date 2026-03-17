@@ -489,6 +489,7 @@ class Evenement(models.Model):
             ('COMPETITION_ATHLETISME', 'Compétition d\'athlétisme'),
             ('COMPETITION', 'Compétition sportive'),
             ('GALA', 'Gala / Cérémonie'),
+            ('RESERVATION', 'Réservation privée'),
             ('AUTRE', 'Autre'),
         ],
         default='MATCH',
@@ -638,6 +639,14 @@ class Ticket(models.Model):
     Chaque ticket est unique ; une fois utilisé (scanné à l'entrée), il ne peut plus servir.
     """
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    numero_billet = models.CharField(
+        max_length=12,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text='Numéro de billet visible (pour vérification manuelle)'
+    )
     evenement_zone = models.ForeignKey(
         EvenementZone,
         on_delete=models.PROTECT,
@@ -655,6 +664,8 @@ class Ticket(models.Model):
         max_length=20,
         choices=[
             ('DISPONIBLE', 'Disponible'),
+            ('EN_RESERVATION', 'En réservation (paiement en cours)'),
+            ('RESERVE', 'Réservé (en attente de paiement)'),
             ('VENDU', 'Vendu'),
             ('UTILISE', 'Utilisé (scanné à l\'entrée)'),
             ('ANNULE', 'Annulé'),
@@ -674,8 +685,65 @@ class Ticket(models.Model):
         verbose_name_plural = 'Tickets'
         ordering = ['evenement_zone', 'date_creation']
 
+    def save(self, *args, **kwargs):
+        # Générer un numéro de billet unique si pas encore défini
+        if not self.numero_billet:
+            self.numero_billet = self.generer_numero_billet()
+        super().save(*args, **kwargs)
+
+    def generer_numero_billet(self):
+        """Génère un numéro de billet unique de 12 caractères"""
+        import random
+        import string
+        
+        # Format: TKT + 8 chiffres aléatoires
+        while True:
+            numero = 'TKT' + ''.join(random.choices(string.digits, k=8))
+            if not Ticket.objects.filter(numero_billet=numero).exists():
+                return numero
+
+    def generer_qr_code(self):
+        """Génère le QR code pour le ticket"""
+        import qrcode
+        from io import BytesIO
+        import base64
+        
+        # Données à encoder dans le QR code
+        qr_data = {
+            'ticket_uid': str(self.uid),
+            'numero_billet': self.numero_billet,
+            'evenement': self.evenement_zone.evenement.titre,
+            'date_evenement': self.evenement_zone.evenement.date_evenement.strftime('%Y-%m-%d'),
+            'zone': self.evenement_zone.zone_stade.nom,
+            'stade': self.evenement_zone.evenement.infrastructure.nom
+        }
+        
+        # Créer le QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(str(qr_data))
+        qr.make(fit=True)
+        
+        # Générer l'image
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convertir en base64 pour l'affichage web
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        
+        return f"data:image/png;base64,{img_str}"
+
+    def get_qr_url(self):
+        """Retourne l'URL publique pour afficher le ticket"""
+        return f"/ticket/{self.uid}/"
+
     def __str__(self):
-        return f"Ticket {str(self.uid)[:8]}… — {self.get_statut_display()}"
+        return f"Ticket {self.numero_billet} — {self.get_statut_display()}"
 
     @property
     def evenement(self):

@@ -22,6 +22,7 @@ def type_infrastructure_list(request):
     context = {
         'types': types,
         'user_role': 'sg',
+        'total_infrastructures': sum(t.infrastructures.count() for t in types),
     }
     
     return render(request, 'infrastructures/type_infrastructure_list.html', context)

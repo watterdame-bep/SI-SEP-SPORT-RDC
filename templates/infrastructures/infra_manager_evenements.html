@@ -1,21 +1,28 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Rencontres & Billetterie | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Rencontres & Billetterie</h1>
                 <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Matchs et événements prévus (configurez zones et tarifs)</p>
             </div>
-            <a href="{% url 'infrastructures:infra_manager_dashboard' %}"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Retour</span>
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'infrastructures:infra_manager_create_reservation' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors border border-green-700">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Réservation</span>
+                </a>
+                <a href="{% url 'infrastructures:infra_manager_dashboard' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Retour</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -27,7 +34,7 @@
 </div>
 
 <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-    {% if evenements %}
+    {% if evenements or reservations %}
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
@@ -36,15 +43,55 @@
                     <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Heure</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Statut</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-200">
+                <!-- Afficher les rencontres officielles -->
                 {% for evt in evenements %}
                 <tr class="hover:bg-slate-50">
-                    <td class="px-4 py-3 font-medium text-slate-900">{{ evt.titre }}</td>
+                    <td class="px-4 py-3 font-medium text-slate-900">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-trophy text-rdc-blue"></i>
+                            {{ evt.titre }}
+                        </div>
+                    </td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ evt.date_evenement|date:"d/m/Y" }}</td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ evt.heure_debut|time:"H:i"|default:"—" }}</td>
-                    <td class="px-4 py-3"><span class="inline-flex px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">{{ evt.get_type_evenement_display }}</span></td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex px-2.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ evt.get_type_evenement_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            Officiel
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Afficher les réservations -->
+                {% for reservation in reservations %}
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3 font-medium text-slate-900">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-green-600"></i>
+                            {{ reservation.titre }}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600">{{ reservation.date_evenement|date:"d/m/Y" }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600">{{ reservation.heure_debut|time:"H:i"|default:"—" }}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex px-2.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ reservation.get_type_evenement_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex px-2.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                            Réservation
+                        </span>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -54,7 +101,14 @@
     <div class="px-6 py-12 text-center text-slate-500">
         <i class="fa-solid fa-calendar-days text-4xl text-slate-300 mb-3"></i>
         <p class="font-medium">Aucun match ou événement prévu pour le moment</p>
-        <p class="text-sm mt-1">Quand la ligue planifiera des rencontres dans ce stade, elles apparaîtront ici. Vous pourrez alors configurer la billetterie (zones, tarifs, tickets).</p>
+        <p class="text-sm mt-1">Créez des réservations pour des événements privés ou attendez les matchs officiels de la ligue.</p>
+        <div class="mt-4">
+            <a href="{% url 'infrastructures:infra_manager_create_reservation' %}" 
+               class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                <i class="fa-solid fa-plus"></i>
+                <span>Créer une réservation</span>
+            </a>
+        </div>
     </div>
     {% endif %}
 </div>

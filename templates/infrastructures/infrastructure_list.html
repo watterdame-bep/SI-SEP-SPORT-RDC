@@ -1,10 +1,10 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Infrastructures Sportives{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
@@ -28,6 +28,14 @@
                     {% endif %}
                 </div>
                 {% endif %}
+                <a href="{% url 'infrastructures:infrastructure_list_with_map' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-green hover:bg-rdc-green/90 text-white text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
+                    <i class="fa-solid fa-map"></i>
+                    <span>Voir la carte</span>
+                </a>
+                <button onclick="toggleView()" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
+                    <i class="fa-solid fa-map" id="toggle-icon"></i>
+                    <span id="toggle-text">Voir la carte</span>
+                </button>
                 {% if is_directeur_provincial %}
                 <a href="{% url 'infrastructures:infrastructure_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
                     <i class="fa-solid fa-plus"></i>
@@ -143,7 +151,7 @@
 </div>
 
 <!-- Liste des Infrastructures -->
-<div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+<div id="list-view" class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
     {% if infrastructures %}
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -289,5 +297,51 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Vue Carte (cachée par défaut) -->
+<div id="map-view" class="hidden bg-white rounded-lg shadow border border-slate-200 p-5">
+    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-map-marked-alt text-rdc-blue"></i>
+        Cartographie des Infrastructures Sportives
+    </h2>
+    
+    <div class="grid grid-cols-1 gap-6">
+        <div>
+            <div class="h-[800px] rounded-lg border border-slate-200 overflow-hidden">
+                <iframe 
+                    src="/carte/" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    style="border: none;"
+                    title="Carte des infrastructures sportives">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleView() {
+    const listView = document.getElementById('list-view');
+    const mapView = document.getElementById('map-view');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (listView.classList.contains('hidden')) {
+        // Afficher la liste
+        listView.classList.remove('hidden');
+        mapView.classList.add('hidden');
+        toggleIcon.className = 'fa-solid fa-map';
+        toggleText.textContent = 'Voir la carte';
+    } else {
+        // Afficher la carte
+        listView.classList.add('hidden');
+        mapView.classList.remove('hidden');
+        toggleIcon.className = 'fa-solid fa-list';
+        toggleText.textContent = 'Voir la liste';
+    }
+}
+</script>
 
 {% endblock %}

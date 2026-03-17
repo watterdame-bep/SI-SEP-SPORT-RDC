@@ -1,22 +1,4 @@
-{% ex
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'rdc-blue': '#0036ca',
-                        'rdc-blue-dark': '#002a9e',
-                        'rdc-yellow': '#FDE015',
-                        'rdc-red': '#ED1C24',
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>tends 'core/base.html' %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Billetterie - {{ infrastructure.nom }} - SI-SEP Sport RDC{% endblock %}
@@ -44,7 +26,7 @@
         </div>
 
         <!-- Informations de la Rencontre -->
-        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark rounded-xl shadow-lg p-6 mb-8 text-white">
+        <div class="bg-rdc-blue rounded-xl shadow-lg p-6 mb-8 text-white">
             <div class="flex items-start justify-between flex-wrap gap-4">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-3 flex-wrap">
@@ -392,7 +374,6 @@
                                        name="capacite_zone_{{ zone.uid }}" 
                                        class="capacite-input w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
                                        min="1"
-                                       {% if zone.capacite_existante %}value="{{ zone.capacite_existante }}"{% endif %}
                                        placeholder="Ex: 500"
                                        data-zone-uid="{{ zone.uid }}"
                                        data-zone-name="{{ zone.nom }}">

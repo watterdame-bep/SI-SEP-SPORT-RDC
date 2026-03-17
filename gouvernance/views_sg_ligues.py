@@ -170,19 +170,38 @@ def sg_approuver_ligue(request, ligue_id):
         defaults={'statut': 'EN_ATTENTE'}
     )
     
-    # Générer le numéro d'attestation
+    # Générer le numéro d'attestation unique
     year = timezone.now().year
     province_code = ligue.province_admin.code if ligue.province_admin else 'XX'
-    count = AttestationReconnaissance.objects.filter(
-        ligue__province_admin=ligue.province_admin,
-        date_approbation__year=year
-    ).count() + 1
     
-    numero_attestation = f"RDC/MIN-SPORT/LIGUE/{province_code}/{year}-{count:03d}"
+    # Trouver le prochain numéro unique
+    max_attempts = 100  # Éviter une boucle infinie
+    for attempt in range(max_attempts):
+        count = AttestationReconnaissance.objects.filter(
+            ligue__province_admin=ligue.province_admin,
+            date_approbation__year=year
+        ).count() + attempt + 1
+        
+        numero_attestation = f"RDC/MIN-SPORT/LIGUE/{province_code}/{year}-{count:03d}"
+        
+        # Vérifier si ce numéro existe déjà
+        if not AttestationReconnaissance.objects.filter(numero_attestation=numero_attestation).exists():
+            break
+    else:
+        # Si on arrive ici, c'est qu'on n'a pas trouvé de numéro unique
+        numero_attestation = f"RDC/MIN-SPORT/LIGUE/{province_code}/{year}-{timezone.now().strftime('%m%d%H%M%S')}"
     
     # Approuver l'attestation et stocker les observations
     attestation.observations_sg = observations_sg
-    attestation.approuver(numero_attestation)
+    try:
+        attestation.approuver(numero_attestation)
+    except Exception as e:
+        # Si erreur de duplicata, générer un nouveau numéro avec timestamp
+        if "Duplicate" in str(e) or "duplicata" in str(e):
+            numero_attestation = f"RDC/MIN-SPORT/LIGUE/{province_code}/{year}-{timezone.now().strftime('%m%d%H%M%S')}"
+            attestation.approuver(numero_attestation)
+        else:
+            raise
     
     # Générer le document d'attestation d'homologation
     attestation_pdf = None

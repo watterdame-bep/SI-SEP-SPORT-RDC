@@ -1,8 +1,7 @@
 """
 Générateur de Licence Sportive pour les Athlètes Certifiés Nationalement.
-- generer_licence_sportive: Format A4 (legacy).
-- generer_licence_sportive_id1: Format ID-1 (85,60 mm × 53,98 mm), norme carte bancaire / permis,
-  licence biométrique sécurisée (QR code, photo, logo fédération, numéro national sportif).
+Utilise le template HTML essai.html du dossier licence_fichier/
+pour créer une carte d'identité sportive avec les données de l'athlète.
 """
 import io
 import os
@@ -13,15 +12,17 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm, mm
 from reportlab.lib.colors import HexColor
 from reportlab.pdfgen import canvas
-from PIL import Image
+from reportlab.lib.utils import ImageReader
+from PIL import Image, ImageDraw, ImageFont
 from django.core.files.base import ContentFile
+from django.conf import settings
+from django.template.loader import render_to_string
 
 # Format ID-1 (ISO/IEC 7810) — carte bancaire, permis de conduire, licence sportive RDC
 ID1_LARGEUR_MM = 85.60
 ID1_HAUTEUR_MM = 53.98
 ID1_PAGESIZE = (ID1_LARGEUR_MM * mm, ID1_HAUTEUR_MM * mm)
 ID1_RAYON_COINS_MM = 3.18
-
 
 # Couleurs RDC
 BLEU_ROYAL = HexColor('#0036ca')
@@ -390,158 +391,346 @@ def generer_licence_sportive(athlete, base_url=None):
     return ContentFile(buffer.getvalue(), name=f"Licence_{numero_fichier}.pdf")
 
 
-def generer_licence_sportive_id1(athlete, base_url=None):
+def generer_licence_sportive_id1_html(athlete, base_url=None):
     """
-    Génère la Licence Sportive Nationale au format ID-1 (85,60 mm × 53,98 mm).
-    Norme RDC / FECOFA : carte biométrique sécurisée (photo, QR code, logo, numéro national).
-    Recto uniquement dans ce PDF ; impression recto-verso possible via le template HTML F22.
+    Génère la Licence Sportive Nationale au format ID-1 en utilisant le template HTML.
+    Utilise weasyprint pour convertir le HTML en PDF de haute qualité.
     
     Returns:
-        io.BytesIO: flux PDF (à sauvegarder dans athlete.licence_pdf).
+        ContentFile: Fichier PDF prêt à être sauvegardé
     """
-    from django.conf import settings
+    try:
+        from weasyprint import HTML, CSS
+    except ImportError:
+        # Fallback sur l'ancienne méthode si weasyprint n'est pas installé
+        return generer_licence_sportive_id1_image(athlete, base_url)
+    
+    if base_url is None:
+        base_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+    base_url = base_url.rstrip('/')
+    
+    # Générer le QR code
+    qr_url = f"{base_url}/gouvernance/verifier-athlete/{athlete.uid}/"
+    qr_img = generer_qr_code(qr_url)
+    
+    # Sauvegarder le QR code temporairement
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_qr:
+        qr_img.save(tmp_qr.name, format='PNG')
+        qr_path = tmp_qr.name
+    
+    try:
+        # Préparer le contexte pour le template
+        context = {
+            'athlete': athlete,
+            'qr_code_path': qr_path,
+            'base_dir': settings.BASE_DIR,
+        }
+        
+        # Charger et rendre le template HTML
+        base_dir = settings.BASE_DIR
+        template_path = os.path.join(base_dir, 'licence_fichier', 'essai.html')
+        
+        with open(template_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        # Remplacer les variables du template
+        html_content = _remplacer_variables_template(html_content, athlete, qr_path, base_dir)
+        
+        # Générer le PDF avec weasyprint
+        pdf_buffer = io.BytesIO()
+        HTML(string=html_content, base_url=str(base_dir)).write_pdf(pdf_buffer)
+        pdf_buffer.seek(0)
+        
+        numero_fichier = athlete.numero_licence or athlete.numero_sportif or str(athlete.uid)[:8]
+        return ContentFile(pdf_buffer.getvalue(), name=f"Licence_ID1_{numero_fichier}.pdf")
+        
+    finally:
+        # Nettoyer le fichier QR temporaire
+        try:
+            os.unlink(qr_path)
+        except:
+            pass
+
+
+def _remplacer_variables_template(html_content, athlete, qr_path, base_dir):
+    """
+    Remplace les variables Django template par les vraies valeurs
+    """
+    # Photo de l'athlète
+    if athlete.personne and athlete.personne.photo:
+        photo_url = athlete.personne.photo.path
+    else:
+        photo_url = os.path.join(base_dir, 'media', 'sceaux', 'logo-rdc.png')
+    
+    # Remplacements
+    replacements = {
+        '{{ athlete.photo.url }}': photo_url,
+        '{{ athlete.nom }}': athlete.personne.nom.upper() if athlete.personne and athlete.personne.nom else '',
+        '{{ athlete.postnom }}': athlete.personne.postnom.upper() if athlete.personne and athlete.personne.postnom else '',
+        '{{ athlete.prenom }}': athlete.personne.prenom.upper() if athlete.personne and a
+    """
+    Génère la Licence Sportive Nationale au format ID-1 (85,60 mm × 53,98 mm).
+    Utilise les templates recto.png et verso.png du dossier licence_fichier/
+    et superpose les informations de l'athlète (photo, numéro, discipline).
+    
+    Returns:
+        ContentFile: Fichier PDF recto-verso prêt à être sauvegardé
+    """
     if base_url is None:
         base_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
     base_url = base_url.rstrip('/')
 
+    # Chemins des templates
+    base_dir = getattr(settings, 'BASE_DIR', os.path.dirname(os.path.dirname(__file__)))
+    recto_template_path = os.path.join(base_dir, 'licence_fichier', 'recto.png')
+    verso_template_path = os.path.join(base_dir, 'licence_fichier', 'verso.png')
+
+    # Créer les images recto et verso avec superposition
+    recto_image = _creer_recto_licence(athlete, recto_template_path, base_url)
+    verso_image = _creer_verso_licence(athlete, verso_template_path, base_url)
+
+    # Créer le PDF avec les deux pages
     buffer = io.BytesIO()
     w, h = ID1_PAGESIZE
     c = canvas.Canvas(buffer, pagesize=ID1_PAGESIZE)
 
-    # Coins arrondis simulés par un rectangle (la découpe physique se fait à l'impression)
-    r = ID1_RAYON_COINS_MM * mm
-    c.setLineWidth(0.5)
-    c.setStrokeColor(BLEU_ROYAL)
-    c.setFillColor(HexColor('#ffffff'))
-    c.roundRect(0, 0, w, h, r, fill=1, stroke=1)
-
-    # Filigrane / fond discret (drapeau RDC - bandes très atténuées)
-    c.setFillColor(HexColor('#0036ca'))
-    c.setFillAlpha(0.06)
-    c.setStrokeAlpha(0.06)
-    c.rect(0, 0, w, h / 3)
-    c.setFillColor(HexColor('#FDE015'))
-    c.rect(0, h / 3, w, h / 3)
-    c.setFillColor(HexColor('#ED1C24'))
-    c.rect(0, 2 * h / 3, w, h / 3)
-    c.setFillAlpha(1)
-    c.setStrokeAlpha(1)
-
-    # --- Photo biométrique (gauche) ---
-    photo_x, photo_y = 2 * mm, h - 10 * mm
-    photo_w, photo_h = 18 * mm, 22 * mm
-    if athlete.personne and getattr(athlete.personne, 'photo', None) and athlete.personne.photo:
-        try:
-            c.drawImage(athlete.personne.photo.path, photo_x, photo_y, width=photo_w, height=photo_h, preserveAspectRatio=True)
-        except Exception:
-            _draw_photo_placeholder(c, photo_x, photo_y, photo_w, photo_h)
-    else:
-        _draw_photo_placeholder(c, photo_x, photo_y, photo_w, photo_h)
-    c.setStrokeColor(BLEU_ROYAL)
-    c.setLineWidth(0.3)
-    c.rect(photo_x, photo_y, photo_w, photo_h)
-
-    # --- Logo fédération / RDC (droite, haut) ---
-    logo_x = w - 20 * mm
-    logo_y = h - 14 * mm
-    logo_w = 16 * mm
-    logo_h = 10 * mm
-    federation = athlete.club.institution_tutelle if athlete.club else None
-    logo_path = None
-    if federation and getattr(federation, 'logo', None) and federation.logo:
-        try:
-            logo_path = federation.logo.path
-        except Exception:
-            pass
-    if not logo_path and getattr(settings, 'STATIC_ROOT', None):
-        logo_path = os.path.join(settings.STATIC_ROOT, 'img', 'logo-rdc.png')
-    if not logo_path and getattr(settings, 'BASE_DIR', None):
-        logo_path = os.path.join(settings.BASE_DIR, 'static', 'img', 'logo-rdc.png')
-    if logo_path and os.path.isfile(logo_path):
-        try:
-            c.drawImage(logo_path, logo_x, logo_y, width=logo_w, height=logo_h, preserveAspectRatio=True)
-        except Exception:
-            pass
-    c.setFont("Helvetica-Bold", 6)
-    c.setFillColor(BLEU_ROYAL)
-    if federation:
-        nom_fed = (getattr(federation, 'nom_officiel', None) or getattr(federation, 'designation', None) or "Fédération")[:25]
-        c.drawString(logo_x, logo_y - 2 * mm, nom_fed.upper())
-
-    # --- Titre et numéro national sportif ---
-    c.setFont("Helvetica-Bold", 7)
-    c.setFillColor(BLEU_ROYAL)
-    c.drawString(photo_x + photo_w + 2 * mm, h - 5 * mm, "RÉPUBLIQUE DÉMOCRATIQUE DU CONGO")
-    c.setFont("Helvetica", 6)
-    c.setFillColor(NOIR)
-    c.drawString(photo_x + photo_w + 2 * mm, h - 7 * mm, "LICENCE SPORTIVE NATIONALE — F22")
-    c.setFont("Helvetica-Bold", 10)
-    c.setFillColor(ROUGE_DRAPEAU)
-    c.drawString(photo_x + photo_w + 2 * mm, h - 10 * mm, athlete.numero_licence or athlete.numero_sportif or "—")
-    c.setFont("Helvetica-Bold", 6)
-    c.setFillColor(NOIR)
-    c.drawString(photo_x + photo_w + 2 * mm, h - 11.5 * mm, "N° NATIONAL SPORTIF")
-
-    # --- Nom, date naissance, discipline ---
-    info_x = photo_x + photo_w + 2 * mm
-    info_y = h - 14 * mm
-    c.setFont("Helvetica-Bold", 6)
-    c.setFillColor(GRIS_CLAIR)
-    c.drawString(info_x, info_y, "NOM COMPLET")
-    c.setFont("Helvetica", 7)
-    c.setFillColor(NOIR)
-    nom_complet = (athlete.nom_complet or "").upper()[:28]
-    c.drawString(info_x, info_y - 2.2 * mm, nom_complet)
-    c.setFont("Helvetica-Bold", 6)
-    c.setFillColor(GRIS_CLAIR)
-    c.drawString(info_x, info_y - 4.5 * mm, "NÉ(E) LE")
-    c.setFont("Helvetica", 7)
-    c.setFillColor(NOIR)
-    if athlete.personne and athlete.personne.date_naissance:
-        c.drawString(info_x, info_y - 6 * mm, athlete.personne.date_naissance.strftime('%d/%m/%Y'))
-    c.setFont("Helvetica-Bold", 6)
-    c.setFillColor(GRIS_CLAIR)
-    c.drawString(info_x, info_y - 8 * mm, "DISCIPLINE")
-    c.setFont("Helvetica", 7)
-    c.setFillColor(NOIR)
-    if athlete.discipline:
-        c.drawString(info_x, info_y - 9.5 * mm, (athlete.discipline.designation or "")[:20])
-    if athlete.club:
-        c.setFont("Helvetica", 5)
-        c.setFillColor(HexColor('#374151'))
-        c.drawString(info_x, info_y - 11 * mm, (athlete.club.nom_officiel or "")[:24])
-
-    # --- Validité ---
-    c.setFont("Helvetica", 5)
-    c.setFillColor(NOIR)
-    if athlete.date_emission_licence and athlete.date_expiration_licence:
-        c.drawString(photo_x, 8 * mm, f"Valide du {athlete.date_emission_licence.strftime('%d/%m/%Y')} au {athlete.date_expiration_licence.strftime('%d/%m/%Y')}")
-
-    # --- QR code (verso simulé = bas de carte) ---
-    qr_url = f"{base_url}/gouvernance/verifier-athlete/{athlete.uid}/"
-    qr_img = generer_qr_code(qr_url)
-    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-        qr_img.save(tmp.name, format='PNG')
-        qr_path = tmp.name
+    # Page 1: Recto
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_recto:
+        recto_image.save(tmp_recto.name, format='PNG', dpi=(300, 300))
+        tmp_recto_path = tmp_recto.name
+    
     try:
-        qr_size = 12 * mm
-        qr_x = w - qr_size - 3 * mm
-        qr_y = 2 * mm
-        c.drawImage(qr_path, qr_x, qr_y, width=qr_size, height=qr_size)
-    except Exception:
-        pass
+        c.drawImage(tmp_recto_path, 0, 0, width=w, height=h)
+        c.showPage()
     finally:
         try:
-            os.unlink(qr_path)
-        except Exception:
+            os.unlink(tmp_recto_path)
+        except:
             pass
-    c.setFont("Helvetica", 4)
-    c.setFillColor(HexColor('#6b7280'))
-    c.drawCentredString(qr_x + qr_size / 2, qr_y - 1.5 * mm, "Scanner vérification")
+
+    # Page 2: Verso
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_verso:
+        verso_image.save(tmp_verso.name, format='PNG', dpi=(300, 300))
+        tmp_verso_path = tmp_verso.name
+    
+    try:
+        c.drawImage(tmp_verso_path, 0, 0, width=w, height=h)
+    finally:
+        try:
+            os.unlink(tmp_verso_path)
+        except:
+            pass
 
     c.save()
     buffer.seek(0)
-    return buffer
+    
+    numero_fichier = athlete.numero_licence or athlete.numero_sportif or str(athlete.uid)[:8]
+    return ContentFile(buffer.getvalue(), name=f"Licence_ID1_{numero_fichier}.pdf")
+
+
+def _creer_recto_licence(athlete, template_path, base_url):
+    """
+    Crée l'image recto de la licence en superposant les données sur le template.
+    Layout: Photo à gauche, informations complètes à droite, QR code en bas à gauche
+    """
+    # Charger le template
+    if os.path.exists(template_path):
+        img = Image.open(template_path).convert('RGBA')
+    else:
+        # Créer une image vide si template absent
+        img = Image.new('RGBA', (1011, 638), (255, 255, 255, 255))
+    
+    draw = ImageDraw.Draw(img)
+    
+    # Charger des polices avec différentes tailles
+    try:
+        font_numero = ImageFont.truetype("arialbd.ttf", 32)  # Numéro athlète
+        font_label = ImageFont.truetype("arialbd.ttf", 16)   # Labels (NOM, PRENOM, etc.)
+        font_value = ImageFont.truetype("arial.ttf", 18)     # Valeurs
+        font_small = ImageFont.truetype("arial.ttf", 14)     # Petits textes
+    except:
+        font_numero = ImageFont.load_default()
+        font_label = ImageFont.load_default()
+        font_value = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+    
+    # === PHOTO DE L'ATHLÈTE (gauche, centrée verticalement) ===
+    photo_x = 40
+    photo_y = 120
+    photo_width = 180
+    photo_height = 240
+    
+    if athlete.personne and athlete.personne.photo:
+        try:
+            photo = Image.open(athlete.personne.photo.path).convert('RGBA')
+            photo = photo.resize((photo_width, photo_height), Image.Resampling.LANCZOS)
+            img.paste(photo, (photo_x, photo_y), photo)
+        except Exception as e:
+            print(f"Erreur chargement photo: {e}")
+            # Dessiner un cadre vide
+            draw.rectangle([(photo_x, photo_y), (photo_x + photo_width, photo_y + photo_height)], 
+                          outline=(200, 200, 200, 255), width=2)
+    else:
+        # Dessiner un cadre vide
+        draw.rectangle([(photo_x, photo_y), (photo_x + photo_width, photo_y + photo_height)], 
+                      outline=(200, 200, 200, 255), width=2)
+    
+    # === INFORMATIONS À DROITE DE LA PHOTO ===
+    info_x = photo_x + photo_width + 30  # Marge de 30px après la photo
+    info_y_start = 100
+    line_height = 35
+    
+    # Numéro athlète (en rouge, grand)
+    numero = athlete.numero_licence or athlete.numero_sportif or "—"
+    draw.text((info_x, info_y_start), f"N° {numero}", 
+             fill=(237, 28, 36, 255), font=font_numero)
+    
+    current_y = info_y_start + 50
+    
+    # NOM
+    if athlete.personne and athlete.personne.nom:
+        draw.text((info_x, current_y), "NOM:", fill=(100, 100, 100, 255), font=font_label)
+        draw.text((info_x + 120, current_y), athlete.personne.nom.upper(), 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # POST-NOM
+    if athlete.personne and athlete.personne.postnom:
+        draw.text((info_x, current_y), "POST-NOM:", fill=(100, 100, 100, 255), font=font_label)
+        draw.text((info_x + 120, current_y), athlete.personne.postnom.upper(), 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # PRÉNOM
+    if athlete.personne and athlete.personne.prenom:
+        draw.text((info_x, current_y), "PRÉNOM:", fill=(100, 100, 100, 255), font=font_label)
+        draw.text((info_x + 120, current_y), athlete.personne.prenom.upper(), 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # DATE DE NAISSANCE
+    if athlete.personne and athlete.personne.date_naissance:
+        draw.text((info_x, current_y), "NÉ(E) LE:", fill=(100, 100, 100, 255), font=font_label)
+        draw.text((info_x + 120, current_y), 
+                 athlete.personne.date_naissance.strftime('%d/%m/%Y'), 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # LIEU DE NAISSANCE
+    if athlete.personne and athlete.personne.lieu_naissance:
+        draw.text((info_x, current_y), "À:", fill=(100, 100, 100, 255), font=font_label)
+        lieu = athlete.personne.lieu_naissance[:30]  # Limiter la longueur
+        draw.text((info_x + 120, current_y), lieu, 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # DISCIPLINE (en bleu)
+    if athlete.discipline:
+        draw.text((info_x, current_y), "DISCIPLINE:", fill=(100, 100, 100, 255), font=font_label)
+        draw.text((info_x + 120, current_y), athlete.discipline.designation[:25], 
+                 fill=(0, 54, 202, 255), font=font_value)
+        current_y += line_height
+    
+    # CLUB
+    if athlete.club:
+        draw.text((info_x, current_y), "CLUB:", fill=(100, 100, 100, 255), font=font_label)
+        club_text = athlete.club.nom_officiel[:30]
+        draw.text((info_x + 120, current_y), club_text, 
+                 fill=(0, 0, 0, 255), font=font_value)
+        current_y += line_height
+    
+    # ADRESSE (si disponible dans le modèle Personne)
+    if athlete.personne and hasattr(athlete.personne, 'adresse') and athlete.personne.adresse:
+        draw.text((info_x, current_y), "ADRESSE:", fill=(100, 100, 100, 255), font=font_label)
+        adresse = str(athlete.personne.adresse)[:35]
+        draw.text((info_x + 120, current_y), adresse, 
+                 fill=(0, 0, 0, 255), font=font_small)
+    
+    # === QR CODE EN BAS À GAUCHE ===
+    qr_url = f"{base_url}/gouvernance/verifier-athlete/{athlete.uid}/"
+    qr_img = generer_qr_code(qr_url)
+    qr_size = 100
+    qr_img = qr_img.resize((qr_size, qr_size), Image.Resampling.LANCZOS)
+    
+    # Position en bas à gauche avec marge
+    qr_x = 40
+    qr_y = 638 - qr_size - 30
+    img.paste(qr_img, (qr_x, qr_y))
+    
+    # Texte sous le QR code
+    draw.text((qr_x + qr_size//2 - 30, qr_y + qr_size + 5), 
+             "Vérifier", fill=(100, 100, 100, 255), font=font_small)
+    
+    return img
+
+
+def _creer_verso_licence(athlete, template_path, base_url):
+    """
+    Crée l'image verso de la licence en superposant les données sur le template.
+    Superpose: dates de validité, informations complémentaires
+    """
+    # Charger le template
+    if os.path.exists(template_path):
+        img = Image.open(template_path).convert('RGBA')
+    else:
+        # Créer une image vide si template absent
+        img = Image.new('RGBA', (1011, 638), (255, 255, 255, 255))
+    
+    draw = ImageDraw.Draw(img)
+    
+    # Charger des polices
+    try:
+        font_title = ImageFont.truetype("arialbd.ttf", 20)
+        font_regular = ImageFont.truetype("arial.ttf", 18)
+        font_small = ImageFont.truetype("arial.ttf", 14)
+    except:
+        font_title = ImageFont.load_default()
+        font_regular = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+    
+    # Position de départ
+    x_start = 100
+    y_start = 150
+    line_height = 40
+    
+    # VALIDITÉ DE LA LICENCE
+    draw.text((x_start, y_start), "VALIDITÉ DE LA LICENCE", 
+             fill=(0, 54, 202, 255), font=font_title)
+    
+    current_y = y_start + 40
+    
+    if athlete.date_emission_licence and athlete.date_expiration_licence:
+        validite_text = f"Valide du {athlete.date_emission_licence.strftime('%d/%m/%Y')}"
+        draw.text((x_start, current_y), validite_text, 
+                 fill=(0, 0, 0, 255), font=font_regular)
+        current_y += 30
+        
+        validite_text2 = f"au {athlete.date_expiration_licence.strftime('%d/%m/%Y')}"
+        draw.text((x_start, current_y), validite_text2, 
+                 fill=(0, 0, 0, 255), font=font_regular)
+        current_y += line_height + 20
+    
+    # INFORMATIONS COMPLÉMENTAIRES
+    if athlete.poste:
+        draw.text((x_start, current_y), f"Poste: {athlete.poste}", 
+                 fill=(0, 0, 0, 255), font=font_regular)
+        current_y += line_height
+    
+    if athlete.numero_maillot:
+        draw.text((x_start, current_y), f"N° Maillot: {athlete.numero_maillot}", 
+                 fill=(0, 0, 0, 255), font=font_regular)
+        current_y += line_height
+    
+    # Catégorie
+    draw.text((x_start, current_y), f"Catégorie: {athlete.get_categorie_display()}", 
+             fill=(0, 0, 0, 255), font=font_regular)
+    
+    # Texte de sécurité en bas
+    security_text = "Document officiel - Toute falsification est passible de sanctions"
+    draw.text((x_start, 638 - 50), security_text, 
+             fill=(237, 28, 36, 255), font=font_small)
+    
+    return img
 
 
 def _draw_photo_placeholder(canvas, x, y, w, h):

@@ -1,26 +1,29 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Personnel du Ministère | SI-SEP Sport RDC{% endblock %}
 
 {% block extra_css %}
 <style>
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-.tab-active {
-    border-bottom: 3px solid #0036ca !important;
-    color: #0036ca !important;
-    font-weight: 600 !important;
-}
-input:focus, textarea:focus, select:focus {
-    outline: none !important;
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, textarea:focus, select:focus { outline: none !important; }
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 </style>
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4 mb-6">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
@@ -28,16 +31,15 @@ input:focus, textarea:focus, select:focus {
             </div>
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Personnel du Ministère</h1>
-                <p class="text-sm text-white/80 mt-1">Gestion des agents du Cabinet</p>
+                <p class="text-sm text-white mt-1">Gestion des agents du Cabinet</p>
             </div>
         </div>
-        
         <div class="flex gap-4 overflow-x-auto">
             <div class="flex-1 min-w-max bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Agents</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Agents</p>
                         <p class="text-2xl font-bold text-white">{{ stats.total_agents }}</p>
                     </div>
                 </div>
@@ -46,7 +48,7 @@ input:focus, textarea:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Comptes Actifs</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Comptes Actifs</p>
                         <p class="text-2xl font-bold text-white">{{ stats.comptes_actifs }}</p>
                     </div>
                 </div>
@@ -55,7 +57,7 @@ input:focus, textarea:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-star text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Ministres</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Ministres</p>
                         <p class="text-2xl font-bold text-white">{{ stats.ministres }}</p>
                     </div>
                 </div>
@@ -71,9 +73,9 @@ input:focus, textarea:focus, select:focus {
 <!-- Toolbar -->
 <div class="bg-white shadow-lg border border-slate-200 px-6 py-4 rounded-t-2xl">
     <div class="flex items-center justify-between gap-4">
-        <input type="text" id="search-input" placeholder="Rechercher un agent..." 
+        <input type="text" id="search-input" placeholder="Rechercher un agent..."
                class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
-        <a href="{% url 'gouvernance:enregistrer_agent' %}" class="px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold rounded-lg whitespace-nowrap">
+        <a href="{% url 'gouvernance:enregistrer_agent' %}" class="px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg whitespace-nowrap">
             <i class="fa-solid fa-plus mr-2"></i>Nouvel Agent
         </a>
     </div>
@@ -85,74 +87,103 @@ input:focus, textarea:focus, select:focus {
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Nom Complet</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Matricule</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Fonction</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-4 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">Actions</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Matricule</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Fonction</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 {% for agent in agents %}
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <span class="font-medium text-slate-900">{{ agent.nom_complet }}</span>
+                    {% with profil=agent.personne.profils_utilisateur.all|first %}
+                    <tr class="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                        data-nom="{{ agent.nom_complet }}"
+                        data-matricule="{{ agent.matricule|default:'-' }}"
+                        data-email="{{ agent.email|default:'-' }}"
+                        data-tel="{{ agent.personne.telephone|default:'-' }}"
+                        data-photo="{% if agent.personne.photo %}{{ agent.personne.photo.url }}{% endif %}"
+                        data-fonction="{% with f=agent.personne.membres.first.fonction %}{% if f %}{{ f.designation }}{% else %}-{% endif %}{% endwith %}"
+                        data-statut="{% if profil %}{% if profil.actif %}actif{% else %}inactif{% endif %}{% else %}sans_compte{% endif %}"
+                        onclick="openAgentModal(this)">
+
+                        <!-- Agent : avatar + nom -->
+                        <td class="px-4 py-2.5">
+                            <div class="flex items-center gap-2.5">
+                                {% if agent.personne.photo %}
+                                    <img src="{{ agent.personne.photo.url }}" class="w-7 h-7 rounded-full object-cover" alt="{{ agent.nom_complet }}">
+                                {% else %}
+                                    <div class="w-7 h-7 rounded-full bg-rdc-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        {{ agent.nom_complet|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                                <span class="text-sm font-medium text-slate-800">{{ agent.nom_complet }}</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">{{ agent.matricule }}</td>
-                        <td class="px-6 py-4 text-sm">
+
+                        <!-- Matricule -->
+                        <td class="px-4 py-2.5 text-xs text-slate-500">{{ agent.matricule|default:'-' }}</td>
+
+                        <!-- Fonction : badge -->
+                        <td class="px-4 py-2.5">
                             {% with fonction=agent.personne.membres.first.fonction %}
                                 {% if fonction %}
-                                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-rdc-blue border border-blue-100">
                                         {{ fonction.designation }}
                                     </span>
                                 {% else %}
-                                    <span class="text-slate-400 text-xs italic">Aucune fonction</span>
+                                    <span class="text-slate-400 text-xs italic">—</span>
                                 {% endif %}
                             {% endwith %}
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">{{ agent.email }}</td>
-                        <td class="px-6 py-4">
-                            {% if agent.personne.profils_utilisateur.all|first %}
-                                {% with profil=agent.personne.profils_utilisateur.all|first %}
-                                    {% if profil.actif %}
-                                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                                            <i class="fa-solid fa-check-circle"></i>Actif
-                                        </span>
-                                    {% else %}
-                                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-800 text-xs font-semibold rounded-full">
-                                            <i class="fa-solid fa-circle-xmark"></i>Inactif
-                                        </span>
-                                    {% endif %}
-                                {% endwith %}
+
+                        <!-- Email -->
+                        <td class="px-4 py-2.5 text-xs text-slate-500">{{ agent.email|default:'-' }}</td>
+
+                        <!-- Statut : icône badge -->
+                        <td class="px-4 py-2.5 text-center">
+                            {% if profil %}
+                                {% if profil.actif %}
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-600" title="Actif">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Inactif">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </span>
+                                {% endif %}
                             {% else %}
-                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
-                                    <i class="fa-solid fa-exclamation-circle"></i>Pas de compte
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-yellow-100 text-yellow-600" title="Pas de compte">
+                                    <i class="fa-solid fa-exclamation text-xs"></i>
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-3">
-                                <a href="{% url 'gouvernance:detail_agent' agent.uid %}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue hover:text-rdc-blue-dark transition-colors" 
+
+                        <!-- Actions -->
+                        <td class="px-4 py-2.5">
+                            <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation()">
+                                <a href="{% url 'gouvernance:detail_agent' agent.uid %}"
+                                   class="action-btn text-rdc-blue hover:bg-blue-50"
                                    title="Voir les détails">
-                                    <i class="fa-solid fa-eye text-lg"></i>
+                                    <i class="fa-solid fa-eye"></i>
                                 </a>
-                                {% if not agent.personne.profils_utilisateur.all|first %}
-                                    <a href="{% url 'core:creer_compte_agent' %}?agent={{ agent.uid }}" 
-                                       class="inline-flex items-center justify-center w-8 h-8 text-green-600 hover:text-green-700 transition-colors" 
+                                {% if not profil %}
+                                    <a href="{% url 'core:creer_compte_agent' %}?agent={{ agent.uid }}"
+                                       class="action-btn text-emerald-600 hover:bg-emerald-50"
                                        title="Créer un compte">
-                                        <i class="fa-solid fa-user-plus text-lg"></i>
+                                        <i class="fa-solid fa-user-plus"></i>
                                     </a>
                                 {% endif %}
-                                <button onclick="confirmDelete('{{ agent.uid }}')" 
-                                        class="inline-flex items-center justify-center w-8 h-8 text-rdc-red hover:text-red-700 transition-colors" 
+                                <button onclick="confirmDelete('{{ agent.uid }}')"
+                                        class="action-btn text-rdc-red hover:bg-red-50"
                                         title="Supprimer">
-                                    <i class="fa-solid fa-trash text-lg"></i>
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
+                    {% endwith %}
                 {% endfor %}
             </tbody>
         </table>
@@ -162,12 +193,44 @@ input:focus, textarea:focus, select:focus {
                 <i class="fa-solid fa-inbox text-3xl text-slate-400"></i>
             </div>
             <p class="text-slate-600 font-medium mb-4">Aucun agent enregistré</p>
-            <a href="{% url 'gouvernance:enregistrer_agent' %}" class="inline-block px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold rounded-lg">
+            <a href="{% url 'gouvernance:enregistrer_agent' %}" class="inline-block px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg">
                 <i class="fa-solid fa-plus mr-2"></i>Enregistrer le premier agent
             </a>
         </div>
     {% endif %}
 </div>
+
+<!-- Overlay flou -->
+<div id="agentOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"></div>
+
+<!-- Modale agent -->
+<dialog id="agentModal" class="rounded-2xl shadow-2xl w-[306px] p-0 z-50 border-0 overflow-hidden">
+    <div id="agentModalContent"></div>
+</dialog>
+
+<!-- Modale confirmation suppression -->
+<dialog id="deleteModal" class="rounded-xl shadow-2xl w-full max-w-sm p-0 z-50 backdrop:bg-black/50">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-red-100 rounded-full">
+                <i class="fa-solid fa-exclamation-circle text-red-600 text-lg"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Supprimer l'agent</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-6">Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.</p>
+        <div class="flex gap-3">
+            <button type="button" onclick="document.getElementById('deleteModal').close()"
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                Annuler
+            </button>
+            <button type="button" id="deleteConfirmBtn"
+                    class="flex-1 px-4 py-2 bg-rdc-red hover:bg-red-600 text-white font-semibold rounded-lg transition-colors text-sm">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</dialog>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -175,20 +238,103 @@ input:focus, textarea:focus, select:focus {
 // Recherche en temps réel
 document.getElementById('search-input').addEventListener('keyup', function() {
     const searchTerm = this.value.toLowerCase();
-    const rows = document.querySelectorAll('tbody tr');
-    
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
     });
 });
 
-// Confirmation de suppression
-function confirmDelete(agentUid) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible.')) {
-        // Rediriger vers la vue de suppression
-        window.location.href = `/gouvernance/agent/${agentUid}/supprimer/`;
-    }
+// Modale agent au clic de ligne
+function openAgentModal(row) {
+    const nom      = row.dataset.nom;
+    const matricule = row.dataset.matricule;
+    const email    = row.dataset.email;
+    const tel      = row.dataset.tel;
+    const photo    = row.dataset.photo;
+    const fonction = row.dataset.fonction;
+    const statut   = row.dataset.statut;
+
+    const initials = nom.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const avatarHtml = photo
+        ? `<img src="${photo}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white" alt="${nom}">`
+        : `<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold ring-2 ring-white/40">${initials}</div>`;
+
+    const statutBadge = statut === 'actif'
+        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full"><i class="fa-solid fa-check text-[10px]"></i>Actif</span>`
+        : statut === 'inactif'
+        ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full"><i class="fa-solid fa-xmark text-[10px]"></i>Inactif</span>`
+        : `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full"><i class="fa-solid fa-exclamation text-[10px]"></i>Sans compte</span>`;
+
+    document.getElementById('agentModalContent').innerHTML = `
+        <div class="bg-rdc-blue px-5 py-5 text-center">
+            <div class="flex justify-center mb-2">${avatarHtml}</div>
+            <p class="text-sm font-bold text-white leading-tight">${nom}</p>
+            <span class="inline-block mt-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">${fonction !== '-' ? fonction : 'Aucune fonction'}</span>
+        </div>
+        <div class="px-5 py-4 space-y-2.5">
+            <div class="flex items-center gap-3">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-id-badge text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Matricule</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${matricule}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-envelope text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Email</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${email}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-phone text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Téléphone</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${tel}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-circle-dot text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Statut compte</p>
+                    <div class="mt-0.5">${statutBadge}</div>
+                </div>
+            </div>
+            <button onclick="closeAgentModal()"
+                    class="mt-1 w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-xs font-semibold rounded-lg transition-colors">
+                Fermer
+            </button>
+        </div>`;
+
+    document.getElementById('agentOverlay').classList.remove('hidden');
+    document.getElementById('agentModal').showModal();
 }
+
+function closeAgentModal() {
+    document.getElementById('agentModal').close();
+    document.getElementById('agentOverlay').classList.add('hidden');
+}
+
+// Suppression
+function confirmDelete(agentUid) {
+    document.getElementById('deleteConfirmBtn').onclick = function() {
+        window.location.href = `/gouvernance/agent/${agentUid}/supprimer/`;
+    };
+    document.getElementById('deleteModal').showModal();
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAgentModal();
+        document.getElementById('deleteModal').close();
+    }
+});
 </script>
 {% endblock %}

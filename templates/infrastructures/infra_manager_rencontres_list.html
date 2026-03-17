@@ -1,21 +1,28 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Rencontres & Billetterie | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Rencontres & Billetterie</h1>
                 <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Gérez les matchs et configurez la billetterie</p>
             </div>
-            <a href="{% url 'infrastructures:infra_manager_dashboard' %}"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Retour</span>
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'infrastructures:infra_manager_create_reservation' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors border border-green-700">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Réservation</span>
+                </a>
+                <a href="{% url 'infrastructures:infra_manager_dashboard' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Retour</span>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -207,6 +214,105 @@
             </tbody>
         </table>
     </div>
+    
+    <!-- Section Réservations -->
+    {% if reservations_evenements %}
+    <div class="mt-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-check text-green-600"></i>
+            Réservations Privées
+        </h3>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-purple-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Événement</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Date & Heure</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Organisateur</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Billetterie</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase">Ventes</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-purple-600 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        {% for reservation in reservations_evenements %}
+                        <tr class="hover:bg-purple-50">
+                            <td class="px-4 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-calendar-check text-green-600"></i>
+                                    <div>
+                                        <div class="font-semibold text-slate-900">{{ reservation.titre }}</div>
+                                        <div class="text-sm text-slate-500">{{ reservation.description|truncatechars:50 }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm font-medium text-slate-900">{{ reservation.date_evenement|date:"d/m/Y" }}</div>
+                                <div class="text-xs text-slate-500">{{ reservation.heure_debut|time:"H:i"|default:"—" }}</div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm text-slate-900">
+                                    {% if reservation.organisateur %}
+                                        {{ reservation.organisateur.nom_officiel|default:reservation.organisateur.designation }}
+                                    {% else %}
+                                        Gestionnaire infrastructure
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <span class="inline-flex px-2.5 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                                    Réservation
+                                </span>
+                            </td>
+                            <td class="px-4 py-4">
+                                {% if reservation.billetterie_configuree %}
+                                <span class="inline-flex px-2.5 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">
+                                    Configurée
+                                </span>
+                                {% else %}
+                                <span class="inline-flex px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-800">
+                                    Non configurée
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="text-sm text-slate-900">{{ reservation.tickets_vendus }}</div>
+                                <div class="text-xs text-slate-500">
+                                    {% if reservation.total_ventes > 0 %}
+                                    {{ reservation.total_ventes|floatformat:0 }} CDF
+                                    {% else %}
+                                    0 CDF
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    {% if reservation.billetterie_configuree %}
+                                    <a href="{% url 'infrastructures:infra_manager_rencontre_statistiques' reservation.uid %}"
+                                       class="inline-flex items-center justify-center w-10 h-10 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                                       title="Voir les statistiques">
+                                        <i class="fa-solid fa-chart-line text-lg"></i>
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'infrastructures:infra_manager_reservation_configurer_billetterie' reservation.uid %}"
+                                       class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg transition-colors">
+                                        <i class="fa-solid fa-cog"></i>
+                                        Configurer
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     {% else %}
     <div class="px-6 py-12 text-center text-slate-500">
         <i class="fa-solid fa-calendar-days text-4xl text-slate-300 mb-3"></i>

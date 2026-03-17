@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -134,13 +134,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 pl-2">
                     {% load static %}
-                    <img src="{% static 'assets/images/logo-rdc.png' %}" alt="Armoiries RDC" class="h-16 w-auto" onerror="this.src='{% static 'media/sceaux/logo-rdc.png' %}'">
-                    <div class="border-l-2 border-white/30 pl-4">
-                        <h1 class="text-xl font-black logo-text uppercase tracking-tight">SI-SEP SPORT</h1>
-                        <p class="text-xs logo-subtitle font-semibold uppercase tracking-wide">République Démocratique du Congo</p>
-                    </div>
+                    <img src="{% static 'assets/images/logo-rdc.png' %}" alt="Armoiries RDC" class="h-12 w-auto" onerror="this.src='{% static 'media/sceaux/logo-rdc.png' %}'">
+                    <div class="border-l-2 border-white/30 pl-3">
+                        <h1 class="text-base font-black logo-text uppercase tracking-tight">SI-SEP SPORT</h1>
+                        </div>
                 </div>
                 
                 <!-- Navigation Links (Centered) -->
@@ -153,11 +152,11 @@
                 <!-- Login/Portal Button -->
                 <div class="hidden md:block">
                     {% if user.is_authenticated %}
-                    <a href="{% url 'core:home' %}" class="btn-portal inline-flex items-center gap-2 px-6 py-3 transition-all font-black text-sm uppercase tracking-wide">
+                    <a href="{% url 'core:home' %}" class="btn-portal inline-flex items-center gap-2 px-4 py-2 transition-all font-bold text-xs uppercase tracking-wide">
                         <span>Mon Portail</span>
                     </a>
                     {% else %}
-                    <a href="{% url 'core:login' %}" class="btn-portal inline-flex items-center gap-2 px-6 py-3 transition-all font-black text-sm uppercase tracking-wide">
+                    <a href="{% url 'core:login' %}" class="btn-portal inline-flex items-center gap-2 px-4 py-2 transition-all font-bold text-xs uppercase tracking-wide">
                         <span>Se connecter</span>
                     </a>
                     {% endif %}
@@ -194,15 +193,15 @@
         <!-- Content -->
         <div class="relative h-full flex flex-col justify-center items-center text-white px-4">
             <div class="text-center max-w-4xl">
-                <p class="text-sm font-black uppercase tracking-widest mb-4 text-rdc-yellow">Portail Officiel</p>
-                <h1 class="text-5xl md:text-7xl font-black uppercase mb-6 tracking-tight leading-tight">
+                <p class="text-xs font-black uppercase tracking-widest mb-3 text-rdc-yellow">Portail Officiel</p>
+                <h1 class="text-3xl md:text-5xl font-black uppercase mb-4 tracking-tight leading-tight">
                     Le Sport au Cœur de
-                    <span class="block text-rdc-yellow mt-2">l'Afrique</span>
+                    <span class="block text-rdc-yellow mt-1">l'Afrique</span>
                 </h1>
-                <p class="text-xl md:text-2xl font-medium mb-10 max-w-3xl mx-auto leading-relaxed">
+                <p class="text-base md:text-lg font-medium mb-8 max-w-2xl mx-auto leading-relaxed">
                     Achetez vos billets en toute sécurité pour les plus grands événements sportifs de la RDC. Une plateforme officielle, rapide et fiable.
                 </p>
-                <a href="#matchs" class="inline-flex items-center gap-3 px-10 py-4 bg-rdc-yellow text-rdc-blue text-lg font-black uppercase tracking-wide hover:bg-yellow-400 transition-all transform hover:scale-105 shadow-lg">
+                <a href="#matchs" class="inline-flex items-center gap-2 px-7 py-3 bg-rdc-yellow text-rdc-blue text-sm font-black uppercase tracking-wide hover:bg-yellow-400 transition-all transform hover:scale-105 shadow-lg">
                     <span>Voir les matchs</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </a>
@@ -229,51 +228,51 @@
     </section>
 
     <!-- Matchs à l'Affiche -->
-    <section id="matchs" class="py-16 bg-white">
+    <section id="matchs" class="py-10 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-black text-slate-900 mb-4 uppercase">Matchs à l'Affiche</h2>
-                <p class="text-lg text-slate-600 font-semibold">Réservez vos places pour les prochaines rencontres</p>
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-slate-900 mb-2 uppercase">Matchs à l'Affiche</h2>
+                <p class="text-sm text-slate-600 font-semibold">Réservez vos places pour les prochaines rencontres</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% for rencontre in rencontres_a_venir %}
-                <div class="bg-white shadow-lg border-2 border-slate-200 overflow-hidden hover:shadow-xl transition-shadow card-hover">
+                <div class="bg-white shadow border-2 border-slate-200 overflow-hidden hover:shadow-md transition-shadow card-hover">
                     <!-- Header -->
-                    <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white p-4">
-                        <div class="flex items-center justify-between text-sm">
+                    <div class="bg-rdc-blue text-white px-3 py-2">
+                        <div class="flex items-center justify-between text-xs">
                             <span class="font-bold uppercase tracking-wide">{{ rencontre.journee.competition.titre }}</span>
-                            <span class="bg-white/20 px-3 py-1 font-bold">{{ rencontre.journee.libelle }}</span>
+                            <span class="bg-white/20 px-2 py-0.5 font-bold">{{ rencontre.journee.libelle }}</span>
                         </div>
                     </div>
                     
                     <!-- Match Info -->
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-6">
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-4">
                             <!-- Equipe A -->
                             <div class="text-center flex-1">
-                                <div class="w-16 h-16 mx-auto mb-2 bg-slate-100 flex items-center justify-center border-2 border-slate-200">
-                                    <i class="fa-solid fa-shield text-2xl text-rdc-blue"></i>
+                                <div class="w-10 h-10 mx-auto mb-1 bg-slate-100 flex items-center justify-center border border-slate-200">
+                                    <i class="fa-solid fa-shield text-base text-rdc-blue"></i>
                                 </div>
-                                <h3 class="font-black text-slate-900 text-sm uppercase">{{ rencontre.equipe_a.nom_officiel|truncatewords:2 }}</h3>
+                                <h3 class="font-black text-slate-900 text-xs uppercase">{{ rencontre.equipe_a.nom_officiel|truncatewords:2 }}</h3>
                             </div>
                             
                             <!-- VS -->
-                            <div class="px-4">
-                                <span class="text-2xl font-black text-slate-400">VS</span>
+                            <div class="px-2">
+                                <span class="text-base font-black text-slate-400">VS</span>
                             </div>
                             
                             <!-- Equipe B -->
                             <div class="text-center flex-1">
-                                <div class="w-16 h-16 mx-auto mb-2 bg-slate-100 flex items-center justify-center border-2 border-slate-200">
-                                    <i class="fa-solid fa-shield text-2xl text-rdc-red"></i>
+                                <div class="w-10 h-10 mx-auto mb-1 bg-slate-100 flex items-center justify-center border border-slate-200">
+                                    <i class="fa-solid fa-shield text-base text-rdc-red"></i>
                                 </div>
-                                <h3 class="font-black text-slate-900 text-sm uppercase">{{ rencontre.equipe_b.nom_officiel|truncatewords:2 }}</h3>
+                                <h3 class="font-black text-slate-900 text-xs uppercase">{{ rencontre.equipe_b.nom_officiel|truncatewords:2 }}</h3>
                             </div>
                         </div>
                         
                         <!-- Date & Lieu -->
-                        <div class="space-y-2 mb-4 text-sm text-slate-600">
+                        <div class="space-y-1 mb-3 text-xs text-slate-600">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-calendar text-rdc-blue"></i>
                                 <span class="font-semibold">{{ rencontre.date_heure|date:"d/m/Y à H:i" }}</span>
@@ -286,24 +285,24 @@
                         
                         <!-- Prix -->
                         {% if rencontre.prix_min %}
-                        <div class="mb-4 p-3 bg-green-50 border-2 border-green-200">
-                            <p class="text-xs text-slate-600 mb-1 font-bold uppercase">À partir de</p>
-                            <p class="text-2xl font-black text-green-600">{{ rencontre.prix_min|floatformat:0 }} CDF</p>
+                        <div class="mb-3 p-2 bg-green-50 border border-green-200">
+                            <p class="text-xs text-slate-600 mb-0.5 font-bold uppercase">À partir de</p>
+                            <p class="text-lg font-black text-green-600">{{ rencontre.prix_min|floatformat:0 }} CDF</p>
                         </div>
                         {% endif %}
                         
                         <!-- Bouton Acheter -->
                         <a href="{% url 'public:match_purchase' rencontre.uid %}" 
-                           class="block w-full text-center px-4 py-3 bg-rdc-yellow text-rdc-blue font-black hover:bg-yellow-400 transition-colors uppercase tracking-wide">
-                            <i class="fa-solid fa-ticket mr-2"></i>
+                           class="block w-full text-center px-3 py-2 bg-rdc-yellow text-rdc-blue text-xs font-black hover:bg-yellow-400 transition-colors uppercase tracking-wide">
+                            <i class="fa-solid fa-ticket mr-1"></i>
                             Acheter mon billet
                         </a>
                     </div>
                 </div>
                 {% empty %}
                 <div class="col-span-full text-center py-12">
-                    <i class="fa-solid fa-calendar-xmark text-6xl text-slate-300 mb-4"></i>
-                    <p class="text-lg text-slate-600 font-semibold">Aucun match programmé pour le moment</p>
+                    <i class="fa-solid fa-calendar-xmark text-5xl text-slate-300 mb-3"></i>
+                    <p class="text-sm text-slate-600 font-semibold">Aucun match programmé pour le moment</p>
                 </div>
                 {% endfor %}
             </div>
@@ -376,7 +375,7 @@
     <!-- Footer -->
     <footer class="bg-slate-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 <div>
                     <h3 class="text-lg font-black mb-4 uppercase">SI-SEP SPORT RDC</h3>
                     <p class="text-sm text-slate-400 font-medium">Système d'Information du Secrétariat Permanent à l'Éducation Physique et aux Sports</p>
@@ -399,7 +398,7 @@
                 </div>
                 <div>
                     <h4 class="font-black mb-4 uppercase">Suivez-nous</h4>
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 justify-center">
                         <a href="#" class="w-10 h-10 bg-slate-800 flex items-center justify-center hover:bg-rdc-blue transition-colors">
                             <i class="fa-brands fa-facebook"></i>
                         </a>

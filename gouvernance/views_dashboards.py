@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from core.permissions import require_role
 from core.models import RoleUtilisateur
-from gouvernance.models import Institution, Agent, Mandat, ProvAdmin, DisciplineSport, ValidationFederation
+from gouvernance.models import Institution, Agent, Mandat, ProvAdmin, DisciplineSport, ValidationFederation, ValidationLigue, DivisionProvinciale
 
 
 def _get_ministere_racine():
@@ -81,6 +81,30 @@ def minister_dashboard(request):
     from infrastructures.models import Infrastructure
     total_infrastructures = Infrastructure.objects.filter(statut='VALIDEE').count()
     
+    # Recette totale des infrastructures pour cette année
+    from infrastructures.models import Vente
+    from django.db.models import Sum, Q
+    from datetime import datetime
+    import json
+    
+    annee_courante = datetime.now().year
+    
+    # Filtrer les ventes de l'année avec statut VALIDE dans les notes
+    ventes_annee = Vente.objects.filter(date_vente__year=annee_courante)
+    
+    # Calculer la recette totale en vérifiant le statut dans les notes
+    recette_totale_annee = 0
+    for vente in ventes_annee:
+        try:
+            if vente.notes:
+                notes_data = json.loads(vente.notes)
+                statut = notes_data.get('statut_paiement', 'INITIE')
+                if statut == 'VALIDE':
+                    recette_totale_annee += float(vente.montant_total)
+        except (json.JSONDecodeError, TypeError):
+            # Si les notes ne sont pas valides, on considère la vente comme valide
+            recette_totale_annee += float(vente.montant_total)
+    
     # Nombre de disciplines sportives
     disciplines_count = DisciplineSport.objects.filter(actif=True).count()
     
@@ -114,6 +138,8 @@ def minister_dashboard(request):
         'total_infrastructures': total_infrastructures,
         'disciplines': disciplines_count,
         'taux_validation': taux_validation,
+        'recette_totale_annee': recette_totale_annee,
+        'annee_courante': annee_courante,
     }
 
     return render(request, 'gouvernance/minister_dashboard.html', {

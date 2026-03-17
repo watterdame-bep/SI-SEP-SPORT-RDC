@@ -1,4 +1,4 @@
-{% ex
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,7 +16,7 @@
                 }
             }
         }
-    </script>tends "core/base.html" %}
+    </script>
 {% load static %}
 
 {% block title %}Divisions Provinciales | SI-SEP Sport RDC{% endblock %}
@@ -33,7 +33,7 @@ input:focus, select:focus {
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4 mb-6">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">

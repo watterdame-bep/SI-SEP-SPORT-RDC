@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des Infrastructures - RD Congo</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* Assurer que la carte occupe toute la hauteur */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        
+        .custom-marker {
+            background-color: #2563eb;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="absolute top-0 left-0 right-0 z-10 bg-white shadow-lg">
+        <div class="px-4 py-3">
+            <h1 class="text-xl font-bold text-gray-800">🗺️ Carte des Infrastructures Sportives</h1>
+            <p class="text-sm text-gray-600">République Démocratique du Congo</p>
+        </div>
+    </div>
+    
+    <!-- Conteneur de la carte -->
+    <div id="map"></div>
+    
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initialisation de la carte OpenStreetMap...');
+            
+            try {
+                // Initialiser la carte centrée sur la RD Congo avec vue optimale
+                var map = L.map('map').setView([-2.889, 23.656], 5);
+                console.log('Carte initialisée avec succès');
+                
+                // Ajouter la couche OpenStreetMap
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors | SI-SEP Sport RDC',
+                    maxZoom: 19
+                }).addTo(map);
+                console.log('Couche OpenStreetMap ajoutée');
+                
+                // Ajouter un marqueur sur Kinshasa
+                var kinshasaMarker = L.marker([-4.4419, 15.2663], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div class="custom-marker"></div>',
+                        iconSize: [12, 12]
+                    })
+                }).addTo(map);
+                
+                kinshasaMarker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1e293b;">🏟️ Kinshasa</h4>
+                        <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Capitale</strong> de la RDC</p>
+                        <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Province:</strong> Kinshasa</p>
+                        <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Population:</strong> ~15 millions</p>
+                    </div>
+                `);
+                
+                console.log('Marqueur de Kinshasa ajouté');
+                
+                // Données des infrastructures depuis la base de données
+                var infrastructures = {{ infrastructures_json|safe }};
+                console.log('Données infrastructures depuis BDD:', infrastructures);
+                console.log('Total infrastructures:', {{ total_infrastructures }});
+                
+                // Ajouter les marqueurs pour chaque infrastructure
+                var markers = [];
+                
+                infrastructures.forEach(function(infra, index) {
+                    var marker = L.marker([infra.latitude, infra.longitude], {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: '<div class="custom-marker"></div>',
+                            iconSize: [12, 12]
+                        })
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`
+                        <div style="min-width: 200px;">
+                            <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1e293b;">🏟️ ${infra.nom}</h4>
+                            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Type:</strong> ${infra.type}</p>
+                            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Ville:</strong> ${infra.ville}</p>
+                            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Province:</strong> ${infra.province}</p>
+                            <p style="margin: 4px 0; font-size: 13px; color: #64748b;"><strong>Capacité:</strong> ${infra.capacite.toLocaleString()} places</p>
+                        </div>
+                    `);
+                    
+                    markers.push(marker);
+                    console.log('Infrastructure ajoutée:', infra.nom);
+                });
+                
+                // Ajuster la vue pour inclure tous les marqueurs
+                if (markers.length > 0) {
+                    var group = new L.featureGroup(markers);
+                    
+                    setTimeout(function() {
+                        map.fitBounds(group.getBounds().pad(0.1));
+                        console.log('Vue ajustée pour tous les marqueurs');
+                    }, 1000);
+                }
+                
+                // Ajouter des contrôles supplémentaires
+                L.control.scale({
+                    metric: true,
+                    imperial: false
+                }).addTo(map);
+                
+                console.log('🎉 Carte OpenStreetMap initialisée avec succès !');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation de la carte:', error);
+                
+                // Afficher un message d'erreur
+                document.getElementById('map').innerHTML = `
+                    <div class="flex items-center justify-center h-full bg-gray-100">
+                        <div class="text-center p-8">
+                            <div class="text-6xl mb-4">🗺️</div>
+                            <h2 class="text-2xl font-bold text-red-600 mb-2">Erreur de chargement</h2>
+                            <p class="text-gray-600">Impossible de charger la carte OpenStreetMap</p>
+                            <p class="text-sm text-gray-500 mt-2">Vérifiez votre connexion internet</p>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

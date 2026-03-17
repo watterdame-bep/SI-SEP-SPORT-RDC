@@ -1,4 +1,4 @@
-{% ex
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,13 +16,13 @@
                 }
             }
         }
-    </script>tends "core/base.html" %}
+    </script>
 {% load static %}
 
 {% block title %}Mon Profil - Ministre | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
@@ -96,7 +96,7 @@
 <div class="max-w-6xl mx-auto">
     <!-- En-tête du profil avec avatar -->
     <div class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden mb-6">
-        <div class="h-32 bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker"></div>
+        <div class="h-32 bg-rdc-blue"></div>
         
         <div class="px-6 pb-6">
             <div class="flex flex-col md:flex-row md:items-end md:gap-6 -mt-16 mb-6">

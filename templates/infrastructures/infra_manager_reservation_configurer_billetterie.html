@@ -1,0 +1,194 @@
+﻿{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Configurer Billetterie | {{ evenement.titre }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Configurer Billetterie</h1>
+                <p class="text-sm text-white/80 mt-1">{{ evenement.titre }} — {{ infrastructure.nom }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'infrastructures:infra_manager_rencontres_list' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Retour</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Informations sur l'événement -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden mb-6">
+    <div class="p-6 border-b border-slate-200">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-calendar-check text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">{{ evenement.titre }}</h2>
+                <p class="text-sm text-slate-600">
+                    {{ evenement.date_evenement|date:"d/m/Y" }} à {{ evenement.heure_debut|time:"H:i"|default:"Heure non définie" }}
+                </p>
+                <p class="text-xs text-slate-500 mt-1">
+                    Type: <span class="inline-flex px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-800">Réservation privée</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration de la billetterie -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-200">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-cog text-rdc-blue"></i>
+            Configuration des Tarifs
+        </h3>
+        <p class="text-sm text-slate-600 mt-1">Définissez les tarifs pour chaque zone de l'infrastructure</p>
+    </div>
+    
+    <form method="post" class="p-6">
+        {% csrf_token %}
+        
+        {% if zones_stade %}
+        <div class="space-y-4">
+            {% for zone in zones_stade %}
+            <div class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-map-marker-alt text-rdc-blue"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">{{ zone.nom }}</h4>
+                            <p class="text-sm text-slate-600">Zone du stade</p>
+                        </div>
+                    </div>
+                    {% for tarif in tarifs_existants %}
+                    {% if tarif.zone_stade.uid == zone.uid %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Configuré
+                    </span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Prix unitaire (CDF)
+                        </label>
+                        <input type="number" 
+                               name="prix_zone_{{ zone.uid }}" 
+                               step="0.01"
+                               min="0"
+                               {% for tarif in tarifs_existants %}
+                               {% if tarif.zone_stade.uid == zone.uid %}
+                               value="{{ tarif.prix_unitaire }}"
+                               {% endif %}
+                               {% endfor %}
+                               placeholder="Ex: 5000"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            Capacité (nombre de places)
+                        </label>
+                        <input type="number" 
+                               name="capacite_zone_{{ zone.uid }}" 
+                               min="1"
+                               {% for tarif in tarifs_existants %}
+                               {% if tarif.zone_stade.uid == zone.uid %}
+                               value="{{ tarif.capacite_max }}"
+                               {% endif %}
+                               {% endfor %}
+                               placeholder="Ex: 1000"
+                               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+                    </div>
+                </div>
+                
+                {% if zone.description %}
+                <p class="text-sm text-slate-500 mt-3">{{ zone.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Options supplémentaires -->
+        <div class="mt-6 p-4 bg-slate-50 rounded-lg">
+            <h4 class="font-semibold text-slate-800 mb-3">Options de vente</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="vente_en_ligne" class="rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue">
+                        <span class="text-sm text-slate-700">Activer la vente en ligne</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="limitation_vente" class="rounded border-slate-300 text-rdc-blue focus:ring-rdc-blue">
+                        <span class="text-sm text-slate-700">Limiter le nombre de tickets par personne</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mb-3">
+                <i class="fa-solid fa-map text-slate-400"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">Aucune zone configurée</p>
+            <p class="text-sm text-slate-500 mt-1">Veuillez d'abord configurer les zones de cette infrastructure.</p>
+            <div class="mt-4">
+                <a href="{% url 'infrastructures:infra_manager_zones' %}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Configurer les zones</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Boutons d'action -->
+        {% if zones_stade %}
+        <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+            <a href="{% url 'infrastructures:infra_manager_rencontres_list' %}"
+               class="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">
+                Annuler
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-save"></i>
+                Enregistrer la configuration
+            </button>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Guide -->
+<div class="mt-6 bg-blue-50 rounded-lg p-4">
+    <h3 class="text-sm font-semibold text-blue-800 mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-info-circle text-blue-600"></i>
+        Guide de Configuration
+    </h3>
+    <ul class="text-sm text-blue-700 space-y-1">
+        <li>• <strong>Tarifs:</strong> Définissez un prix pour chaque zone (0 = gratuit)</li>
+        <li>• <strong>Vente en ligne:</strong> Permet aux clients d'acheter des tickets via le site</li>
+        <li>• <strong>Limitation:</strong> Contrôle le nombre maximum de tickets par personne</li>
+        <li>• <strong>Capacité:</strong> Le système ne permettra pas de vendre plus que la capacité</li>
+    </ul>
+</div>
+
+{% endblock %}

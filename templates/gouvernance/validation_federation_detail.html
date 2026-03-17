@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Inspection de Viabilité | SI-SEP Sport RDC{% endblock %}
@@ -12,7 +12,7 @@ body {
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4">
             <a href="{% if sg_verifier %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'gouvernance:enquetes_viabilite' %}{% endif %}" 

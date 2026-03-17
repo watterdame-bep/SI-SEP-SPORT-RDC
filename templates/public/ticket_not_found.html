@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billet Non Trouvé - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-rdc-blue text-white p-4">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">SI-SEP Sport RDC</h1>
+            <a href="/" class="text-white hover:text-rdc-yellow transition-colors">
+                <i class="fas fa-home mr-2"></i>Accueil
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="max-w-4xl mx-auto p-4">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-red-500 to-red-600 text-white p-8 text-center">
+                <div class="mx-auto w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-exclamation-triangle text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold mb-2">Billet Non Trouvé</h1>
+                <p class="text-red-100">Le billet que vous recherchez n'existe pas ou a été supprimé</p>
+            </div>
+
+            <!-- Contenu -->
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Que faire ?</h2>
+                        <div class="space-y-4 text-left max-w-2xl mx-auto">
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">Vérifiez le lien</p>
+                                    <p class="text-gray-600 text-sm">Assurez-vous que le lien du billet est complet et correct</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">Contactez le support</p>
+                                    <p class="text-gray-600 text-sm">Si vous pensez qu'il s'agit d'une erreur, contactez notre service client</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="font-semibold">Consultez vos billets</p>
+                                    <p class="text-gray-600 text-sm">Accédez à votre liste de billets pour retrouver vos achats</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{% url 'public:my_tickets' %}" 
+                       class="bg-rdc-blue text-white px-6 py-3 rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fas fa-list mr-2"></i>Mes Billets
+                    </a>
+                    <a href="/" 
+                       class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Accueil
+                    </a>
+                    <button onclick="window.history.back()" 
+                            class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                    </button>
+                </div>
+
+                <!-- Informations de support -->
+                <div class="mt-8 bg-blue-50 rounded-lg p-6">
+                    <h3 class="font-semibold text-blue-900 mb-3">
+                        <i class="fas fa-headset mr-2"></i>Support Client
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="font-semibold text-blue-800">Téléphone</p>
+                            <p class="text-blue-700">+243 XXX XXX XXX</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-blue-800">Email</p>
+                            <p class="text-blue-700">support@sisep-rdc.cd</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-blue-800">Horaires</p>
+                            <p class="text-blue-700">Lun-Ven: 8h-18h</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

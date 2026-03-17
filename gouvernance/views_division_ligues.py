@@ -18,11 +18,25 @@ def division_ligue_detail(request, validation_id):
     """
     Détail d'une ligue pour inspection par la Division Provinciale.
     """
-    validation_ligue = get_object_or_404(
-        ValidationLigue,
-        uid=validation_id,
-        statut__in=['EN_INSPECTION', 'INSPECTION_VALIDEE', 'INSPECTION_REJETEE']
-    )
+    try:
+        validation_ligue = get_object_or_404(
+            ValidationLigue,
+            uid=validation_id
+        )
+    except Exception as e:
+        # Logger l'erreur pour débogage
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erreur lors de la récupération de ValidationLigue {validation_id}: {str(e)}")
+        raise
+    
+    # Vérifier que l'utilisateur a accès à cette validation
+    if hasattr(request.user, 'profil_sisep') and hasattr(request.user.profil_sisep, 'agent'):
+        agent = request.user.profil_sisep.agent
+        if validation_ligue.division_provinciale and validation_ligue.division_provinciale.chef != agent:
+            from django.contrib import messages
+            messages.error(request, "Vous n'avez pas accès à cette validation de ligue.")
+            return redirect('gouvernance:enquetes_viabilite')
     
     ligue = validation_ligue.ligue
     federation = ligue.institution_tutelle

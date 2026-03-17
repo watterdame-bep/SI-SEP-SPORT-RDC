@@ -1,0 +1,345 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement en cours - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rdc-blue': '#0036ca',
+                        'rdc-blue-dark': '#002a9e',
+                        'rdc-yellow': '#FDE015',
+                        'rdc-red': '#ED1C24',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            border-radius: 0 !important;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .progress-bar {
+            animation: progress 120s linear forwards;
+        }
+        
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Header -->
+    <header class="bg-rdc-blue text-white py-4 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center">
+                <h1 class="text-xl font-black uppercase tracking-tight">Paiement en cours</h1>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Statut du paiement -->
+        <div class="bg-white shadow-lg border-2 border-slate-200 p-8 mb-6 text-center">
+            <div class="mb-6">
+                <div class="inline-block p-6 bg-rdc-blue">
+                    <i class="fa-solid fa-mobile-screen-button text-6xl text-white spinner"></i>
+                </div>
+            </div>
+            
+            <h2 class="text-3xl font-black text-slate-900 mb-4 uppercase">
+                Paiement en cours de traitement
+            </h2>
+            
+            <p class="text-lg text-slate-600 font-semibold mb-6">
+                Veuillez confirmer le paiement sur votre téléphone
+            </p>
+            
+            <!-- Barre de progression -->
+            <div class="w-full bg-slate-200 h-2 mb-6">
+                <div class="progress-bar bg-rdc-blue h-2"></div>
+            </div>
+            
+            <div id="status-message" class="text-slate-700 font-bold pulse">
+                <i class="fa-solid fa-clock mr-2"></i>
+                En attente de confirmation...
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="bg-rdc-yellow p-6 border-2 border-yellow-600 mb-6">
+            <h3 class="font-black text-rdc-blue uppercase mb-4 text-lg">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                Instructions
+            </h3>
+            
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black flex-shrink-0">1</div>
+                    <div>
+                        <p class="font-bold text-slate-900">Vérifiez votre téléphone</p>
+                        <p class="text-sm text-slate-700 font-semibold">
+                            Vous devriez recevoir une notification de paiement sur votre téléphone
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black flex-shrink-0">2</div>
+                    <div>
+                        <p class="font-bold text-slate-900">Entrez votre code PIN</p>
+                        <p class="text-sm text-slate-700 font-semibold">
+                            Confirmez le paiement avec votre code PIN Mobile Money
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-rdc-blue text-white flex items-center justify-center font-black flex-shrink-0">3</div>
+                    <div>
+                        <p class="font-bold text-slate-900">Attendez la confirmation</p>
+                        <p class="text-sm text-slate-700 font-semibold">
+                            Cette page se mettra à jour automatiquement une fois le paiement confirmé
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Détails de la commande -->
+        <div class="bg-white shadow-lg border-2 border-slate-200 p-6">
+            <h3 class="text-xl font-black text-slate-900 mb-4 uppercase">
+                <i class="fa-solid fa-receipt text-rdc-blue mr-2"></i>
+                Détails de votre commande
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-slate-600 font-bold">Référence</p>
+                    <p class="font-black text-slate-900">{{ order_number }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-600 font-bold">Montant</p>
+                    <p class="font-black text-rdc-blue text-xl">{{ purchase_data.total|floatformat:0 }} CDF</p>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-600 font-bold">Tribune</p>
+                    <p class="font-black text-slate-900 uppercase">{{ purchase_data.zone }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-slate-600 font-bold">Quantité</p>
+                    <p class="font-black text-slate-900">{{ purchase_data.quantity }} billet(s)</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Modal d'échec de paiement -->
+    <div id="paymentFailedModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4 transform transition-all">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fa-solid fa-times text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Paiement échoué</h3>
+                <p id="failureMessage" class="text-sm text-gray-600 mb-6">
+                    Une erreur est survenue lors du traitement de votre paiement.
+                </p>
+                <div class="flex justify-center">
+                    <button onclick="returnToPurchase()" class="px-6 py-2 bg-rdc-blue text-white rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>
+                        Retour à l'achat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier le statut du paiement - intervalle adaptatif
+        let checkCount = 0;
+        const maxChecks = 200; // 10 minutes max
+        let checkInterval = 2000; // Commencer à 2 secondes (plus rapide)
+        
+        function showPaymentFailure(reason, detail) {
+            // Mettre à jour le message d'échec
+            const messageElement = document.getElementById('failureMessage');
+            if (reason === 'solde_insuffisant') {
+                messageElement.innerHTML = `
+                    <strong>Solde insuffisant</strong><br>
+                    Votre solde Mobile Money est insuffisant pour cette transaction.<br>
+                    Veuillez recharger votre compte et réessayer.
+                `;
+            } else {
+                messageElement.innerHTML = `
+                    <strong>Échec du paiement</strong><br>
+                    ${detail || 'Une erreur est survenue lors du traitement de votre paiement.'}<br>
+                    Veuillez réessayer ou contacter votre opérateur.
+                `;
+            }
+            
+            // Afficher le modal
+            const modal = document.getElementById('paymentFailedModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function returnToPurchase() {
+            // Masquer le modal
+            const modal = document.getElementById('paymentFailedModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // Nettoyer la session et rediriger vers l'URL d'achat précédente
+            fetch('/api/clear-payment-session/', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success && data.return_url) {
+                    // Rediriger vers la page d'achat précédente
+                    window.location.href = data.return_url;
+                } else {
+                    // Fallback: rediriger vers la page générale
+                    window.location.href = '/billets/acheter/';
+                }
+            }).catch(() => {
+                // En cas d'erreur, rediriger vers la page d'accueil
+                window.location.href = '/';
+            });
+        }
+        
+        function checkPaymentStatus() {
+            checkCount++;
+            
+            if (checkCount > maxChecks) {
+                showPaymentFailure('timeout', 'Délai d\'attente dépassé. Veuillez réessayer.');
+                return;
+            }
+            
+            // Intervalle adaptatif: 
+            // - 2s pour les 10 premières vérifications (20 secondes)
+            // - 3s pour les 20 suivantes (1 minute)
+            // - 5s après (pour économiser les ressources)
+            if (checkCount > 30) {
+                checkInterval = 5000;
+            } else if (checkCount > 10) {
+                checkInterval = 3000;
+            }
+            
+            // Essayer d'abord l'API dédiée
+            fetch('/api/payment/status/', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Statut paiement:', data);
+                
+                if (data.success) {
+                    if (data.status === 'VALIDE') {
+                        // Paiement réussi - rediriger vers la page de succès
+                        console.log('Paiement validé, redirection vers succès...');
+                        window.location.href = '/paiement/succes/';
+                    } else if (data.status === 'ECHOUE' || data.status === 'SOLDE_INSUFFISANT') {
+                        // Paiement échoué - afficher le modal IMMÉDIATEMENT
+                        const reason = data.status === 'SOLDE_INSUFFISANT' ? 'solde_insuffisant' : 'autre_erreur';
+                        showPaymentFailure(reason, data.detail);
+                    } else if (data.status === 'EXPIRE') {
+                        // Réservation expirée
+                        showPaymentFailure('expire', 'Votre réservation a expiré. Veuillez recommencer votre achat.');
+                    } else {
+                        // Continuer à vérifier (EN_ATTENTE, INITIE)
+                        console.log(`Paiement en attente (${data.status}), nouvelle vérification dans ${checkInterval/1000}s...`);
+                        setTimeout(checkPaymentStatus, checkInterval);
+                    }
+                } else {
+                    // Fallback: recharger la page pour vérifier le statut côté serveur
+                    console.log('API retourne success=false, fallback...');
+                    checkPaymentStatusFallback();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur API vérification:', error);
+                // Fallback: recharger la page pour vérifier le statut
+                checkPaymentStatusFallback();
+            });
+        }
+        
+        function checkPaymentStatusFallback() {
+            // Méthode fallback: recharger la page et vérifier les redirections
+            fetch('/api/payment/status/', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // Le backend a redirigé vers succès ou échec
+                    window.location.href = response.url;
+                } else {
+                    // Continuer à vérifier avec l'API
+                    setTimeout(checkPaymentStatus, checkInterval);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur fallback:', error);
+                // En dernier recours, recharger complètement la page
+                if (checkCount < maxChecks) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                }
+            });
+        }
+        
+        // Démarrer la vérification après 1 seconde (au lieu de 3)
+        setTimeout(checkPaymentStatus, 1000);
+    </script>
+
+</body>
+</html>

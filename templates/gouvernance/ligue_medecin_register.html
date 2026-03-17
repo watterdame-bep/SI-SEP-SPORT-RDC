@@ -1,10 +1,10 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Enregistrer un médecin | {{ ligue.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4">
             <a href="{% url 'gouvernance:ligue_medecins_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">

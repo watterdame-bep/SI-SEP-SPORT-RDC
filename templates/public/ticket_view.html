@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billet #{{ ticket.numero_billet }} - {{ evenement.titre }}</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { margin: 0; padding: 0; }
+        }
+        .print-only { display: none; }
+        @page { margin: 0; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="no-print bg-rdc-blue text-white p-4">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">SI-SEP Sport RDC</h1>
+            <a href="/" class="text-white hover:text-rdc-yellow transition-colors">
+                <i class="fas fa-home mr-2"></i>Accueil
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="max-w-4xl mx-auto p-4">
+        <!-- En-tête du billet -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header avec logo et titre -->
+            <div class="bg-rdc-blue text-white p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 class="text-2xl font-bold mb-2">SI-SEP Sport RDC</h1>
+                        <p class="text-rdc-yellow font-semibold">Billet d'Entrée Officiel</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="bg-white/20 rounded-lg p-3">
+                            <p class="text-sm">Numéro</p>
+                            <p class="text-xl font-mono font-bold">{{ ticket.numero_billet }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations de l'événement -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Détails de l'événement -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ evenement.titre }}</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-calendar w-6 text-rdc-blue"></i>
+                                <span class="ml-3">{{ evenement.date_evenement|date:"d/m/Y" }}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-map-marker-alt w-6 text-rdc-blue"></i>
+                                <span class="ml-3">{{ evenement.infrastructure.nom }}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-chair w-6 text-rdc-blue"></i>
+                                <span class="ml-3">Zone: {{ zone.nom }}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-tag w-6 text-rdc-blue"></i>
+                                <span class="ml-3">Prix: {{ ticket.evenement_zone.prix_unitaire|floatformat:0 }} CDF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code -->
+                    <div class="text-center">
+                        <div class="bg-gray-50 rounded-lg p-4 inline-block">
+                            <p class="text-sm text-gray-600 mb-2">QR Code du Billet</p>
+                            <img src="{{ qr_code }}" alt="QR Code" class="w-48 h-48 mx-auto">
+                            <p class="text-xs text-gray-500 mt-2">Scannez ce code pour vérifier</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations d'achat -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-500">Date d'achat</p>
+                            <p class="font-semibold">{{ ticket.date_creation|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Statut</p>
+                            <p class="font-semibold text-green-600">
+                                {% if ticket.statut == 'VENDU' %}
+                                    <i class="fas fa-check-circle mr-1"></i>Valide
+                                {% elif ticket.statut == 'UTILISE' %}
+                                    <i class="fas fa-times-circle mr-1"></i>Utilisé
+                                {% else %}
+                                    <i class="fas fa-clock mr-1"></i>{{ ticket.get_statut_display }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Référence vente</p>
+                            <p class="font-mono text-xs">{{ ticket.vente.reference_paiement|default:"N/A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Type</p>
+                            <p class="font-semibold">Billet Électronique</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="mt-6 bg-blue-50 rounded-lg p-4">
+                    <h3 class="font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Instructions Importantes
+                    </h3>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Présentez ce billet (numérique ou imprimé) à l'entrée du stade</li>
+                        <li>• Le QR code sera scanné pour validation</li>
+                        <li>• Chaque billet n'est valable que pour une seule personne</li>
+                        <li>• En cas de smartphone défectueux, présentez le numéro: {{ ticket.numero_billet }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="no-print bg-gray-50 p-4 border-t">
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'public:print_ticket' ticket.uid %}" 
+                       class="bg-rdc-blue text-white px-6 py-2 rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                        <i class="fas fa-print mr-2"></i>Imprimer
+                    </a>
+                    <button onclick="shareTicket()" 
+                            class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-share-alt mr-2"></i>Partager
+                    </button>
+                    <a href="{% url 'public:my_tickets' %}" 
+                       class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-list mr-2"></i>Mes Billets
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="print-only text-center mt-8 text-gray-600">
+            <p class="text-sm">Billet généré par SI-SEP Sport RDC</p>
+            <p class="text-xs">Numéro: {{ ticket.numero_billet }} | UID: {{ ticket.uid }}</p>
+        </div>
+    </div>
+
+    <!-- Script pour le partage -->
+    <script>
+        function shareTicket() {
+            const url = window.location.href;
+            const title = `Billet #{{ ticket.numero_billet }} - {{ evenement.titre }}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `Mon billet pour {{ evenement.titre }} le {{ evenement.date_evenement|date:"d/m/Y" }}`,
+                    url: url
+                });
+            } else {
+                // Fallback: copier dans le presse-papiers
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Lien du billet copié dans le presse-papiers!');
+                });
+            }
+        }
+
+        // Détecter si c'est un mobile pour optimiser l'affichage
+        if (window.innerWidth < 768) {
+            document.querySelector('.max-w-4xl').classList.remove('max-w-4xl');
+            document.querySelector('.max-w-4xl').classList.add('max-w-full');
+        }
+    </script>
+</body>
+</html>

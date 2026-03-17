@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -26,10 +26,10 @@
 <body class="bg-slate-50 font-sans antialiased">
     
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-br from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+    <aside id="app-sidebar" class="fixed left-0 top-0 z-50 h-screen w-72 bg-rdc-blue shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
         
         <!-- Logo Header -->
-        <div class="h-16 flex items-center justify-center px-6 border-b border-white/10 bg-black/10">
+        <div class="h-16 flex items-center justify-center px-6 border-b border-white/10">
             <a href="{% if user_role == 'ministre' %}{% url 'gouvernance:minister_dashboard' %}{% elif user_role == 'sg' %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'core:setup_sisep' %}{% endif %}" class="block group">
                 <img src="{% static 'assets/images/logo-ministere-sports.png' %}" 
                      alt="Ministère des Sports" 
@@ -52,7 +52,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Parapheur Électronique</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -77,7 +77,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Paramètres</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -99,7 +99,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Administration</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -160,7 +160,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Paramètres</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -217,7 +217,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Ressources</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -245,7 +245,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Opérations Terrain</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -283,7 +283,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Rapports</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -331,7 +331,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Gestion Ligue</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -351,7 +351,7 @@
             <div class="pt-4 pb-2 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Athlètes</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -416,7 +416,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Documents</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -444,7 +444,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Gestion Fédération</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -493,7 +493,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Documents</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -521,7 +521,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Mon Club</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -541,7 +541,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Athlètes</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -567,7 +567,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Staff & Infra</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -587,7 +587,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Compétitions</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -615,7 +615,7 @@
             <div class="pt-6 pb-3 px-4">
                 <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rdc-yellow uppercase tracking-wider">Mon Infrastructure</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-rdc-yellow/40 to-transparent"></div>
+                    <div class="flex-1 h-px bg-white/10"></div>
                 </div>
             </div>
             
@@ -698,7 +698,7 @@
                 <div class="relative">
                     <details id="user-menu" class="group">
                         <summary class="flex items-center gap-3 cursor-pointer list-none px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors duration-200 [&::-webkit-details-marker]:hidden">
-                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-rdc-blue to-rdc-blue-darker flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-rdc-yellow/20">
+                            <div class="w-9 h-9 rounded-full bg-rdc-blue flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-rdc-yellow/20">
                                 {{ user.get_full_name|default:user.username|slice:":2"|upper }}
                             </div>
                             <div class="hidden md:block text-left">

@@ -1,10 +1,10 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Réservations | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
@@ -91,7 +91,7 @@
         {% for date_group in reservations_by_date %}
         <div class="border border-slate-200 rounded-lg overflow-hidden">
             <!-- En-tête de date -->
-            <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark px-5 py-3 flex items-center gap-4">
+            <div class="bg-rdc-blue px-5 py-3 flex items-center gap-4">
                 <div class="flex items-center justify-center w-14 h-14 bg-white/20 backdrop-blur-sm rounded-lg">
                     <div class="text-center">
                         <div class="text-xs font-semibold text-white/80 uppercase">{{ date_group.grouper|date:"M" }}</div>

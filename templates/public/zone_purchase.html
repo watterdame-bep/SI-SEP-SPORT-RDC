@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -182,7 +182,7 @@
                 <div class="lg:col-span-1">
                     <div class="price-card sticky top-4">
                         <!-- Price Header -->
-                        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white p-6">
+                        <div class="bg-rdc-blue text-white p-6">
                             <p class="text-sm font-bold uppercase mb-2">{{ zone_tarif.zone_stade.nom }}</p>
                             <p class="text-xs text-white/80 mb-3">À partir de</p>
                             <div class="flex items-baseline gap-2">
@@ -295,15 +295,15 @@
     </div>
 
     <script>
-        const pricePerTicket = {{ zone_tarif.prix_unitaire }};
-        const maxPlaces = {{ places_disponibles }};
+        const pricePerTicket = parseFloat("{{ zone_tarif.prix_unitaire }}") || 0;
+        const maxPlaces = parseInt("{{ places_disponibles }}") || 10;
         let currentQuantity = 1;
         
         function updateDisplay() {
             document.getElementById('quantity').value = currentQuantity;
             document.getElementById('quantity-display').textContent = currentQuantity;
             const total = pricePerTicket * currentQuantity;
-            document.getElementById('total-price').textContent = total.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+            document.getElementById('total-price').textContent = Math.round(total).toLocaleString('fr-FR');
         }
         
         function increaseQuantity() {

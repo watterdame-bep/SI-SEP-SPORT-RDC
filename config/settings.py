@@ -139,6 +139,11 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False  # True en production avec HTTPS
 SESSION_COOKIE_PATH = '/'
 
+# Configuration des iframe pour autoriser l'affichage dans le dashboard
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Autorise les iframe du même domaine
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False
+
 # Connexion par e-mail ou par nom d'utilisateur
 AUTHENTICATION_BACKENDS = [
     'core.backends.EmailOrUsernameModelBackend',
@@ -153,6 +158,21 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+# FlexPay API configuration pour Mobile Money
+FLEXPAY_API_URL = os.environ.get(
+    'FLEXPAY_API_URL',
+    'https://backend.flexpay.cd/api/rest/v1/paymentService'
+)
+FLEXPAY_CHECK_URL = os.environ.get(
+    'FLEXPAY_CHECK_URL',
+    'https://backend.flexpay.cd/api/rest/v1/check/'
+)
+FLEXPAY_BEARER_TOKEN = os.environ.get(
+    'FLEXPAY_BEARER_TOKEN',
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcL2xvZ2luIiwicm9sZXMiOlsiTUVSQ0hBTlQiXSwiZXhwIjoxODI4NDU1ODY4LCJzdWIiOiJkNThhZGZkNzkzNzgzN2I1NTQxNzE5M2QyZTAzNzg2ZSJ9.zR-ldRiNsn-iqOQ-S1_XPrbazyX-OyppZGj_2G3whxc'
+)
+FLEXPAY_MERCHANT = os.environ.get('FLEXPAY_MERCHANT', 'JCONSULTMY')
 
 # Logging configuration for email output and debugging
 LOGGING = {

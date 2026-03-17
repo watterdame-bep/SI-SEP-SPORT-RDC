@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {# Template version: 2.0 - Manager Identity Complete #}
@@ -6,7 +6,7 @@
 {% block title %}{% if form.instance.uid %}Modifier{% else %}Créer{% endif %} Infrastructure | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
@@ -539,7 +539,7 @@
     <!-- Modal Caméra -->
     <div id="cameraModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" style="display: none;">
         <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-            <div class="px-6 py-4 bg-gradient-to-r from-rdc-blue to-rdc-blue/80 rounded-t-xl flex items-center justify-between">
+            <div class="px-6 py-4 bg-rdc-blue rounded-t-xl flex items-center justify-between">
                 <h3 class="text-lg font-bold text-white">Capturer une Photo</h3>
                 <button type="button" id="btnCloseCam" class="text-white/80 hover:text-white text-xl">
                     <i class="fa-solid fa-times"></i>

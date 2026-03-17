@@ -3,6 +3,8 @@ URLs pour le module Infrastructures Sportives.
 """
 from django.urls import path
 from . import views, views_types, views_sg_validation, views_billetterie
+from . import views_infra_manager
+from . import views_infra_list
 from .views_infra_manager import (
     infra_manager_dashboard,
     infra_manager_maintenance,
@@ -10,6 +12,8 @@ from .views_infra_manager import (
     infra_manager_photos,
     infra_manager_zones,
     infra_manager_evenements,
+    infra_manager_create_reservation,
+    infra_manager_reservation_configurer_billetterie
 )
 
 app_name = 'infrastructures'
@@ -17,6 +21,7 @@ app_name = 'infrastructures'
 urlpatterns = [
     # Infrastructure management
     path('list/', views.infrastructure_list, name='infrastructure_list'),
+    path('list-with-map/', views_infra_list.infrastructure_list_with_map, name='infrastructure_list_with_map'),
     path('create/', views.infrastructure_create, name='infrastructure_create'),
     path('<uuid:infrastructure_id>/', views.infrastructure_detail, name='infrastructure_detail'),
     path('<uuid:infrastructure_id>/edit/', views.infrastructure_edit, name='infrastructure_edit'),
@@ -29,6 +34,8 @@ urlpatterns = [
     path('manager/photos/', infra_manager_photos, name='infra_manager_photos'),
     path('manager/zones/', infra_manager_zones, name='infra_manager_zones'),
     path('manager/evenements/', infra_manager_evenements, name='infra_manager_evenements'),
+    path('manager/create-reservation/', infra_manager_create_reservation, name='infra_manager_create_reservation'),
+    path('manager/reservation/<uuid:evenement_uid>/configurer-billetterie/', infra_manager_reservation_configurer_billetterie, name='infra_manager_reservation_configurer_billetterie'),
 
     # SG Infrastructure validation
     path('sg/validation/', views_sg_validation.infrastructure_validation_list, name='sg_infrastructure_validation_list'),

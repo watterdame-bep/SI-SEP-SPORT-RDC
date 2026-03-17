@@ -1,4 +1,4 @@
-// Variables globales
+﻿// Variables globales
 let currentTab = 'provinces';
 let deleteCallback = null;
 
@@ -55,9 +55,9 @@ function updateCreateButton() {
 function loadProvinces() {
     document.getElementById('table-head').innerHTML = `
         <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Territoires</th>
-            <th class="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Province</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Territoires</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
         </tr>
     `;
     
@@ -72,7 +72,7 @@ function loadProvinces() {
     }
     
     document.getElementById('table-body').innerHTML = allProvinces.map(p => `
-        <tr class="hover:bg-slate-50">
+        <tr class="hover:bg-slate-50/70 transition-colors">
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 rounded-xl bg-rdc-blue text-white flex items-center justify-center font-bold text-sm">
@@ -84,13 +84,11 @@ function loadProvinces() {
                     </div>
                 </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600">${p.nb_territoires} territoire(s)</td>
-            <td class="px-6 py-4 text-right">
-                <button onclick="editProvince('${p.id}')" class="p-2 text-rdc-blue hover:text-white hover:bg-rdc-blue rounded-lg mr-2 transition-all" title="Modifier">
-                    <i class="fa-solid fa-edit text-lg"></i>
+            <td class="px-4 py-2.5 text-xs text-slate-500">${p.nb_territoires} territoire(s)</td>
+            <td class="px-4 py-2.5 text-center">
+                <button onclick="editProvince('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                 </button>
-                <button onclick="deleteProvince('${p.id}')" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all" title="Supprimer">
-                    <i class="fa-solid fa-trash text-lg"></i>
+                <button onclick="deleteProvince('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                 </button>
             </td>
         </tr>
@@ -101,10 +99,10 @@ function loadProvinces() {
 function loadTerritoires() {
     document.getElementById('table-head').innerHTML = `
         <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Territoire/Ville</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Secteurs</th>
-            <th class="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Territoire/Ville</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Province</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Secteurs</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
         </tr>
     `;
     
@@ -141,7 +139,7 @@ function loadTerritoires() {
         }
         
         document.getElementById('table-body').innerHTML = allTerritoires.map(t => `
-            <tr class="hover:bg-slate-50">
+            <tr class="hover:bg-slate-50/70 transition-colors">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
@@ -153,14 +151,12 @@ function loadTerritoires() {
                         </div>
                     </div>
                 </td>
-                <td class="px-6 py-4 text-sm text-slate-600">${t.province.designation}</td>
-                <td class="px-6 py-4 text-sm text-slate-600">${t.nb_secteurs || 0} secteur(s)</td>
-                <td class="px-6 py-4 text-right">
-                    <button onclick="editTerritoire('${t.id}')" class="p-2 text-rdc-blue hover:text-white hover:bg-rdc-blue rounded-lg mr-2 transition-all" title="Modifier">
-                        <i class="fa-solid fa-edit text-lg"></i>
+                <td class="px-4 py-2.5 text-xs text-slate-500">${t.province.designation}</td>
+                <td class="px-4 py-2.5 text-xs text-slate-500">${t.nb_secteurs || 0} secteur(s)</td>
+                <td class="px-4 py-2.5 text-center">
+                    <button onclick="editTerritoire('${t.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                     </button>
-                    <button onclick="deleteTerritoire('${t.id}')" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all" title="Supprimer">
-                        <i class="fa-solid fa-trash text-lg"></i>
+                    <button onclick="deleteTerritoire('${t.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                     </button>
                 </td>
             </tr>
@@ -180,10 +176,10 @@ function loadTerritoires() {
 function loadSecteurs() {
     document.getElementById('table-head').innerHTML = `
         <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Secteur/Commune</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Territoire</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Groupements</th>
-            <th class="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Secteur/Commune</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Territoire</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Groupements</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
         </tr>
     `;
     
@@ -235,7 +231,7 @@ function loadSecteurs() {
             }
             
             document.getElementById('table-body').innerHTML = allSecteurs.map(s => `
-                <tr class="hover:bg-slate-50">
+                <tr class="hover:bg-slate-50/70 transition-colors">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                             <div class="h-10 w-10 rounded-xl bg-green-600 text-white flex items-center justify-center font-bold text-sm">
@@ -247,14 +243,12 @@ function loadSecteurs() {
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${s.territoire.designation}</td>
-                    <td class="px-6 py-4 text-sm text-slate-600">${s.nb_groupements || 0} groupement(s)</td>
-                    <td class="px-6 py-4 text-right">
-                        <button onclick="editSecteur('${s.id}')" class="p-2 text-rdc-blue hover:text-white hover:bg-rdc-blue rounded-lg mr-2 transition-all" title="Modifier">
-                            <i class="fa-solid fa-edit text-lg"></i>
+                    <td class="px-4 py-2.5 text-xs text-slate-500">${s.territoire.designation}</td>
+                    <td class="px-4 py-2.5 text-xs text-slate-500">${s.nb_groupements || 0} groupement(s)</td>
+                    <td class="px-4 py-2.5 text-center">
+                        <button onclick="editSecteur('${s.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                         </button>
-                        <button onclick="deleteSecteur('${s.id}')" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all" title="Supprimer">
-                            <i class="fa-solid fa-trash text-lg"></i>
+                        <button onclick="deleteSecteur('${s.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </td>
                 </tr>
@@ -275,9 +269,9 @@ function loadSecteurs() {
 function loadGroupements() {
     document.getElementById('table-head').innerHTML = `
         <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Groupement/Quartier</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Secteur</th>
-            <th class="px-6 py-4 text-right text-xs font-bold text-slate-700 uppercase">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Groupement/Quartier</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Secteur</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
         </tr>
     `;
     
@@ -344,7 +338,7 @@ function loadGroupements() {
                 }
                 
                 document.getElementById('table-body').innerHTML = allGroupements.map(g => `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50/70 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm">
@@ -356,13 +350,11 @@ function loadGroupements() {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${g.secteur.designation}</td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="editGroupement('${g.id}')" class="p-2 text-rdc-blue hover:text-white hover:bg-rdc-blue rounded-lg mr-2 transition-all" title="Modifier">
-                                <i class="fa-solid fa-edit text-lg"></i>
+                        <td class="px-4 py-2.5 text-xs text-slate-500">${g.secteur.designation}</td>
+                        <td class="px-4 py-2.5 text-center">
+                            <button onclick="editGroupement('${g.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                             </button>
-                            <button onclick="deleteGroupement('${g.id}')" class="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all" title="Supprimer">
-                                <i class="fa-solid fa-trash text-lg"></i>
+                            <button onclick="deleteGroupement('${g.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                             </button>
                         </td>
                     </tr>
@@ -572,3 +564,5 @@ function confirmDelete() {
         deleteCallback = null;
     }
 }
+
+

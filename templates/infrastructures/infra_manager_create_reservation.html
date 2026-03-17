@@ -1,0 +1,146 @@
+﻿{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Créer une Réservation | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Créer une Réservation</h1>
+                <p class="text-sm text-white/80 mt-1">{{ infrastructure.nom }} — Événements privés et activités spéciales</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'infrastructures:infra_manager_evenements' %}"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-colors border border-white/20">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Retour</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+<div class="mb-6 space-y-3">
+    {% for message in messages %}
+    <div class="{% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800{% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} border-l-4 p-4 rounded-lg flex items-start gap-3">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-xl mt-0.5"></i>
+        <p class="text-sm font-semibold flex-1">{{ message }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Formulaire de réservation -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div class="p-6 border-b border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-plus text-green-600"></i>
+            Informations de la Réservation
+        </h2>
+        <p class="text-sm text-slate-600 mt-1">Créez une réservation pour un événement privé ou une activité spéciale dans votre infrastructure.</p>
+    </div>
+    
+    <form method="post" class="p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Titre -->
+        <div>
+            <label for="titre" class="block text-sm font-semibold text-slate-700 mb-2">
+                Titre de l'événement <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   id="titre" 
+                   name="titre" 
+                   required
+                   class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue transition-colors"
+                   placeholder="Ex: Tournoi de football amateur, Formation sportive, Événement privé...">
+        </div>
+        
+        <!-- Date et heures -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="date_evenement" class="block text-sm font-semibold text-slate-700 mb-2">
+                    Date <span class="text-red-500">*</span>
+                </label>
+                <input type="date" 
+                       id="date_evenement" 
+                       name="date_evenement" 
+                       required
+                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue transition-colors">
+            </div>
+            
+            <div>
+                <label for="heure_debut" class="block text-sm font-semibold text-slate-700 mb-2">
+                    Heure de début <span class="text-red-500">*</span>
+                </label>
+                <input type="time" 
+                       id="heure_debut" 
+                       name="heure_debut" 
+                       required
+                       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue transition-colors">
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-semibold text-slate-700 mb-2">
+                Description
+            </label>
+            <textarea id="description" 
+                      name="description" 
+                      rows="4"
+                      class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue transition-colors resize-vertical"
+                      placeholder="Décrivez l'événement, les participants attendus, les besoins spécifiques..."></textarea>
+        </div>
+        
+        <!-- Informations sur l'infrastructure -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
+                <div>
+                    <h4 class="text-sm font-semibold text-blue-800">Infrastructure</h4>
+                    <p class="text-sm text-blue-700 mt-1">
+                        <strong>{{ infrastructure.nom }}</strong><br>
+                        Capacité: {{ infrastructure.capacite_spectateurs|default:"Non spécifiée" }} places<br>
+                        Localisation: {{ infrastructure.province_admin.designation|default:"Non spécifiée" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Boutons -->
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+            <a href="{% url 'infrastructures:infra_manager_evenements' %}"
+               class="px-4 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">
+                Annuler
+            </a>
+            <button type="submit" 
+                    class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-check"></i>
+                Créer la réservation
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Guide -->
+<div class="mt-6 bg-slate-50 rounded-lg p-4">
+    <h3 class="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-lightbulb text-yellow-600"></i>
+        Guide des Réservations
+    </h3>
+    <ul class="text-sm text-slate-600 space-y-1">
+        <li>• <strong>Type d'événements:</strong> Activités privées, formations, tournois amateurs, événements spéciaux</li>
+        <li>• <strong>Non officiel:</strong> Ces réservations n'apparaissent pas dans le calendrier officiel de la ligue</li>
+        <li>• <strong>Gestion:</strong> Vous pouvez modifier ou annuler ces réservations à tout moment</li>
+        <li>• <strong>Billetterie:</strong> Option de configurer une billetterie si nécessaire (contactez l'admin)</li>
+    </ul>
+</div>
+
+{% endblock %}

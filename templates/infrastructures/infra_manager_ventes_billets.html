@@ -1,22 +1,4 @@
-{% ex
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'rdc-blue': '#0036ca',
-                        'rdc-blue-dark': '#002a9e',
-                        'rdc-yellow': '#FDE015',
-                        'rdc-red': '#ED1C24',
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>tends 'core/base.html' %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Ventes de Billets - {{ rencontre.equipe_a.nom_officiel }} vs {{ rencontre.equipe_b.nom_officiel }}{% endblock %}

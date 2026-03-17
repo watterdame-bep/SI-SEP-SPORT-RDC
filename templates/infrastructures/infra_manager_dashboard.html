@@ -1,10 +1,10 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Tableau de bord | Gestionnaire Infrastructure | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
@@ -37,30 +37,30 @@
 
 <!-- Statistiques principales -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <!-- Card 1: Réservations semaine -->
+    <!-- Card 1: Recette du mois -->
     <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
             <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Réservations</p>
-                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ reservations_week }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Cette semaine</p>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Recette du mois</p>
+                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ recette_mois|floatformat:0 }} CDF</h3>
+                <p class="text-xs text-slate-500 mt-0.5">{{ ventes_mois }} ventes</p>
             </div>
             <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
-                <i class="fa-solid fa-calendar-week text-xl text-rdc-blue"></i>
+                <i class="fa-solid fa-money-bill-wave text-xl text-rdc-blue"></i>
             </div>
         </div>
     </div>
     
-    <!-- Card 2: Taux présence -->
+    <!-- Card 2: Tickets vendus mois -->
     <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
             <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Taux présence</p>
-                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ taux_presence }}%</h3>
-                <p class="text-xs text-slate-500 mt-0.5">7 derniers jours</p>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Tickets vendus</p>
+                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ tickets_vendus_mois }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Ce mois</p>
             </div>
             <div class="bg-green-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-user-check text-xl text-green-600"></i>
+                <i class="fa-solid fa-ticket text-xl text-green-600"></i>
             </div>
         </div>
     </div>
@@ -79,16 +79,16 @@
         </div>
     </div>
     
-    <!-- Card 4: Photos -->
+    <!-- Card 4: Réservations mois -->
     <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
             <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Galerie</p>
-                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ photos_count }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Photos</p>
+                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Réservations</p>
+                <h3 class="text-3xl font-bold text-purple-600 mt-1">{{ reservations_mois }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Ce mois</p>
             </div>
             <div class="bg-purple-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-images text-xl text-purple-600"></i>
+                <i class="fa-solid fa-calendar-check text-xl text-purple-600"></i>
             </div>
         </div>
     </div>
@@ -237,7 +237,7 @@
 </div>
 
 <!-- Maintenances Récentes -->
-<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-wrench text-rdc-blue"></i>
@@ -268,6 +268,57 @@
     {% else %}
     <p class="text-center text-sm text-slate-500 py-6">Aucune maintenance enregistrée</p>
     {% endif %}
+</div>
+
+<!-- Événements à Venir -->
+<div class="bg-white rounded-lg shadow border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-calendar text-rdc-blue"></i>
+            Événements à Venir
+        </h2>
+        <a href="{% url 'infrastructures:infra_manager_evenements' %}" 
+           class="text-xs text-rdc-blue hover:text-rdc-blue-dark font-semibold inline-flex items-center gap-1">
+            Voir tout <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+    
+    <div class="space-y-3">
+        {% if evenements_a_venir %}
+            {% for rencontre in evenements_a_venir %}
+            <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-rdc-blue/10 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-day text-rdc-blue"></i>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-800">{{ rencontre.equipe_domicile.nom_officiel|default:"Équipe Domicile" }} vs {{ rencontre.equipe_exterieure.nom_officiel|default:"Équipe Extérieure" }}</p>
+                    <p class="text-xs text-slate-500">{{ rencontre.date_heure|date:"d/m/Y H:i" }}</p>
+                </div>
+                <div class="flex-shrink-0">
+                    {% if rencontre.billetterie_configuree %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-ticket"></i>Billetterie
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                        <i class="fa-solid fa-exclamation-triangle"></i>À configurer
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="text-center py-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mb-3">
+                <i class="fa-solid fa-calendar-xmark text-xl text-slate-400"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">Aucun événement à venir</p>
+            <p class="text-xs text-slate-500 mt-1">Les prochains événements apparaîtront ici.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

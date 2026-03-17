@@ -1,4 +1,4 @@
-{% ex
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,7 +16,7 @@
                 }
             }
         }
-    </script>tends "core/base.html" %}
+    </script>
 {% load static %}
 
 {% block title %}Gérer les comptes | SI-SEP Sport RDC{% endblock %}
@@ -103,7 +103,7 @@ input:focus, textarea:focus, select:focus {
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4 mb-6">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
@@ -111,7 +111,7 @@ input:focus, textarea:focus, select:focus {
             </div>
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Gérer les comptes</h1>
-                <p class="text-sm text-white/80 mt-1">{{ mon_institution.nom_officiel }}</p>
+                <p class="text-sm text-white mt-1">{{ mon_institution.nom_officiel }}</p>
             </div>
         </div>
         
@@ -120,7 +120,7 @@ input:focus, textarea:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Comptes</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Comptes</p>
                         <p class="text-2xl font-bold text-white">{{ comptes_mon_entite|length }}</p>
                     </div>
                 </div>
@@ -129,7 +129,7 @@ input:focus, textarea:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Comptes Actifs</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Comptes Actifs</p>
                         <p class="text-2xl font-bold text-white" id="active-count">0</p>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ input:focus, textarea:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-star text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Administrateurs</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Administrateurs</p>
                         <p class="text-2xl font-bold text-white" id="admin-count">0</p>
                     </div>
                 </div>
@@ -168,78 +168,89 @@ input:focus, textarea:focus, select:focus {
         <table class="min-w-full divide-y divide-slate-200">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Utilisateur</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Rôle</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Agent Lié</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-4 text-right text-xs font-semibold text-slate-700 uppercase tracking-wider">Actions</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 {% for profil in comptes_mon_entite %}
-                    <tr class="hover:bg-slate-50 transition-colors" data-active="{% if profil.user.is_active %}1{% else %}0{% endif %}" data-admin="{% if profil.role == 'INSTITUTION_ADMIN' %}1{% else %}0{% endif %}">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                {% if profil.personne.photo %}
-                                    <img src="{{ profil.personne.photo.url }}" alt="{{ profil.user.get_full_name }}" class="w-10 h-10 rounded-full object-cover">
-                                {% endif %}
-                                <div>
-                                    <span class="font-medium text-slate-900">{{ profil.user.get_full_name|default:profil.user.username }}</span>
-                                    <p class="text-xs text-slate-500 mt-0.5">{{ profil.personne.nom }} {{ profil.personne.prenom }}</p>
-                                </div>
+                    <tr class="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                        data-active="{% if profil.user.is_active %}1{% else %}0{% endif %}"
+                        data-admin="{% if profil.role == 'INSTITUTION_ADMIN' %}1{% else %}0{% endif %}"
+                        data-has-agent="{% if profil.agent %}1{% else %}0{% endif %}"
+                        data-agent-nom="{% if profil.agent %}{{ profil.agent.personne.nom_complet }}{% endif %}"
+                        data-agent-matricule="{% if profil.agent %}{{ profil.agent.matricule|default:'-' }}{% endif %}"
+                        data-agent-email="{% if profil.agent %}{{ profil.agent.personne.email|default:'-' }}{% endif %}"
+                        data-agent-tel="{% if profil.agent %}{{ profil.agent.personne.telephone|default:'-' }}{% endif %}"
+                        data-agent-photo="{% if profil.agent and profil.agent.personne.photo %}{{ profil.agent.personne.photo.url }}{% endif %}"
+                        data-user-nom="{{ profil.user.first_name|default:profil.user.username }}"
+                        data-user-role="{{ profil.get_role_display }}"
+                        onclick="openRowModal(this)"
+                        >
+
+                        <!-- Utilisateur : nom seulement -->
+                        <td class="px-4 py-2.5">
+                            <div class="flex items-center gap-2.5">
+                               
+                                <span class="text-sm font-medium text-slate-800 leading-tight">{{ profil.user.first_name.upper|default:profil.user.username }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="badge-role">
-                                <i class="fa-solid fa-user-shield"></i>
+
+                        <!-- Rôle : badge épuré -->
+                        <td class="px-4 py-2.5">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-rdc-blue border border-blue-100">
                                 {{ profil.get_role_display }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">{{ profil.user.email }}</td>
-                        <td class="px-6 py-4 text-sm">
+
+                        <!-- Email -->
+                        <td class="px-4 py-2.5 text-xs text-slate-500">{{ profil.user.email }}</td>
+
+                        <!-- Agent lié : icône uniquement -->
+                        <td class="px-4 py-2.5 text-center">
                             {% if profil.agent %}
-                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                                    {{ profil.agent.personne.nom_complet }}
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-600" title="{{ profil.agent.personne.nom_complet }}">
+                                    <i class="fa-solid fa-link text-xs"></i>
                                 </span>
                             {% else %}
-                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
-                                    Non lié
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Non lié">
+                                    <i class="fa-solid fa-link-slash text-xs"></i>
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4">
+
+                        <!-- Statut : badge icône -->
+                        <td class="px-4 py-2.5 text-center">
                             {% if profil.user.is_active %}
-                                <span class="badge-status badge-active">
-                                    <i class="fa-solid fa-check-circle"></i>
-                                    Actif
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-600" title="Actif">
+                                    <i class="fa-solid fa-check text-xs"></i>
                                 </span>
                             {% else %}
-                                <span class="badge-status badge-inactive">
-                                    <i class="fa-solid fa-circle-xmark"></i>
-                                    Inactif
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Inactif">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <a href="{% url 'core:profil_compte' profil.user.id %}" 
-                                   class="action-btn action-btn-view" 
-                                   title="Voir le profil">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                                <button onclick="openLinkAgentModal('{{ profil.user.id }}', {% if profil.agent %}'{{ profil.agent.uid }}'{% else %}''{% endif %})" 
-                                        class="action-btn action-btn-view" 
+
+                        <!-- Actions : centrées, icônes rapprochées -->
+                        <td class="px-4 py-2.5">
+                            <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation()">
+                                <button onclick="openLinkAgentModal('{{ profil.user.id }}', {% if profil.agent %}'{{ profil.agent.uid }}'{% else %}''{% endif %})"
+                                        class="action-btn action-btn-view"
                                         title="Lier à un agent">
                                     <i class="fa-solid fa-link"></i>
                                 </button>
-                                <button onclick="toggleCompte('{{ profil.user.id }}')" 
-                                        class="action-btn {% if profil.user.is_active %}text-green-600 hover:text-green-700 hover:bg-green-50{% else %}text-slate-400 hover:text-slate-600 hover:bg-slate-100{% endif %}" 
+                                <button onclick="toggleCompte('{{ profil.user.id }}')"
+                                        class="action-btn {% if profil.user.is_active %}text-emerald-600 hover:bg-emerald-50{% else %}text-slate-400 hover:bg-slate-100{% endif %}"
                                         title="{% if profil.user.is_active %}Désactiver{% else %}Activer{% endif %}">
                                     <i class="fa-solid fa-{% if profil.user.is_active %}toggle-on{% else %}toggle-off{% endif %}"></i>
                                 </button>
-                                <button onclick="deleteCompte('{{ profil.user.id }}')" 
-                                        class="action-btn action-btn-delete" 
+                                <button onclick="deleteCompte('{{ profil.user.id }}')"
+                                        class="action-btn action-btn-delete"
                                         title="Supprimer">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -286,6 +297,14 @@ input:focus, textarea:focus, select:focus {
             </button>
         </div>
     </form>
+</dialog>
+
+<!-- Overlay flou pour rowInfoModal -->
+<div id="rowInfoOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"></div>
+
+<!-- Modale info ligne -->
+<dialog id="rowInfoModal" class="rounded-2xl shadow-2xl w-[306px] p-0 z-50 border-0 overflow-hidden">
+    <div id="rowInfoContent"></div>
 </dialog>
 
 <!-- Overlay -->
@@ -363,6 +382,92 @@ input:focus, textarea:focus, select:focus {
 
 {% block extra_js %}
 <script>
+// Modale info ligne
+function openRowModal(row) {
+    const hasAgent = row.dataset.hasAgent === '1';
+    const userNom = row.dataset.userNom;
+    const userRole = row.dataset.userRole;
+    let html = '';
+
+    if (!hasAgent) {
+        html = `
+        <div class="bg-rdc-blue px-5 py-4 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/20 mb-2">
+                <i class="fa-solid fa-link-slash text-lg text-white"></i>
+            </div>
+            <p class="text-sm font-bold text-white">${userNom}</p>
+            <p class="text-xs text-white/70">${userRole}</p>
+        </div>
+        <div class="px-5 py-4 text-center">
+            <p class="text-sm text-slate-500 italic">Ce compte n'est pas lié à un agent.</p>
+            <button onclick="closeRowModal()"
+                    class="mt-4 w-full px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
+                Fermer
+            </button>
+        </div>`;
+    } else {
+        const nom = row.dataset.agentNom;
+        const matricule = row.dataset.agentMatricule;
+        const email = row.dataset.agentEmail;
+        const tel = row.dataset.agentTel;
+        const photo = row.dataset.agentPhoto;
+
+        const initials = nom.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+        const avatarHtml = photo
+            ? `<img src="${photo}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white" alt="${nom}">`
+            : `<div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold ring-2 ring-white/40">${initials}</div>`;
+
+        html = `
+        <div class="bg-rdc-blue px-5 py-5 text-center">
+            <div class="flex justify-center mb-2">${avatarHtml}</div>
+            <p class="text-sm font-bold text-white leading-tight">${nom}</p>
+            <span class="inline-block mt-1 px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">${userRole}</span>
+        </div>
+        <div class="px-5 py-4 space-y-2.5">
+            <div class="flex items-center gap-3 text-sm">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-id-badge text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Matricule</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${matricule}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-envelope text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Email</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${email}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue flex-shrink-0">
+                    <i class="fa-solid fa-phone text-xs"></i>
+                </span>
+                <div>
+                    <p class="text-xs text-slate-400 leading-none">Téléphone</p>
+                    <p class="text-slate-800 font-medium text-xs mt-0.5">${tel}</p>
+                </div>
+            </div>
+            <button onclick="closeRowModal()"
+                    class="mt-1 w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-xs font-semibold rounded-lg transition-colors">
+                Fermer
+            </button>
+        </div>`;
+    }
+
+    document.getElementById('rowInfoContent').innerHTML = html;
+    document.getElementById('rowInfoOverlay').classList.remove('hidden');
+    document.getElementById('rowInfoModal').showModal();
+}
+
+function closeRowModal() {
+    document.getElementById('rowInfoModal').close();
+    document.getElementById('rowInfoOverlay').classList.add('hidden');
+}
+
 let pendingAction = null;
 
 // Recherche en temps réel
@@ -489,6 +594,7 @@ document.addEventListener('keydown', function(e) {
         closeConfirmModal();
         closeLinkAgentModal();
         closeConfirmTransferModal();
+        closeRowModal();
     }
 });
 
@@ -642,6 +748,7 @@ document.addEventListener('keydown', function(e) {
         closeConfirmModal();
         closeLinkAgentModal();
         closeConfirmTransferModal();
+        closeRowModal();
     }
 });
 

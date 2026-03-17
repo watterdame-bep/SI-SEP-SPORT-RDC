@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Format Standard ID-1 (Carte Bancaire) */
+        .card-container {
+            width: 85.6mm;
+            height: 53.98mm;
+            margin-bottom: 10px;
+            position: relative;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1a1a1a;
+            overflow: hidden;
+            border-radius: 3mm;
+            border: 0.2mm solid #ccc;
+            background-size: cover;
+        }
+
+        /* Recto */
+        .recto {
+            background-image: url('recto.png');
+        }
+
+        /* Verso */
+        .verso {
+            background-image: url('verso.png');
+        }
+
+        /* Photo de l'athlète */
+        .athlete-photo {
+            position: absolute;
+            top: 18mm;
+            left: 5mm;
+            width: 18mm;
+            height: 22mm;
+            border: 0.5mm solid #0056b3;
+            background-color: #eee;
+            object-fit: cover;
+        }
+
+        /* Zone de texte Infos */
+        .info-section {
+            position: absolute;
+            top: 18mm;
+            left: 26mm;
+            font-size: 7pt;
+            line-height: 1.3;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #0056b3;
+            text-transform: uppercase;
+            font-size: 5.5pt;
+            margin-bottom: 0.5mm;
+        }
+
+        .info-value {
+            margin-bottom: 2mm;
+            font-size: 7.5pt;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* QR Code au Recto en bas à gauche */
+        .qr-code {
+            position: absolute;
+            bottom: 4mm;
+            left: 5mm;
+            width: 10mm;
+            height: 10mm;
+        }
+
+        /* Numéro athlète en haut */
+        .numero-athlete {
+            position: absolute;
+            top: 13mm;
+            left: 26mm;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #ED1C24;
+        }
+
+        @media print {
+            body { margin: 0; }
+            .card-container { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-container recto">
+        <img src="{{ athlete.photo.url }}" class="athlete-photo" alt="Photo Athlete">
+
+        <div class="numero-athlete">N° {{ athlete.id_sportif }}</div>
+
+        <div class="info-section">
+            <div class="info-label">NOM</div>
+            <div class="info-value">{{ athlete.nom }}</div>
+
+            <div class="info-label">POST-NOM</div>
+            <div class="info-value">{{ athlete.postnom }}</div>
+
+            <div class="info-label">PRÉNOM</div>
+            <div class="info-value">{{ athlete.prenom }}</div>
+
+            <div class="info-label">NÉ(E) LE</div>
+            <div class="info-value">{{ athlete.date_naissance|date:"d/m/Y" }}</div>
+
+            <div class="info-label">DISCIPLINE</div>
+            <div class="info-value" style="color: #0056b3;">{{ athlete.discipline.nom }}</div>
+        </div>
+
+        <img src="{{ athlete.qr_code.url }}" class="qr-code" alt="QR Code">
+    </div>
+
+    <div class="card-container verso">
+        <div class="info-section" style="top: 15mm; left: 10mm;">
+            <div class="info-label">PROVINCE</div>
+            <div class="info-value">{{ athlete.province.nom }}</div>
+
+            <div class="info-label">LIEU DE NAISSANCE</div>
+            <div class="info-value">{{ athlete.lieu_naissance }}</div>
+
+            <div class="info-label">CLUB</div>
+            <div class="info-value">{{ athlete.club }}</div>
+
+            <div class="info-label">GROUPE SANGUIN</div>
+            <div class="info-value" style="color: #ED1C24;">{{ athlete.visite_medicale.groupe_sanguin }}</div>
+        </div>
+        
+        <div style="position: absolute; bottom: 5mm; width: 100%; text-align: center; font-size: 5pt; color: #666;">
+            Document officiel - Toute falsification est passible de sanctions
+        </div>
+    </div>
+
+</body>
+</html>

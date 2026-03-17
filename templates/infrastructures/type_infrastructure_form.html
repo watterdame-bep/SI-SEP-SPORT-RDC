@@ -1,63 +1,80 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}{{ title }} | SI-SEP Sport RDC{% endblock %}
 
+{% block extra_css %}
+<style>
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, select:focus, textarea:focus { outline: none !important; }
+</style>
+{% endblock %}
+
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">{{ title }}</h1>
-                <p class="text-sm text-white/80 mt-1">Gestion des types d'infrastructures sportives</p>
-            </div>
-            <a href="{% url 'infrastructures:type_infrastructure_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold rounded-lg transition-colors">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Retour</span>
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-5">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'infrastructures:type_infrastructure_list' %}"
+               class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-all">
+                <i class="fa-solid fa-arrow-left text-white"></i>
             </a>
+            <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-white tracking-tight">{{ title }}</h1>
+                <p class="text-xs text-white mt-0.5">Types d'infrastructures sportives</p>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<form method="post" class="max-w-2xl mx-auto">
-    {% csrf_token %}
-    
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 space-y-6">
-        <!-- Désignation -->
-        <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Désignation
-                <span class="text-red-500">*</span>
-            </label>
-            <input type="text" name="designation" value="{% if type_infra %}{{ type_infra.designation }}{% endif %}" placeholder="Ex: Stade Omnisports" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rdc-blue" required>
-            <p class="text-xs text-slate-500 mt-1">Nom complet du type d'infrastructure</p>
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue">
+                <i class="fa-solid fa-layer-group text-sm"></i>
+            </span>
+            <h2 class="text-sm font-bold text-slate-800">{% if type_infra %}Modifier le type{% else %}Nouveau type{% endif %}</h2>
         </div>
-        
-        <!-- Code -->
-        <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                Code
-                <span class="text-red-500">*</span>
-            </label>
-            <input type="text" name="code" value="{% if type_infra %}{{ type_infra.code }}{% endif %}" placeholder="Ex: STAD" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rdc-blue uppercase" required>
-            <p class="text-xs text-slate-500 mt-1">Code unique (3-4 caractères, sera converti en majuscules)</p>
-        </div>
-        
-        <!-- Boutons d'action -->
-        <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-200">
-            <a href="{% url 'infrastructures:type_infrastructure_list' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm font-semibold rounded-lg transition-colors">
-                <i class="fa-solid fa-times"></i>
-                <span>Annuler</span>
-            </a>
-            
-            <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors shadow hover:shadow-md">
-                <i class="fa-solid fa-check"></i>
-                <span>{% if type_infra %}Mettre à jour{% else %}Créer le type{% endif %}</span>
-            </button>
-        </div>
-    </div>
-</form>
 
+        <form method="post" class="px-5 py-5 space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Désignation <span class="text-rdc-red">*</span>
+                </label>
+                <input type="text" name="designation"
+                       value="{% if type_infra %}{{ type_infra.designation }}{% endif %}"
+                       placeholder="Ex: Stade Omnisports"
+                       class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue"
+                       required>
+                <p class="text-xs text-slate-400 mt-1">Nom complet du type d'infrastructure</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                    Code <span class="text-rdc-red">*</span>
+                </label>
+                <input type="text" name="code"
+                       value="{% if type_infra %}{{ type_infra.code }}{% endif %}"
+                       placeholder="Ex: STAD"
+                       class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue uppercase"
+                       required>
+                <p class="text-xs text-slate-400 mt-1">Code unique 3–4 caractères (converti en majuscules)</p>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <a href="{% url 'infrastructures:type_infrastructure_list' %}"
+                   class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-colors">
+                    <i class="fa-solid fa-xmark"></i>Annuler
+                </a>
+                <button type="submit"
+                        class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-xl transition-colors">
+                    <i class="fa-solid fa-check"></i>{% if type_infra %}Mettre à jour{% else %}Créer{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

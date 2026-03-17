@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Créer un Club | SI-SEP Sport RDC{% endblock %}
@@ -206,7 +206,7 @@ input:focus, select:focus, textarea:focus {
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-2 lg:px-4 py-6">
         <div class="flex items-center gap-4">
             <a href="{% url 'gouvernance:ligue_clubs_affiliation' %}" 

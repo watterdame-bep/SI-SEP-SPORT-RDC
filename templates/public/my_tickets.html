@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Billets - SI-SEP Sport RDC</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-rdc-blue text-white p-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">SI-SEP Sport RDC</h1>
+            <a href="/" class="text-white hover:text-rdc-yellow transition-colors">
+                <i class="fas fa-home mr-2"></i>Accueil
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="max-w-6xl mx-auto p-4">
+        <!-- En-tête -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Mes Billets</h1>
+                    <p class="text-gray-600 mt-1">Consultez et gérez tous vos billets</p>
+                </div>
+                <div class="text-right">
+                    <div class="bg-rdc-blue/10 rounded-lg p-3">
+                        <p class="text-sm text-gray-600">Total</p>
+                        <p class="text-2xl font-bold text-rdc-blue">{{ tickets|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                    <p class="text-red-800">{{ error }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if tickets %}
+            <!-- Filtres et tri -->
+            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Rechercher par numéro de billet, événement..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-transparent">
+                    </div>
+                    <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-transparent">
+                        <option value="">Tous les statuts</option>
+                        <option value="VENDU">Valides</option>
+                        <option value="UTILISE">Utilisés</option>
+                        <option value="DISPONIBLE">Disponibles</option>
+                    </select>
+                    <select id="sortBy" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-transparent">
+                        <option value="date_desc">Plus récents</option>
+                        <option value="date_asc">Plus anciens</option>
+                        <option value="event">Événement</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Liste des billets -->
+            <div id="ticketsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for ticket in tickets %}
+                <div class="ticket-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                     data-status="{{ ticket.statut }}"
+                     data-event="{{ ticket.evenement_zone.evenement.nom|lower }}"
+                     data-number="{{ ticket.numero_billet }}">
+                    <!-- Header du billet -->
+                    <div class="bg-gradient-to-r {% if ticket.statut == 'VENDU' %}from-green-500 to-green-600{% elif ticket.statut == 'UTILISE' %}from-gray-500 to-gray-600{% else %}from-blue-500 to-blue-600{% endif %} text-white p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs uppercase tracking-wide opacity-90">Billet</p>
+                                <p class="text-lg font-bold font-mono">{{ ticket.numero_billet }}</p>
+                            </div>
+                            <div class="text-right">
+                                {% if ticket.statut == 'VENDU' %}
+                                    <span class="bg-white/20 px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-check-circle mr-1"></i>Valide
+                                    </span>
+                                {% elif ticket.statut == 'UTILISE' %}
+                                    <span class="bg-white/20 px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-times-circle mr-1"></i>Utilisé
+                                    </span>
+                                {% else %}
+                                    <span class="bg-white/20 px-2 py-1 rounded text-xs">
+                                        <i class="fas fa-clock mr-1"></i>{{ ticket.get_statut_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenu du billet -->
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
+                            {{ ticket.evenement_zone.evenement.nom }}
+                        </h3>
+                        
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar w-4 text-rdc-blue"></i>
+                                <span class="ml-2">{{ ticket.evenement_zone.evenement.date_evenement|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt w-4 text-rdc-blue"></i>
+                                <span class="ml-2">{{ ticket.evenement_zone.evenement.stade.nom }}</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <i class="fas fa-chair w-4 text-rdc-blue"></i>
+                                <span class="ml-2">{{ ticket.evenement_zone.zone_stade.nom }}</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <i class="fas fa-tag w-4 text-rdc-blue"></i>
+                                <span class="ml-2 font-semibold">{{ ticket.evenement_zone.prix_unitaire|floatformat:0 }} CDF</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4 pt-4 border-t border-gray-200 flex gap-2">
+                            <a href="{% url 'public:view_ticket' ticket.uid %}" 
+                               class="flex-1 bg-rdc-blue text-white px-3 py-2 rounded text-center hover:bg-rdc-blue-dark transition-colors text-sm">
+                                <i class="fas fa-eye mr-1"></i>Voir
+                            </a>
+                            <a href="{% url 'public:print_ticket' ticket.uid %}" 
+                               class="flex-1 bg-gray-600 text-white px-3 py-2 rounded text-center hover:bg-gray-700 transition-colors text-sm">
+                                <i class="fas fa-print mr-1"></i>Imprimer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Message si aucun billet -->
+            <div class="bg-white rounded-lg shadow p-8 text-center">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-ticket-alt text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun billet trouvé</h3>
+                <p class="text-gray-600 mb-6">Vous n'avez pas encore de billets. Achetez vos billets pour les prochains matchs!</p>
+                <a href="/" class="bg-rdc-blue text-white px-6 py-2 rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                    <i class="fas fa-shopping-cart mr-2"></i>Acheter des billets
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Script pour les filtres -->
+    <script>
+        // Fonction de recherche et filtrage
+        function filterTickets() {
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const statusValue = document.getElementById('statusFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            const tickets = document.querySelectorAll('.ticket-card');
+            const visibleTickets = [];
+            
+            tickets.forEach(ticket => {
+                const event = ticket.dataset.event;
+                const number = ticket.dataset.number;
+                const status = ticket.dataset.status;
+                
+                // Filtre de recherche
+                const matchesSearch = searchValue === '' || 
+                    event.includes(searchValue) || 
+                    number.includes(searchValue);
+                
+                // Filtre de statut
+                const matchesStatus = statusValue === '' || status === statusValue;
+                
+                if (matchesSearch && matchesStatus) {
+                    ticket.style.display = 'block';
+                    visibleTickets.push(ticket);
+                } else {
+                    ticket.style.display = 'none';
+                }
+            });
+            
+            // Tri
+            if (sortBy === 'event') {
+                visibleTickets.sort((a, b) => 
+                    a.dataset.event.localeCompare(b.dataset.event)
+                );
+            } else if (sortBy === 'date_asc') {
+                visibleTickets.reverse();
+            }
+            // date_desc est l'ordre par défaut
+            
+            // Réorganiser les éléments
+            const container = document.getElementById('ticketsList');
+            visibleTickets.forEach(ticket => {
+                container.appendChild(ticket);
+            });
+        }
+        
+        // Écouteurs d'événements
+        document.getElementById('searchInput').addEventListener('input', filterTickets);
+        document.getElementById('statusFilter').addEventListener('change', filterTickets);
+        document.getElementById('sortBy').addEventListener('change', filterTickets);
+        
+        // Optimisation pour mobile
+        if (window.innerWidth < 768) {
+            document.querySelector('.max-w-6xl').classList.remove('max-w-6xl');
+            document.querySelector('.max-w-6xl').classList.add('max-w-full');
+        }
+    </script>
+</body>
+</html>

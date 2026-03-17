@@ -1,22 +1,4 @@
-{% ex
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'rdc-blue': '#0036ca',
-                        'rdc-blue-dark': '#002a9e',
-                        'rdc-yellow': '#FDE015',
-                        'rdc-red': '#ED1C24',
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>tends 'core/base.html' %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Configuration Billetterie - SI-SEP Sport RDC{% endblock %}
@@ -40,7 +22,7 @@
         </div>
 
         <!-- Informations de la Rencontre -->
-        <div class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark rounded-xl shadow-lg p-6 mb-8 text-white">
+        <div class="bg-rdc-blue rounded-xl shadow-lg p-6 mb-8 text-white">
             <div class="flex items-start justify-between">
                 <div>
                     <div class="flex items-center gap-3 mb-3">

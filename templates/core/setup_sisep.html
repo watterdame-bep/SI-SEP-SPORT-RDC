@@ -1,4 +1,4 @@
-{% ex
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,7 +16,7 @@
                 }
             }
         }
-    </script>tends "core/base.html" %}
+    </script>
 {% load static %}
 
 {% block title %}Initialisation du Système | SI-SEP Sport RDC{% endblock %}
@@ -53,7 +53,7 @@
     {% if setup_deja_fait %}
     <!-- Configuration déjà effectuée -->
     <div class="bg-white shadow-sm border border-slate-200">
-        <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-rdc-blue to-rdc-blue-hover">
+        <div class="px-6 py-4 border-b border-slate-200 bg-rdc-blue">
             <h2 class="text-lg font-semibold text-white">Configuration déjà effectuée</h2>
         </div>
         <div class="p-6">
@@ -158,7 +158,7 @@
         
         <!-- Section 1: Institution -->
         <div class="bg-white shadow-sm border border-slate-200">
-            <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-rdc-blue to-rdc-blue-hover">
+            <div class="px-6 py-4 border-b border-slate-200 bg-rdc-blue">
                 <h2 class="text-lg font-semibold text-white uppercase tracking-wider">Institution — Ministère des Sports</h2>
             </div>
             <div class="p-6">
@@ -219,7 +219,7 @@
 
         <!-- Section 2: Comptes clés -->
         <div class="bg-white shadow-sm border border-slate-200">
-            <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-rdc-blue to-rdc-blue-hover">
+            <div class="px-6 py-4 border-b border-slate-200 bg-rdc-blue">
                 <h2 class="text-lg font-semibold text-white uppercase tracking-wider">Comptes clés</h2>
             </div>
             <div class="p-6">

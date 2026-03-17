@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -52,7 +52,7 @@
 <body class="bg-slate-50">
 
     <!-- Header -->
-    <header class="bg-gradient-to-r from-rdc-blue to-rdc-blue-dark text-white py-4 shadow-lg">
+    <header class="bg-rdc-blue text-white py-4 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-center">
                 <h1 class="text-xl font-black uppercase tracking-tight">Confirmation de Paiement</h1>
@@ -61,6 +61,20 @@
     </header>
 
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Messages d'erreur/succès -->
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 border-2 {% if message.tags == 'error' %}bg-red-50 border-red-600 text-red-900{% elif message.tags == 'success' %}bg-green-50 border-green-600 text-green-900{% else %}bg-blue-50 border-blue-600 text-blue-900{% endif %}">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %} text-2xl"></i>
+                    <p class="font-bold">{{ message }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         
         <!-- Récapitulatif de la commande -->
         <div class="bg-white shadow-lg border-2 border-slate-200 p-6 mb-6">
@@ -211,10 +225,12 @@
                     <p class="text-xs text-slate-600 mt-1 font-semibold">Le numéro utilisé pour le paiement mobile</p>
                 </div>
                 
-                <button type="submit" class="w-full bg-rdc-blue text-white py-4 font-black text-lg uppercase tracking-wide hover:bg-rdc-blue-dark transition-colors">
+                <button type="submit" id="submit-payment-btn" class="w-full bg-rdc-blue text-white py-4 font-black text-lg uppercase tracking-wide hover:bg-rdc-blue-dark transition-colors">
                     <i class="fa-solid fa-check-circle mr-2"></i>
                     Confirmer le paiement
                 </button>
+                
+                
             </form>
         </div>
         
@@ -274,6 +290,36 @@
                 instructions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
+        
+        // Validation du formulaire avant soumission
+        document.getElementById('payment-form-main').addEventListener('submit', function(e) {
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            const paymentPhone = document.querySelector('input[name="payment_phone"]').value;
+            
+            if (!paymentMethod) {
+                e.preventDefault();
+                alert('Veuillez sélectionner un mode de paiement');
+                return false;
+            }
+            
+            if (!paymentPhone || paymentPhone.trim() === '') {
+                e.preventDefault();
+                alert('Veuillez entrer votre numéro de téléphone');
+                return false;
+            }
+            
+            console.log('Formulaire soumis avec:', {
+                method: paymentMethod.value,
+                phone: paymentPhone
+            });
+            
+            // Afficher un indicateur de chargement
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Traitement en cours...';
+            
+            return true;
+        });
     </script>
 
 </body>

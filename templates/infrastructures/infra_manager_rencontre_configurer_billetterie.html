@@ -1,10 +1,10 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Configuration Billetterie | {{ rencontre.equipe_a.nom_officiel }} vs {{ rencontre.equipe_b.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center justify-between">
             <div>
@@ -79,9 +79,7 @@
                     <div class="flex items-center justify-between mb-3">
                         <div>
                             <h3 class="font-semibold text-slate-900">{{ zone.nom }}</h3>
-                            {% if zone.capacite %}
-                            <p class="text-sm text-slate-500">Capacité maximale: {{ zone.capacite }} places</p>
-                            {% endif %}
+                            <p class="text-sm text-slate-500">Zone du stade</p>
                         </div>
                         {% for tarif in tarifs_existants %}
                         {% if tarif.zone_stade.uid == zone.uid %}
@@ -118,7 +116,6 @@
                             <input type="number" 
                                    name="capacite_zone_{{ zone.uid }}" 
                                    min="1"
-                                   {% if zone.capacite %}max="{{ zone.capacite }}"{% endif %}
                                    {% for tarif in tarifs_existants %}
                                    {% if tarif.zone_stade.uid == zone.uid %}
                                    value="{{ tarif.capacite_max }}"
