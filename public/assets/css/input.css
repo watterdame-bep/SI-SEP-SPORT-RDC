@@ -7,7 +7,7 @@
   :root {
     --sisep-bleu-royal: #0036ca;
     --sisep-bleu-hover: #0028a0;
-    --sisep-jaune-drapeau: #FDE015;
+    --sisep-jaune-drapeau: #f59e0b;
     --sisep-rouge-drapeau: #ED1C24;
     --sisep-fond-gris: #f8f9fa;
   }
@@ -96,7 +96,7 @@
   
   .sidebar-link-blue.active-blue { 
     background-color: rgba(255, 255, 255, 0.12); 
-    border-left: 3px solid #FDE015; 
+    border-left: 3px solid #f59e0b; 
     font-weight: 500;
   }
   

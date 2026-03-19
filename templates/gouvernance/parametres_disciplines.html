@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Paramètres Disciplines | SI-SEP Sport RDC{% endblock %}
@@ -115,17 +115,18 @@ input:focus, select:focus {
                 <td class="px-4 py-2.5">
                     <div class="flex items-center justify-center gap-2">
                         <button onclick="editDiscipline('{{ discipline.uid }}')"
-                                class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors"
+                                class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-blue rounded-lg hover:bg-rdc-blue-dark transition-colors"
                                 title="Modifier">
                             <i class="fa-solid fa-pen text-xs"></i>
                         </button>
                         <button onclick="toggleActif('{{ discipline.uid }}')"
-                                class="inline-flex items-center justify-center w-8 h-8 bg-white border {% if discipline.actif %}text-emerald-600 border-emerald-400 hover:bg-emerald-50{% else %}text-slate-400 border-slate-300 hover:bg-slate-50{% endif %} rounded-lg transition-colors"
+                                class="inline-flex items-center justify-center w-8 h-8 text-white rounded-lg transition-colors"
+                                style="background:{% if discipline.actif %}#16a34a{% else %}#64748b{% endif %};"
                                 title="{% if discipline.actif %}Désactiver{% else %}Activer{% endif %}">
                             <i class="fa-solid fa-{% if discipline.actif %}toggle-on{% else %}toggle-off{% endif %} text-xs"></i>
                         </button>
                         <button onclick="deleteDiscipline('{{ discipline.uid }}')"
-                                class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors"
+                                class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red rounded-lg hover:bg-red-700 transition-colors"
                                 title="Supprimer">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>

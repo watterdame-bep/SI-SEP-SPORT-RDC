@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -7,7 +7,7 @@
                     colors: {
                         'rdc-blue': '#0036ca',
                         'rdc-blue-dark': '#002a9e',
-                        'rdc-yellow': '#FDE015',
+                        'rdc-yellow': '#f59e0b',
                         'rdc-red': '#ED1C24',
                     },
                     fontFamily: {
@@ -35,37 +35,53 @@ input:focus, textarea:focus, select:focus {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 0.5rem;
-    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
+    transition: all 0.15s ease;
+    font-size: 0.8rem;
+    border: none;
 }
 
 .action-btn-view {
-    color: #0036ca;
+    background: #0036ca;
+    color: #fff;
 }
-
 .action-btn-view:hover {
-    background: #0036ca/10;
+    background: #002aaa;
 }
 
-.action-btn-toggle {
-    color: #64748b;
+.action-btn-toggle-on {
+    background: #16a34a;
+    color: #fff;
+}
+.action-btn-toggle-on:hover {
+    background: #15803d;
 }
 
-.action-btn-toggle:hover {
-    background: #64748b/10;
+.action-btn-toggle-off {
+    background: #94a3b8;
+    color: #fff;
+}
+.action-btn-toggle-off:hover {
+    background: #64748b;
+}
+
+.action-btn-email {
+    background: #0036ca;
+    color: #fff;
+}
+.action-btn-email:hover {
+    background: #002aaa;
 }
 
 .action-btn-delete {
-    color: #ef4444;
+    background: #ED1C24;
+    color: #fff;
 }
-
 .action-btn-delete:hover {
-    background: #ef4444/10;
+    background: #c81019;
 }
 
 .badge-role {
@@ -239,13 +255,18 @@ input:focus, textarea:focus, select:focus {
                         <!-- Actions : centrées, icônes rapprochées -->
                         <td class="px-4 py-2.5">
                             <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation()">
+                                <button onclick="openEditEmailModal('{{ profil.user.id }}', '{{ profil.user.email|escapejs }}')"
+                                        class="action-btn action-btn-email"
+                                        title="Modifier l'email">
+                                    <i class="fa-solid fa-at"></i>
+                                </button>
                                 <button onclick="openLinkAgentModal('{{ profil.user.id }}', {% if profil.agent %}'{{ profil.agent.uid }}'{% else %}''{% endif %})"
                                         class="action-btn action-btn-view"
                                         title="Lier à un agent">
                                     <i class="fa-solid fa-link"></i>
                                 </button>
                                 <button onclick="toggleCompte('{{ profil.user.id }}')"
-                                        class="action-btn {% if profil.user.is_active %}text-emerald-600 hover:bg-emerald-50{% else %}text-slate-400 hover:bg-slate-100{% endif %}"
+                                        class="action-btn {% if profil.user.is_active %}action-btn-toggle-on{% else %}action-btn-toggle-off{% endif %}"
                                         title="{% if profil.user.is_active %}Désactiver{% else %}Activer{% endif %}">
                                     <i class="fa-solid fa-{% if profil.user.is_active %}toggle-on{% else %}toggle-off{% endif %}"></i>
                                 </button>
@@ -373,6 +394,35 @@ input:focus, textarea:focus, select:focus {
             <button type="button" onclick="confirmLinkAgent()" 
                     class="flex-1 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-hover text-white font-semibold rounded-lg transition-colors">
                 Lier
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<!-- Modal Éditer Email -->
+<dialog id="editEmailModal" class="rounded-lg shadow-2xl w-full max-w-md p-0 z-50">
+    <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-10 w-10 items-center justify-center bg-blue-100 rounded-full">
+                <i class="fa-solid fa-at text-rdc-blue text-lg"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900">Modifier l'email</h2>
+        </div>
+        <p class="text-sm text-slate-500 mb-4">L'email sert à la connexion et aux notifications du compte.</p>
+        <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Nouvel email</label>
+            <input type="email" id="edit-email-input"
+                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm"
+                   placeholder="exemple@sport.gouv.cd">
+        </div>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeEditEmailModal()"
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                Annuler
+            </button>
+            <button type="button" onclick="confirmEditEmail()"
+                    class="flex-1 px-4 py-2 bg-rdc-blue text-white font-semibold rounded-lg hover:bg-rdc-blue-dark transition-colors">
+                Enregistrer
             </button>
         </div>
     </div>
@@ -547,7 +597,7 @@ function confirmAction() {
     
     if (pendingAction.type === 'toggle') {
         // Appel AJAX pour activer/désactiver
-        fetch(`/api/compte/${pendingAction.userId}/toggle/`, {
+        fetch(`/auth/api/compte/${pendingAction.userId}/toggle/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
@@ -566,7 +616,7 @@ function confirmAction() {
           });
     } else if (pendingAction.type === 'delete') {
         // Appel AJAX pour supprimer
-        fetch(`/api/compte/${pendingAction.userId}/delete/`, {
+        fetch(`/auth/api/compte/${pendingAction.userId}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
@@ -625,7 +675,7 @@ function proceedToSelectAgent() {
     closeConfirmTransferModal();
     
     // Récupérer les agents disponibles
-    fetch(`/api/agents-disponibles/`)
+    fetch(`/auth/api/agents-disponibles/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -705,7 +755,7 @@ function confirmLinkAgent() {
     const formData = new FormData();
     formData.append('agent_id', agentId);
     
-    fetch(`/api/compte/${selectedAgentForLink}/lier-agent/`, {
+    fetch(`/auth/api/compte/${selectedAgentForLink}/lier-agent/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
@@ -765,5 +815,40 @@ document.addEventListener('DOMContentLoaded', function() {
         selectInput.addEventListener('change', onAgentSelectChange);
     }
 });
+
+// ── Éditer email ──────────────────────────────────────────
+let editEmailUserId = null;
+
+function openEditEmailModal(userId, currentEmail) {
+    editEmailUserId = userId;
+    document.getElementById('edit-email-input').value = currentEmail || '';
+    document.getElementById('editEmailModal').showModal();
+}
+
+function closeEditEmailModal() {
+    document.getElementById('editEmailModal').close();
+    editEmailUserId = null;
+}
+
+function confirmEditEmail() {
+    const newEmail = document.getElementById('edit-email-input').value.trim();
+    if (!newEmail) { alert('Veuillez saisir un email.'); return; }
+    if (!newEmail.includes('@')) { alert('Email invalide.'); return; }
+
+    const formData = new FormData();
+    formData.append('email', newEmail);
+
+    fetch(`/auth/api/compte/${editEmailUserId}/edit-email/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) { closeEditEmailModal(); location.reload(); }
+        else { alert('Erreur : ' + (data.error || 'Erreur inconnue')); }
+    })
+    .catch(() => alert('Une erreur est survenue.'));
+}
 </script>
 {% endblock %}

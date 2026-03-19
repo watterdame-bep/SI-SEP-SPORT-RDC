@@ -434,7 +434,6 @@ def gerer_comptes(request):
 
 
 
-
 @login_required(login_url='/login/')
 @_user_passes_test(est_secretaire_general_ministere, login_url='/login/')
 def parametres_fonctions(request):
@@ -1035,3 +1034,104 @@ def api_lier_agent(request, user_id):
         return JsonResponse({'success': False, 'error': 'Profil non trouvé'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/login/')
+@require_http_methods(['POST'])
+def api_edit_email_compte(request, user_id):
+    """Permet au SG de modifier l'email d'un compte de son institution."""
+    try:
+        profil_demandeur = request.user.profil_sisep
+    except ProfilUtilisateur.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Accès refusé'}, status=403)
+
+    try:
+        cible = ProfilUtilisateur.objects.select_related('user').get(
+            user__id=user_id,
+            institution=profil_demandeur.institution,
+        )
+    except ProfilUtilisateur.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Compte introuvable'}, status=404)
+
+    new_email = request.POST.get('email', '').strip()
+    if not new_email or '@' not in new_email:
+        return JsonResponse({'success': False, 'error': 'Email invalide'}, status=400)
+
+    # Vérifier unicité de l'email (exclure le compte courant)
+    if User.objects.filter(email=new_email).exclude(pk=cible.user.pk).exists():
+        return JsonResponse({'success': False, 'error': 'Cet email est déjà utilisé par un autre compte'}, status=400)
+
+    cible.user.email = new_email
+    cible.user.save(update_fields=['email'])
+    return JsonResponse({'success': True, 'email': new_email})
+
+
+@require_http_methods(['GET', 'POST'])
+def set_password_transfer(request, token):
+    """
+    Page de définition de mot de passe lors d'un transfert de compte.
+    L'utilisateur reçoit un lien par email et définit son nouveau mot de passe.
+    """
+    from core.models import EmailVerificationToken
+
+    try:
+        token_obj = EmailVerificationToken.objects.select_related('user').get(token=token)
+    except EmailVerificationToken.DoesNotExist:
+        return render(request, 'core/set_password_transfer.html', {
+            'error': 'Lien invalide ou expiré.',
+            'token_valid': False,
+        })
+
+    from django.utils import timezone
+    if token_obj.expires_at < timezone.now():
+        return render(request, 'core/set_password_transfer.html', {
+            'error': 'Ce lien a expiré. Contactez l\'administrateur.',
+            'token_valid': False,
+        })
+
+    user = token_obj.user
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1', '').strip()
+        password2 = request.POST.get('password2', '').strip()
+
+        if not password1 or len(password1) < 8:
+            return render(request, 'core/set_password_transfer.html', {
+                'error': 'Le mot de passe doit contenir au moins 8 caractères.',
+                'token_valid': True,
+                'token': token,
+            })
+
+        if password1 != password2:
+            return render(request, 'core/set_password_transfer.html', {
+                'error': 'Les mots de passe ne correspondent pas.',
+                'token_valid': True,
+                'token': token,
+            })
+
+        # Définir le nouveau mot de passe et activer le compte
+        user.set_password(password1)
+        user.is_active = True
+        user.save()
+
+        # Activer le profil
+        try:
+            profil = user.profil_sisep
+            profil.actif = True
+            profil.save()
+        except Exception:
+            pass
+
+        # Supprimer le token utilisé
+        token_obj.delete()
+
+        return render(request, 'core/set_password_transfer.html', {
+            'success': True,
+            'token_valid': False,
+        })
+
+    return render(request, 'core/set_password_transfer.html', {
+        'token_valid': True,
+        'token': token,
+        'username': user.username,
+    })

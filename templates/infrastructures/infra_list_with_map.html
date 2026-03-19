@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Gestion des Infrastructures | SI-SEP Sport RDC{% endblock %}
@@ -202,6 +202,165 @@ function toggleView() {
         mapView.classList.remove('hidden');
         toggleIcon.className = 'fa-solid fa-list';
         toggleText.textContent = 'Voir la liste';
+    }
+}
+</script>
+
+{% endblock %}
+
+<!-- Vue Liste -->
+<div id="list-view">
+    <div class="bg-white border border-slate-200 overflow-hidden">
+        <div class="px-4 py-2 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                <i class="fa-solid fa-list mr-1 text-blue-600"></i>Liste des infrastructures ({{ total_infrastructures }})
+            </span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Nom</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Type</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ville</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Province</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Capacité</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Coordonnées</th>
+                        <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for infrastructure in infrastructures %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-4 py-2 text-sm text-slate-800">{{ infrastructure.nom }}</td>
+                        <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
+                                {{ infrastructure.type_infrastructure.designation|default:"—" }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2 text-sm text-slate-600">{{ infrastructure.territoire.designation|default:"—" }}</td>
+                        <td class="px-4 py-2 text-sm text-slate-600">{{ infrastructure.province_admin.designation|default:"—" }}</td>
+                        <td class="px-4 py-2 text-sm text-slate-800">
+                            {{ infrastructure.capacite_spectateurs|default:0 }} <span class="text-xs text-slate-400">places</span>
+                        </td>
+                        <td class="px-4 py-2 text-xs">
+                            {% if infrastructure.latitude and infrastructure.longitude %}
+                            <span class="text-green-600"><i class="fa-solid fa-check mr-1"></i>{{ infrastructure.latitude|floatformat:4 }}, {{ infrastructure.longitude|floatformat:4 }}</span>
+                            {% else %}
+                            <span class="text-red-500"><i class="fa-solid fa-times mr-1"></i>Non définies</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-2">
+                            <div class="flex items-center gap-1.5">
+                                <a href="{% url 'infrastructures:infrastructure_detail' infrastructure.uid %}"
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded" style="background:#0036ca;" title="Voir">
+                                    <i class="fa-solid fa-eye text-white text-xs"></i>
+                                </a>
+                                <a href="{% url 'infrastructures:infrastructure_edit' infrastructure.uid %}"
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded" style="background:#64748b;" title="Modifier">
+                                    <i class="fa-solid fa-edit text-white text-xs"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-10 text-center text-slate-400">
+                            <i class="fa-solid fa-inbox text-3xl mb-2 block"></i>
+                            <p class="text-sm font-medium">Aucune infrastructure trouvée</p>
+                            {% if q or province_id or type_id %}
+                            <p class="text-xs mt-1">Essayez de modifier vos filtres</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Carte (cachée par défaut) -->
+<div id="map-view" class="hidden">
+    <div class="bg-white border border-slate-200 overflow-hidden">
+        <div class="px-4 py-2 border-b border-slate-100 bg-slate-50">
+            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                <i class="fa-solid fa-map-marked-alt mr-1 text-blue-600"></i>Cartographie — {{ total_infrastructures }} infrastructure{{ total_infrastructures|pluralize }} affichée{{ total_infrastructures|pluralize }}
+            </span>
+        </div>
+        <div class="h-[700px]">
+            <div id="map-container" style="width:100%; height:100%;"></div>
+        </div>
+    </div>
+</div>
+
+</div><!-- end px-4 py-4 -->
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const infrastructuresData = {{ infrastructures_json|safe }};
+let mapInitialized = false;
+let leafletMap = null;
+
+function toggleView() {
+    const listView = document.getElementById('list-view');
+    const mapView = document.getElementById('map-view');
+    const icon = document.getElementById('toggle-icon');
+    const text = document.getElementById('toggle-text');
+
+    if (listView.classList.contains('hidden')) {
+        listView.classList.remove('hidden');
+        mapView.classList.add('hidden');
+        icon.className = 'fa-solid fa-map';
+        text.textContent = 'Voir la carte';
+    } else {
+        listView.classList.add('hidden');
+        mapView.classList.remove('hidden');
+        icon.className = 'fa-solid fa-list';
+        text.textContent = 'Voir la liste';
+        if (!mapInitialized) initMap();
+    }
+}
+
+function initMap() {
+    mapInitialized = true;
+    leafletMap = L.map('map-container').setView([-4.0, 24.0], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(leafletMap);
+
+    const icon = L.divIcon({
+        className: '',
+        html: '<div style="background:#0036ca;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+
+    infrastructuresData.forEach(function(infra) {
+        if (infra.latitude && infra.longitude && infra.latitude !== 0 && infra.longitude !== 0) {
+            const marker = L.marker([infra.latitude, infra.longitude], { icon: icon });
+            marker.bindPopup(
+                '<div style="font-size:13px;min-width:180px;">' +
+                '<strong style="color:#0036ca;">' + infra.nom + '</strong><br>' +
+                '<span style="color:#64748b;font-size:11px;">' + infra.type + ' · ' + infra.province + '</span><br>' +
+                '<span style="font-size:11px;">📍 ' + infra.ville + '</span><br>' +
+                '<span style="font-size:11px;">🏟 ' + infra.capacite.toLocaleString() + ' places</span>' +
+                '</div>'
+            );
+            marker.addTo(leafletMap);
+        }
+    });
+
+    // Fit bounds if markers exist
+    const validPoints = infrastructuresData.filter(i => i.latitude !== 0 && i.longitude !== 0);
+    if (validPoints.length > 0) {
+        const bounds = L.latLngBounds(validPoints.map(i => [i.latitude, i.longitude]));
+        leafletMap.fitBounds(bounds, { padding: [30, 30] });
     }
 }
 </script>

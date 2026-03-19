@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -7,7 +7,7 @@
                     colors: {
                         'rdc-blue': '#0036ca',
                         'rdc-blue-dark': '#002a9e',
-                        'rdc-yellow': '#FDE015',
+                        'rdc-yellow': '#f59e0b',
                         'rdc-red': '#ED1C24',
                     },
                     fontFamily: {
@@ -50,8 +50,8 @@ input:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-building text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Divisions Actives</p>
-                        <p class="text-2xl font-bold text-white">{{ divisions|length }}/26</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Divisions Actives</p>
+                        <p class="text-2xl font-bold text-white" id="chefs-count-actives">{{ divisions|length }}</p>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@ input:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Chefs Assignés</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Chefs Assignés</p>
                         <p class="text-2xl font-bold text-white" id="chefs-count">0</p>
                     </div>
                 </div>
@@ -70,7 +70,16 @@ input:focus, select:focus {
 {% endblock %}
 
 {% block content %}
-<div id="message-container" class="mb-6 space-y-3"></div>
+<div id="message-container" class="mb-4 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-start gap-3 px-4 py-3 text-sm font-medium
+        {% if message.tags == 'error' %}text-red-800{% elif message.tags == 'success' %}text-green-800{% else %}text-blue-800{% endif %}"
+        style="background:{% if message.tags == 'error' %}#fef2f2{% elif message.tags == 'success' %}#f0fdf4{% else %}#eff6ff{% endif %};">
+        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-xmark text-red-500{% elif message.tags == 'success' %}fa-circle-check text-green-500{% else %}fa-circle-info text-blue-500{% endif %} mt-0.5 flex-shrink-0"></i>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
 
 <!-- Barre d'outils -->
 <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
@@ -148,26 +157,29 @@ input:focus, select:focus {
                     <td class="px-6 py-4">
                         <div class="flex items-center justify-center gap-1.5">
                             <a href="{% url 'gouvernance:division_detail' division.uid %}" 
-                               class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
                                title="Voir">
-                                <i class="fa-solid fa-eye text-base"></i>
+                                <i class="fa-solid fa-eye text-base text-white"></i>
                             </a>
-                            <button onclick="openEditModal('{{ division.uid }}')" 
-                                    class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
-                                    title="Assigner Chef">
-                                <i class="fa-solid fa-user-tie text-base"></i>
+                            <button onclick="{% if division.statut == 'ACTIVE' %}openEditModal('{{ division.uid }}'){% endif %}" 
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors{% if division.statut != 'ACTIVE' %} cursor-not-allowed{% endif %}" 
+                                    style="background:{% if division.statut != 'ACTIVE' %}#e2e8f0{% elif division.chef %}#ea580c{% else %}#0036ca{% endif %}"
+                                    title="{% if division.statut != 'ACTIVE' %}Division inactive{% elif division.chef %}Transférer le chef{% else %}Assigner un chef{% endif %}"
+                                    {% if division.statut != 'ACTIVE' %}disabled{% endif %}>
+                                <i class="fa-solid {% if division.chef %}fa-arrows-rotate{% else %}fa-user-tie{% endif %} text-base {% if division.statut != 'ACTIVE' %}text-slate-400{% else %}text-white{% endif %}"></i>
                             </button>
-                            {% if division.chef and division.statut == 'ACTIVE' %}
+                            {% if division.chef and division.statut == 'ACTIVE' and not division.chef.profils_utilisateur.exists %}
                             <a href="{% url 'core:creer_compte_agent' %}?chef_division={{ division.chef.uid }}&division={{ division.uid }}" 
-                               class="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#16a34a"
                                title="Créer un compte">
-                                <i class="fa-solid fa-user-plus text-base"></i>
+                                <i class="fa-solid fa-user-plus text-base text-white"></i>
                             </a>
                             {% endif %}
                             <button onclick="toggleDivisionStatus('{{ division.uid }}')" 
-                                    class="p-1.5 {% if division.statut == 'ACTIVE' %}text-green-600 hover:text-green-700 hover:bg-green-50{% else %}text-slate-400 hover:text-slate-600 hover:bg-slate-100{% endif %} rounded transition-all" 
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {% if division.statut == 'ACTIVE' %}{% else %}cursor-not-allowed{% endif %}" 
+                                    style="{% if division.statut == 'ACTIVE' %}background:#16a34a{% else %}background:#e2e8f0{% endif %}"
                                     title="{% if division.statut == 'ACTIVE' %}Désactiver{% else %}Activer{% endif %}">
-                                <i class="fa-solid {% if division.statut == 'ACTIVE' %}fa-toggle-on text-lg{% else %}fa-toggle-off text-lg{% endif %}"></i>
+                                <i class="fa-solid {% if division.statut == 'ACTIVE' %}fa-toggle-on text-lg text-white{% else %}fa-toggle-off text-lg text-slate-400{% endif %}"></i>
                             </button>
                         </div>
                     </td>
@@ -188,33 +200,49 @@ input:focus, select:focus {
 <dialog id="transferModal" class="rounded-lg shadow-2xl w-full max-w-md p-0 z-50">
     <div class="p-6">
         <div class="flex items-center gap-3 mb-4">
-            <div class="flex h-10 w-10 items-center justify-center bg-orange-100 rounded-full">
-                <i class="fa-solid fa-exclamation-triangle text-orange-600 text-lg"></i>
+            <div class="flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0" style="background:#fff7ed;">
+                <i class="fa-solid fa-arrows-rotate text-lg" style="color:#ea580c;"></i>
             </div>
-            <h2 class="text-lg font-bold text-slate-900">Confirmer le transfert</h2>
+            <h2 class="text-lg font-bold text-slate-900">Transférer la division</h2>
         </div>
-        
-        <p class="text-sm text-slate-600 mb-4">
-            Un Chef de Division est déjà assigné à cette division. Voulez-vous le remplacer?
+
+        <p class="text-sm text-slate-600 mb-3">
+            Cette division a déjà un chef assigné. Le transfert va :
         </p>
-        
-        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-6">
-            <p class="text-sm text-orange-800">
-                <strong>Chef actuel:</strong> <span id="current-chef-name" class="font-semibold"></span>
-            </p>
-        </div>
-        
-        <!-- Boutons -->
-        <div class="flex gap-3">
-            <button type="button" onclick="closeTransferModal()" 
-                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
-                Annuler
-            </button>
-            <button type="button" onclick="confirmTransfer()" 
-                    class="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors">
-                Confirmer
-            </button>
-        </div>
+        <ul class="text-sm mb-4 space-y-1 pl-4" style="color:#92400e;">
+            <li>• Désactiver le compte de <strong id="current-chef-name"></strong></li>
+            <li>• Assigner le nouvel agent sélectionné</li>
+            <li>• Envoyer un email d'activation au nouvel agent</li>
+        </ul>
+
+        <form id="transferForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="transfer_chef">
+            <input type="hidden" name="division_id" id="transfer_division_id">
+
+            <div class="mb-3">
+                <input type="text" id="transfer-agent-search" placeholder="Rechercher un agent..."
+                       class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm"
+                       onkeyup="filterTransferSelect()">
+            </div>
+            <select id="transfer_agent_id" name="agent_id"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm mb-4"
+                    onchange="updateTransferBtn()">
+                <option value="">-- Choisir le nouvel agent --</option>
+            </select>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="closeTransferModal()"
+                        class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                    Annuler
+                </button>
+                <button type="submit" id="transfer-submit-btn" disabled
+                        class="flex-1 px-4 py-2 font-semibold rounded-lg transition-colors text-sm text-white disabled:opacity-50"
+                        style="background:#ea580c;">
+                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Transférer
+                </button>
+            </div>
+        </form>
     </div>
 </dialog>
 
@@ -278,32 +306,35 @@ let currentDivisionId = null;
 let currentChefName = null;
 
 function openEditModal(divisionId) {
-    // Récupérer les informations de la division
-    const row = document.querySelector(`tr[data-division-id="${divisionId}"]`);
-    if (!row) {
-        // Chercher par un autre moyen
-        const rows = document.querySelectorAll('#table-body tr');
-        for (let r of rows) {
-            if (r.textContent.includes(divisionId)) {
-                // Vérifier si un chef est déjà assigné
-                const chefCell = r.querySelector('td:nth-child(3)');
-                if (chefCell && !chefCell.textContent.includes('Non assigné')) {
-                    // Il y a déjà un chef
-                    const chefName = chefCell.querySelector('.font-semibold')?.textContent || 'Chef actuel';
-                    currentDivisionId = divisionId;
-                    currentChefName = chefName;
-                    document.getElementById('current-chef-name').textContent = chefName;
-                    document.getElementById('transferOverlay').classList.remove('hidden');
-                    document.getElementById('transferModal').showModal();
-                    return;
-                }
-                break;
+    const rows = document.querySelectorAll('#table-body tr');
+    let hasChef = false;
+    let chefName = '';
+
+    for (let r of rows) {
+        const btn = r.querySelector(`button[onclick*="${divisionId}"]`) || r.querySelector(`a[href*="${divisionId}"]`);
+        if (btn || r.innerHTML.includes(divisionId)) {
+            const chefCell = r.querySelector('td:nth-child(3)');
+            if (chefCell && !chefCell.textContent.includes('Non assigné')) {
+                hasChef = true;
+                chefName = chefCell.querySelector('.font-semibold')?.textContent?.trim() || 'Chef actuel';
             }
+            break;
         }
     }
-    
-    // Pas de chef assigné, ouvrir directement le modal d'assignation
-    showAssignModal(divisionId);
+
+    currentDivisionId = divisionId;
+
+    if (hasChef) {
+        // Afficher la modale de transfert
+        document.getElementById('current-chef-name').textContent = chefName;
+        document.getElementById('transfer_division_id').value = divisionId;
+        loadAgentsInto('transfer_agent_id', () => {
+            document.getElementById('transferOverlay').classList.remove('hidden');
+            document.getElementById('transferModal').showModal();
+        });
+    } else {
+        showAssignModal(divisionId);
+    }
 }
 
 function showAssignModal(divisionId) {
@@ -311,21 +342,16 @@ function showAssignModal(divisionId) {
     document.getElementById('agent_id').value = '';
     document.getElementById('agent-search').value = '';
     document.getElementById('submit-btn').disabled = true;
-    loadAgents();
-    document.getElementById('editOverlay').classList.remove('hidden');
-    document.getElementById('editModal').showModal();
+    loadAgentsInto('agent_id', () => {
+        document.getElementById('editOverlay').classList.remove('hidden');
+        document.getElementById('editModal').showModal();
+    });
 }
 
 function closeTransferModal() {
     document.getElementById('transferModal').close();
     document.getElementById('transferOverlay').classList.add('hidden');
     currentDivisionId = null;
-    currentChefName = null;
-}
-
-function confirmTransfer() {
-    closeTransferModal();
-    showAssignModal(currentDivisionId);
 }
 
 function closeEditModal() {
@@ -333,21 +359,42 @@ function closeEditModal() {
     document.getElementById('editOverlay').classList.add('hidden');
 }
 
-function loadAgents() {
-    fetch('/api/agents-disponibles/')
+function loadAgentsInto(selectId, callback) {
+    fetch('/auth/api/agents-disponibles/')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 allAgents = data.agents;
-                populateSelect(allAgents);
-            } else {
-                alert('Erreur: ' + data.error);
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">-- Choisir un agent --</option>';
+                data.agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.uid;
+                    option.textContent = `${agent.nom_complet} (${agent.matricule})`;
+                    option.dataset.searchText = `${agent.nom_complet} ${agent.matricule}`.toLowerCase();
+                    select.appendChild(option);
+                });
+                if (callback) callback();
             }
         })
-        .catch(error => {
-            console.error('Erreur:', error);
-            alert('Erreur de chargement des agents');
-        });
+        .catch(err => console.error('Erreur chargement agents:', err));
+}
+
+function loadAgents() {
+    loadAgentsInto('agent_id');
+}
+
+function updateTransferBtn() {
+    const val = document.getElementById('transfer_agent_id').value;
+    document.getElementById('transfer-submit-btn').disabled = !val;
+}
+
+function filterTransferSelect() {
+    const term = document.getElementById('transfer-agent-search').value.toLowerCase();
+    document.querySelectorAll('#transfer_agent_id option').forEach((opt, i) => {
+        if (i === 0) return;
+        opt.style.display = (opt.dataset.searchText || '').includes(term) ? '' : 'none';
+    });
 }
 
 function populateSelect(agents) {

@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Inspections à Transférer | SI-SEP Sport RDC{% endblock %}
@@ -24,7 +24,7 @@ input:focus, select:focus {
             </a>
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Inspections à Transférer</h1>
-                <p class="text-sm text-white/80 mt-1">Validations complétées par les Directeurs Provinciaux</p>
+                <p class="text-sm text-white mt-1">Validations complétées par les Directeurs Provinciaux</p>
             </div>
         </div>
         
@@ -32,27 +32,36 @@ input:focus, select:focus {
         <div class="flex gap-4">
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-list-check text-2xl text-orange-300"></i>
+                    <i class="fa-solid fa-list-check text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Total</p>
                         <p class="text-2xl font-bold text-white">{{ total_validations }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                        <p class="text-xs text-white uppercase tracking-wider">En attente</p>
+                        <p class="text-2xl font-bold text-white">{{ validations_en_attente }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Validées</p>
                         <p class="text-2xl font-bold text-white">{{ validations_acceptees }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                    <i class="fa-solid fa-ban text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Rejetées</p>
                         <p class="text-2xl font-bold text-white">{{ validations_rejetees }}</p>
                     </div>
                 </div>
@@ -102,11 +111,9 @@ input:focus, select:focus {
                 
                 <!-- Fédération -->
                 <td class="px-6 py-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-900">{{ validation.federation.nom_officiel }}</div>
-                            <div class="text-xs text-slate-500 font-bold">{{ validation.federation.sigle }}</div>
-                        </div>
+                    <div>
+                        <div class="text-sm text-slate-900 capitalize">{{ validation.federation.nom_officiel }}</div>
+                        <div class="text-xs text-slate-500">{{ validation.federation.sigle }}</div>
                     </div>
                 </td>
                 
@@ -142,18 +149,22 @@ input:focus, select:focus {
                 <!-- Actions -->
                 <td class="px-6 py-4">
                     <div class="flex items-center justify-center gap-1.5">
-                        <!-- Bouton Transférer (si pas encore transféré) -->
                         {% if validation.federation.statut_signature == '' %}
-                        <button onclick="transferToMinister('{{ validation.uid }}')" 
-                                class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                        <!-- Pas encore transféré — bouton actif -->
+                        <button onclick="transferToMinister('{{ validation.uid }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all"
+                                style="background:#0036ca"
                                 title="Transférer au Ministre">
-                            <i class="fa-solid fa-arrow-right text-base"></i>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                         {% else %}
-                        <!-- Icône Terminé (si déjà transféré) -->
-                        <span class="p-1.5 text-green-600" title="Déjà transféré au Ministre">
-                            <i class="fa-solid fa-check-circle text-base"></i>
-                        </span>
+                        <!-- Déjà transféré — bouton visible mais désactivé -->
+                        <button disabled
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white cursor-not-allowed"
+                                style="background:#94a3b8"
+                                title="Déjà transféré au Ministre">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
                         {% endif %}
                     </div>
                 </td>

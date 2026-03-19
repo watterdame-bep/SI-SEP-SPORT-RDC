@@ -21,26 +21,37 @@ from gouvernance.forms import EnregistrerAgentForm, ModifierAgentForm
 def personnel_ministere(request):
     """Liste des agents du Cabinet (SG)."""
     institution = request.user.profil_sisep.institution
-    
-    # Récupérer tous les agents de l'institution avec leurs fonctions
+
+    # Récupérer tous les agents avec leurs profils liés via agent FK
     agents = Agent.objects.filter(institution=institution).select_related(
         'personne'
     ).prefetch_related('personne__membres__fonction')
-    
+
+    # Construire un dict agent_uid → profil pour lookup rapide dans le template
+    profils_par_agent = {
+        str(p.agent_id): p
+        for p in ProfilUtilisateur.objects.filter(
+            agent__institution=institution
+        ).select_related('user')
+        if p.agent_id
+    }
+
+    # Annoter chaque agent avec son profil
+    for agent in agents:
+        agent.profil_compte = profils_par_agent.get(str(agent.uid))
+
     # Statistiques
     stats = {
         'total_agents': agents.count(),
-        'comptes_actifs': ProfilUtilisateur.objects.filter(
-            personne__agent__institution=institution,
-            actif=True
-        ).count(),
-        'ministres': ProfilUtilisateur.objects.filter(
-            personne__agent__institution=institution,
-            role=RoleUtilisateur.MINISTRE,
-            actif=True
-        ).count(),
+        'comptes_actifs': sum(
+            1 for p in profils_par_agent.values() if p.actif
+        ),
+        'ministres': sum(
+            1 for p in profils_par_agent.values()
+            if p.role == RoleUtilisateur.MINISTRE and p.actif
+        ),
     }
-    
+
     context = {
         'agents': agents,
         'stats': stats,
@@ -85,8 +96,8 @@ def detail_agent(request, agent_id):
         membre__institution=institution
     ).select_related('membre__fonction')
     
-    # Récupérer le compte utilisateur s'il existe
-    profil = ProfilUtilisateur.objects.filter(personne=agent.personne).first()
+    # Récupérer le compte utilisateur s'il existe (via le lien agent FK)
+    profil = ProfilUtilisateur.objects.filter(agent=agent).first()
     
     context = {
         'agent': agent,

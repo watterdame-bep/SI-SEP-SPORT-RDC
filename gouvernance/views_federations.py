@@ -73,8 +73,12 @@ def federations_nationales(request):
     # TODO: Ajouter un champ province dans Institution ou via AdresseContact
     repartition_geo = {}
     
+    # Fédérations agréées (signées)
+    agreees = federations.filter(statut_signature='SIGNE').count()
+
     stats = {
         'total': total_federations,
+        'agreees': agreees,
         'en_attente': en_attente,
         'agrement_expire': agrement_expire,
         'refusees': refusees,

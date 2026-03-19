@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Enquêtes de Viabilité | SI-SEP Sport RDC{% endblock %}
@@ -230,13 +230,15 @@ input:focus, select:focus {
                             <!-- Bouton Voir/Inspecter -->
                             {% if validation.statut == 'EN_ATTENTE' %}
                             <a href="{% url 'gouvernance:validation_detail' validation.uid %}" 
-                               class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                               style="background:#0036ca"
                                title="Inspecter">
                                 <i class="fa-solid fa-magnifying-glass text-base"></i>
                             </a>
                             {% else %}
                             <a href="{% url 'gouvernance:validation_detail' validation.uid %}" 
-                               class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                               style="background:#0036ca"
                                title="Voir">
                                 <i class="fa-solid fa-eye text-base"></i>
                             </a>
@@ -334,13 +336,15 @@ input:focus, select:focus {
                             <!-- Bouton Inspecter -->
                             {% if validation_ligue.statut == 'EN_INSPECTION' %}
                             <a href="{% url 'gouvernance:division_ligue_detail' validation_ligue.uid %}" 
-                               class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                               style="background:#0036ca"
                                title="Inspecter">
                                 <i class="fa-solid fa-magnifying-glass text-base"></i>
                             </a>
                             {% else %}
                             <a href="{% url 'gouvernance:division_ligue_detail' validation_ligue.uid %}" 
-                               class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                               style="background:#0036ca"
                                title="Voir">
                                 <i class="fa-solid fa-eye text-base"></i>
                             </a>

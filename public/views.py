@@ -938,15 +938,16 @@ def download_ticket(request, ticket_uid):
     from django.shortcuts import get_object_or_404
     from infrastructures.models import Ticket
     from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.pagesizes import A7
     import io
 
     ticket = get_object_or_404(Ticket, uid=ticket_uid)
     numero = ticket.numero_billet or str(ticket.uid)[:8].upper()
 
-    w, h = A4
+    from reportlab.lib.pagesizes import A7
+    w, h = A7
     buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
+    p = canvas.Canvas(buffer, pagesize=A7)
     _generer_page_billet(p, ticket, request, w, h)
     p.showPage()
     p.save()
@@ -959,7 +960,7 @@ def download_ticket(request, ticket_uid):
 
 def _generer_page_billet(p, ticket, request, w, h):
     """
-    Dessine une page billet complète sur le canvas ReportLab.
+    Dessine un billet format A7 (74mm × 105mm) sur le canvas ReportLab.
     Réutilisé par download_ticket et download_vente.
     """
     from reportlab.lib.colors import HexColor, white, black
@@ -967,17 +968,18 @@ def _generer_page_billet(p, ticket, request, w, h):
     import io
     import qrcode
 
-    bleu_rdc = HexColor('#0036ca')
+    bleu_rdc  = HexColor('#0036ca')
     jaune_rdc = HexColor('#FDE015')
     gris_clair = HexColor('#f8f9fa')
     gris_texte = HexColor('#555555')
 
     evenement = ticket.evenement_zone.evenement
-    zone = ticket.evenement_zone.zone_stade
-    numero = ticket.numero_billet or str(ticket.uid)[:8].upper()
+    zone      = ticket.evenement_zone.zone_stade
+    numero    = ticket.numero_billet or str(ticket.uid)[:8].upper()
 
+    # QR code
     verify_url = request.build_absolute_uri(f'/verify/ticket/{ticket.uid}/')
-    qr = qrcode.QRCode(version=1, box_size=6, border=2)
+    qr = qrcode.QRCode(version=1, box_size=4, border=1)
     qr.add_data(verify_url)
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color='black', back_color='white')
@@ -987,143 +989,136 @@ def _generer_page_billet(p, ticket, request, w, h):
     qr_reader = ImageReader(qr_buf)
 
     font = 'Helvetica'
+    pad  = 8   # padding latéral
 
-    # Header bleu
+    # ── Header bleu ──────────────────────────────────────────
+    header_h = 28
     p.setFillColor(bleu_rdc)
-    p.rect(0, h - 100, w, 100, fill=1, stroke=0)
+    p.rect(0, h - header_h, w, header_h, fill=1, stroke=0)
+
     p.setFillColor(white)
-    p.setFont(font + '-Bold', 20)
-    p.drawString(30, h - 40, 'SI-SEP Sport RDC')
-    p.setFont(font, 11)
+    p.setFont(font + '-Bold', 8)
+    p.drawString(pad, h - 11, 'SI-SEP SPORT RDC')
+    p.setFont(font, 6)
     p.setFillColor(jaune_rdc)
-    p.drawString(30, h - 60, "Billet d'Entrée Officiel")
-    p.setFillColor(HexColor('#ffffff33'))
-    p.roundRect(w - 160, h - 90, 130, 50, 5, fill=1, stroke=0)
+    p.drawString(pad, h - 21, "Billet d'Entrée Officiel")
+
+    # Numéro billet (coin droit du header)
+    p.setFillColor(HexColor('#ffffff22'))
+    p.rect(w - 52, h - header_h + 3, 46, header_h - 6, fill=1, stroke=0)
     p.setFillColor(white)
-    p.setFont(font, 9)
-    p.drawCentredString(w - 95, h - 55, 'Numéro')
-    p.setFont(font + '-Bold', 14)
-    p.drawCentredString(w - 95, h - 75, numero)
+    p.setFont(font, 5)
+    p.drawCentredString(w - 29, h - 12, 'N°')
+    p.setFont(font + '-Bold', 7)
+    p.drawCentredString(w - 29, h - 21, numero[:10])
 
-    # Titre événement
+    # ── Titre événement ──────────────────────────────────────
+    y = h - header_h - 10
     p.setFillColor(black)
-    p.setFont(font + '-Bold', 16)
-    p.drawString(30, h - 135, evenement.titre)
+    p.setFont(font + '-Bold', 7)
+    titre = evenement.titre[:38]
+    p.drawString(pad, y, titre)
+    y -= 5
     p.setStrokeColor(bleu_rdc)
-    p.setLineWidth(2)
-    p.line(30, h - 145, w - 30, h - 145)
+    p.setLineWidth(1)
+    p.line(pad, y, w - pad, y)
+    y -= 8
 
-    # Infos événement
-    y = h - 175
-    for label, valeur in [
-        ('Date', evenement.date_evenement.strftime('%d/%m/%Y')),
-        ('Lieu', evenement.infrastructure.nom),
-        ('Zone', zone.nom),
-        ('Prix', f"{ticket.evenement_zone.prix_unitaire:,.0f} CDF"),
-    ]:
+    # ── Infos match (gauche) + QR (droite) ───────────────────
+    qr_size = 52
+    qr_x    = w - qr_size - pad
+    qr_y    = y - qr_size - 2
+
+    infos = [
+        ('Date',  evenement.date_evenement.strftime('%d/%m/%Y')),
+        ('Lieu',  evenement.infrastructure.nom[:22]),
+        ('Zone',  zone.nom[:22]),
+        ('Prix',  f"{ticket.evenement_zone.prix_unitaire:,.0f} CDF"),
+    ]
+    for label, valeur in infos:
         p.setFillColor(gris_texte)
-        p.setFont(font, 10)
-        p.drawString(30, y, label + ' :')
+        p.setFont(font, 6)
+        p.drawString(pad, y, label + ' :')
         p.setFillColor(black)
-        p.setFont(font + '-Bold', 10)
-        p.drawString(160, y, valeur)
-        y -= 22
+        p.setFont(font + '-Bold', 6)
+        p.drawString(pad + 28, y, valeur)
+        y -= 10
 
     # QR code
-    qr_size = 130
-    qr_x = w - qr_size - 30
-    qr_y = h - 175 - qr_size + 10
     p.setFillColor(gris_clair)
-    p.rect(qr_x - 8, qr_y - 20, qr_size + 16, qr_size + 30, fill=1, stroke=0)
+    p.rect(qr_x - 3, qr_y - 6, qr_size + 6, qr_size + 10, fill=1, stroke=0)
     p.drawImage(qr_reader, qr_x, qr_y, width=qr_size, height=qr_size)
     p.setFillColor(gris_texte)
-    p.setFont(font, 8)
-    p.drawCentredString(qr_x + qr_size / 2, qr_y - 14, 'Scannez pour vérifier')
+    p.setFont(font, 5)
+    p.drawCentredString(qr_x + qr_size / 2, qr_y - 4, 'Scanner pour vérifier')
 
-    # Séparateur pointillé
-    y_sep = h - 330
+    # ── Séparateur pointillé ─────────────────────────────────
+    y_sep = min(y - 6, qr_y - 10)
     p.setStrokeColor(HexColor('#cccccc'))
-    p.setLineWidth(1)
-    p.setDash(4, 4)
-    p.line(30, y_sep, w - 30, y_sep)
+    p.setLineWidth(0.5)
+    p.setDash(3, 3)
+    p.line(pad, y_sep, w - pad, y_sep)
     p.setDash()
     p.setFillColor(gris_texte)
-    p.setFont(font, 10)
-    p.drawString(w / 2 - 5, y_sep - 2, '✂')
+    p.setFont(font, 7)
+    p.drawCentredString(w / 2, y_sep - 1, '✂')
 
-    # Infos acheteur
-    y = y_sep - 35
+    # ── Infos acheteur ───────────────────────────────────────
+    y2 = y_sep - 12
     p.setFillColor(bleu_rdc)
-    p.setFont(font + '-Bold', 11)
-    p.drawString(30, y, "Informations d'achat")
-    y -= 20
-    achat_infos = []
+    p.setFont(font + '-Bold', 6)
+    p.drawString(pad, y2, "Informations d'achat")
+    y2 -= 8
+
+    achat = []
     if ticket.vente:
-        achat_infos = [
-            ("Acheté par", ticket.vente.acheteur_nom or 'N/A'),
-            ("Téléphone", ticket.vente.acheteur_telephone or 'N/A'),
-            ("Date d'achat", ticket.vente.date_vente.strftime('%d/%m/%Y %H:%M')),
-            ("Référence", ticket.vente.reference_paiement or 'N/A'),
+        achat = [
+            ('Nom',       ticket.vente.acheteur_nom or 'N/A'),
+            ('Tél.',      ticket.vente.acheteur_telephone or 'N/A'),
+            ('Date achat', ticket.vente.date_vente.strftime('%d/%m/%Y')),
+            ('Réf.',      (ticket.vente.reference_paiement or 'N/A')[:18]),
         ]
-    achat_infos.append(("Statut", 'Valide ✓' if ticket.statut == 'VENDU' else ticket.get_statut_display()))
-    achat_infos.append(("UID", str(ticket.uid)))
-    col2_x = w / 2
-    p.setFont(font, 10)
-    for i, (label, valeur) in enumerate(achat_infos[:3]):
-        row_y = y - i * 22
-        p.setFillColor(gris_texte)
-        p.drawString(30, row_y, f'{label} :')
-        p.setFillColor(black)
-        p.setFont(font + '-Bold', 10)
-        p.drawString(130, row_y, str(valeur))
-        p.setFont(font, 10)
-    for i, (label, valeur) in enumerate(achat_infos[3:]):
-        row_y = y - i * 22
-        p.setFillColor(gris_texte)
-        p.drawString(col2_x, row_y, f'{label} :')
-        p.setFillColor(black)
-        p.setFont(font + '-Bold', 10)
-        p.drawString(col2_x + 90, row_y, str(valeur)[:40])
-        p.setFont(font, 10)
+    achat.append(('Statut', 'Valide ✓' if ticket.statut == 'VENDU' else ticket.get_statut_display()))
 
-    # Instructions
-    y_inst = y_sep - 175
-    p.setFillColor(HexColor('#e3f2fd'))
-    p.rect(30, y_inst - 80, w - 60, 90, fill=1, stroke=0)
-    p.setStrokeColor(bleu_rdc)
-    p.setLineWidth(3)
-    p.line(30, y_inst - 80, 30, y_inst + 10)
-    p.setFillColor(bleu_rdc)
-    p.setFont(font + '-Bold', 10)
-    p.drawString(40, y_inst, 'Instructions importantes')
-    p.setFillColor(HexColor('#1a3a6b'))
-    p.setFont(font, 9)
-    for i, line in enumerate([
-        "• Présentez ce billet (numérique ou imprimé) à l'entrée du stade",
-        "• Le QR code sera scanné pour validation à l'entrée",
-        "• Chaque billet est valable pour une seule personne",
-        f"• En cas de problème, présentez le numéro : {numero}",
-    ]):
-        p.drawString(40, y_inst - 18 - i * 14, line)
+    col2 = w / 2
+    left  = achat[:3]
+    right = achat[3:]
+    for i, (label, valeur) in enumerate(left):
+        row_y = y2 - i * 9
+        p.setFillColor(gris_texte)
+        p.setFont(font, 5.5)
+        p.drawString(pad, row_y, label + ' :')
+        p.setFillColor(black)
+        p.setFont(font + '-Bold', 5.5)
+        p.drawString(pad + 30, row_y, str(valeur)[:20])
+    for i, (label, valeur) in enumerate(right):
+        row_y = y2 - i * 9
+        p.setFillColor(gris_texte)
+        p.setFont(font, 5.5)
+        p.drawString(col2, row_y, label + ' :')
+        p.setFillColor(black)
+        p.setFont(font + '-Bold', 5.5)
+        p.drawString(col2 + 22, row_y, str(valeur)[:18])
 
-    # Footer
+    # ── Footer ───────────────────────────────────────────────
+    footer_h = 14
     p.setFillColor(gris_clair)
-    p.rect(0, 0, w, 40, fill=1, stroke=0)
+    p.rect(0, 0, w, footer_h, fill=1, stroke=0)
     p.setFillColor(gris_texte)
-    p.setFont(font, 8)
-    p.drawCentredString(w / 2, 25, 'Billet généré par SI-SEP Sport RDC')
-    p.drawCentredString(w / 2, 12, f'Numéro : {numero}  |  UID : {ticket.uid}')
+    p.setFont(font, 5)
+    p.drawCentredString(w / 2, 8, f'SI-SEP Sport RDC  |  N° {numero}')
+    p.drawCentredString(w / 2, 3, str(ticket.uid))
 
 
 def download_vente(request, vente_uid):
     """
-    Télécharge tous les billets d'une vente en un seul PDF multi-pages (1 page = 1 billet).
+    Télécharge tous les billets d'une vente en un seul PDF multi-pages (1 page A7 = 1 billet).
     """
     from django.http import HttpResponse, HttpResponseNotFound
     from django.shortcuts import get_object_or_404
     from infrastructures.models import Vente
     from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.pagesizes import A7
     import io
 
     vente = get_object_or_404(Vente, uid=vente_uid)
@@ -1136,9 +1131,9 @@ def download_vente(request, vente_uid):
     if not tickets:
         return HttpResponseNotFound("Aucun billet valide trouvé pour cette vente.")
 
-    w, h = A4
+    w, h = A7
     buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
+    p = canvas.Canvas(buffer, pagesize=A7)
 
     for ticket in tickets:
         _generer_page_billet(p, ticket, request, w, h)

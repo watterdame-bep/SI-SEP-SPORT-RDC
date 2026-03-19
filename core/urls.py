@@ -28,4 +28,6 @@ urlpatterns = [
     path('api/compte/<int:user_id>/toggle/', views.api_toggle_compte, name='api_toggle_compte'),
     path('api/compte/<int:user_id>/delete/', views.api_delete_compte, name='api_delete_compte'),
     path('api/compte/<int:user_id>/lier-agent/', views.api_lier_agent, name='api_lier_agent'),
+    path('api/compte/<int:user_id>/edit-email/', views.api_edit_email_compte, name='api_edit_email_compte'),
+    path('set-password/<str:token>/', views.set_password_transfer, name='set_password_transfer'),
 ]

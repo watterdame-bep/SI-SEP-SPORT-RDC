@@ -490,6 +490,8 @@ def inspections_a_transferer(request):
     validations_acceptees = validations_completes.filter(statut='VALIDEE').count()
     validations_rejetees = validations_completes.filter(statut='REJETEE').count()
     total_validations = validations_completes.count()
+    # En attente = validées/rejetées mais pas encore transférées au Ministre
+    validations_en_attente = validations_completes.filter(federation__statut_signature='').count()
 
     provinces = ProvAdmin.objects.all().order_by('designation')
 
@@ -497,6 +499,7 @@ def inspections_a_transferer(request):
         'validations_completes': validations_completes,
         'validations_acceptees': validations_acceptees,
         'validations_rejetees': validations_rejetees,
+        'validations_en_attente': validations_en_attente,
         'total_validations': total_validations,
         'provinces': provinces,
         'province_id': province_id or '',

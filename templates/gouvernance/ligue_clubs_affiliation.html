@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Mes Clubs Affiliés | SI-SEP Sport RDC{% endblock %}
@@ -193,7 +193,8 @@
                     <div class="flex items-center justify-center gap-1.5">
                         <!-- Voir -->
                         <a href="{% url 'gouvernance:ligue_club_detail' club.uid %}" 
-                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                           style="background:#0036ca"
                            title="Voir">
                             <i class="fa-solid fa-eye text-base"></i>
                         </a>
@@ -201,7 +202,7 @@
                         <!-- Affilier : uniquement si validé par la province (masqué si déjà AFFILIEE) -->
                         {% if club.statut_validation_club == 'VALIDEE_PROVINCIALE' %}
                         <button onclick="openAffiliateModal('{{ club.uid }}', '{{ club.nom_officiel }}')" 
-                           class="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white transition-all" 
                            title="Affilier">
                             <i class="fa-solid fa-check text-base"></i>
                         </button>
@@ -210,7 +211,7 @@
                         {% if club.statut_validation_club == 'AFFILIEE' %}
                         <form method="post" action="{% url 'gouvernance:ligue_club_resend_activation' club.uid %}" class="inline">
                             {% csrf_token %}
-                            <button type="submit" class="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-all" title="Renvoyer l'email d'activation">
+                            <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" style="background:#0036ca" title="Renvoyer l'email d'activation">
                                 <i class="fa-solid fa-envelope-circle-check text-base"></i>
                             </button>
                         </form>

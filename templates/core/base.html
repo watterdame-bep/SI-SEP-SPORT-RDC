@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -699,18 +699,67 @@
                     <details id="user-menu" class="group">
                         <summary class="flex items-center gap-3 cursor-pointer list-none px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors duration-200 [&::-webkit-details-marker]:hidden">
                             <div class="w-9 h-9 rounded-full bg-rdc-blue flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-rdc-yellow/20">
-                                {{ user.get_full_name|default:user.username|slice:":2"|upper }}
+                                {% if request.user.profil_sisep.agent %}
+                                    {{ request.user.profil_sisep.agent.personne.nom_complet|slice:":2"|upper }}
+                                {% else %}
+                                    {{ user.get_full_name|default:user.username|slice:":2"|upper }}
+                                {% endif %}
                             </div>
                             <div class="hidden md:block text-left">
-                                <p class="text-sm font-semibold text-slate-900 leading-tight">{{ user.get_full_name|default:user.username }}</p>
-                                <p class="text-xs text-slate-500 leading-tight">{{ user.email|default:"" }}</p>
+                                <p class="text-sm font-semibold text-slate-900 leading-tight">
+                                    {% if request.user.profil_sisep.agent %}
+                                        {{ request.user.profil_sisep.agent.personne.nom_complet }}
+                                    {% else %}
+                                        {{ user.get_full_name|default:user.username }}
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-slate-500 leading-tight">
+                                    {% if request.user.profil_sisep %}
+                                        {% with r=request.user.profil_sisep.role %}
+                                            {% if r == 'MINISTRE' %}Ministre
+                                            {% elif r == 'INSTITUTION_ADMIN' %}Secrétaire Général
+                                            {% elif r == 'DIRECTEUR_PROVINCIAL' %}Directeur Provincial
+                                            {% elif r == 'FEDERATION_SECRETARY' %}Secrétaire
+                                            {% elif r == 'CLUB_SECRETARY' %}Secrétaire Club
+                                            {% elif r == 'MEDECIN_INSPECTEUR' %}Médecin
+                                            {% elif r == 'INFRA_MANAGER' %}Gest. Infrastructure
+                                            {% elif r == 'INSTITUTION_AGENT' %}Agent
+                                            {% else %}{{ request.user.profil_sisep.get_role_display }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        {{ user.email|default:"" }}
+                                    {% endif %}
+                                </p>
                             </div>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-400 group-open:rotate-180 transition-transform duration-200"></i>
                         </summary>
                         
                         <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 py-2 z-50 animate-fade-in">
                             <div class="px-4 py-3 border-b border-slate-100">
-                                <p class="text-sm font-semibold text-slate-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                <p class="text-sm font-semibold text-slate-900 truncate">
+                                    {% if request.user.profil_sisep.agent %}
+                                        {{ request.user.profil_sisep.agent.personne.nom_complet }}
+                                    {% else %}
+                                        {{ user.get_full_name|default:user.username }}
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-slate-400 truncate mt-0.5">
+                                    {% if request.user.profil_sisep %}
+                                        {% with r=request.user.profil_sisep.role %}
+                                            {% if r == 'MINISTRE' %}Ministre
+                                            {% elif r == 'INSTITUTION_ADMIN' %}Secrétaire Général
+                                            {% elif r == 'DIRECTEUR_PROVINCIAL' %}Directeur Provincial
+                                            {% elif r == 'FEDERATION_SECRETARY' %}Secrétaire
+                                            {% elif r == 'CLUB_SECRETARY' %}Secrétaire Club
+                                            {% elif r == 'MEDECIN_INSPECTEUR' %}Médecin
+                                            {% elif r == 'INFRA_MANAGER' %}Gest. Infrastructure
+                                            {% elif r == 'INSTITUTION_AGENT' %}Agent
+                                            {% else %}{{ request.user.profil_sisep.get_role_display }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                </p>
                                 <p class="text-xs text-slate-500 truncate mt-1">{{ user.email|default:"" }}</p>
                             </div>
                             {% if user_role == 'ministre' %}

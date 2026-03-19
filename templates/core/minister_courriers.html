@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Courriers à Signer | SI-SEP Sport RDC{% endblock %}
@@ -144,14 +144,14 @@
                 <td class="px-6 py-4">
                     <div class="flex items-center justify-center gap-1.5">
                         <a href="{% url 'core:minister_parapheur' courrier.uid %}" 
-                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
                            title="Examiner">
-                            <i class="fa-solid fa-eye text-base"></i>
+                            <i class="fa-solid fa-eye text-base text-white"></i>
                         </a>
                         <a href="{% url 'core:minister_parapheur' courrier.uid %}" 
-                           class="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#16a34a"
                            title="Signer">
-                            <i class="fa-solid fa-pen-to-square text-base"></i>
+                            <i class="fa-solid fa-pen-to-square text-base text-white"></i>
                         </a>
                     </div>
                 </td>

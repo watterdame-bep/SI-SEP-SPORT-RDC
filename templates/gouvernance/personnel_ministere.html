@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Personnel du Ministère | SI-SEP Sport RDC{% endblock %}
@@ -97,7 +97,7 @@ input:focus, textarea:focus, select:focus { outline: none !important; }
             </thead>
             <tbody class="divide-y divide-slate-100">
                 {% for agent in agents %}
-                    {% with profil=agent.personne.profils_utilisateur.all|first %}
+                {% with profil=agent.profil_compte %}
                     <tr class="hover:bg-slate-50/70 transition-colors cursor-pointer"
                         data-nom="{{ agent.nom_complet }}"
                         data-matricule="{{ agent.matricule|default:'-' }}"
@@ -108,18 +108,9 @@ input:focus, textarea:focus, select:focus { outline: none !important; }
                         data-statut="{% if profil %}{% if profil.actif %}actif{% else %}inactif{% endif %}{% else %}sans_compte{% endif %}"
                         onclick="openAgentModal(this)">
 
-                        <!-- Agent : avatar + nom -->
+                        <!-- Agent : nom seulement -->
                         <td class="px-4 py-2.5">
-                            <div class="flex items-center gap-2.5">
-                                {% if agent.personne.photo %}
-                                    <img src="{{ agent.personne.photo.url }}" class="w-7 h-7 rounded-full object-cover" alt="{{ agent.nom_complet }}">
-                                {% else %}
-                                    <div class="w-7 h-7 rounded-full bg-rdc-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                        {{ agent.nom_complet|slice:":1"|upper }}
-                                    </div>
-                                {% endif %}
-                                <span class="text-sm font-medium text-slate-800">{{ agent.nom_complet }}</span>
-                            </div>
+                            <span class="text-sm font-medium text-slate-800">{{ agent.nom_complet }}</span>
                         </td>
 
                         <!-- Matricule -->

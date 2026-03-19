@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}{{ agent.nom_complet }} | SI-SEP Sport RDC{% endblock %}
@@ -34,168 +34,216 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 {% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-5">
+<div style="max-width:1200px; margin:0 auto;">
+    <div style="display:flex; flex-direction:row; gap:20px; align-items:flex-start;">
 
-    <!-- Carte identité principale -->
-    <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
-        <div class="bg-rdc-blue px-6 py-4 flex items-center gap-5">
-            {% if agent.personne.photo %}
-                <img src="{{ agent.personne.photo.url }}" class="w-16 h-16 rounded-full object-cover ring-2 ring-white/40" alt="{{ agent.nom_complet }}">
-            {% else %}
-                <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold ring-2 ring-white/30">
-                    {{ agent.nom_complet|slice:":1"|upper }}
+        <!-- Colonne gauche : Identité + Infos personnelles -->
+        <div style="flex:1; min-width:0;" class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
+            <!-- Header identité -->
+            <div class="bg-rdc-blue px-6 py-5" style="display:flex; align-items:center; gap:0;">
+                <!-- Avatar -->
+                <div style="flex-shrink:0; margin-right:20px;">
+                    {% if agent.personne.photo %}
+                        <img src="{{ agent.personne.photo.url }}"
+                             style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.4);"
+                             alt="{{ agent.nom_complet }}">
+                    {% else %}
+                        <div style="width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:white;">
+                            {{ agent.nom_complet|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
-            <div>
-                <p class="text-lg font-bold text-white">{{ agent.nom_complet }}</p>
-                <p class="text-xs text-white/80 mt-0.5">
-                    {% with fonction=agent.personne.membres.first.fonction %}
-                        {% if fonction %}{{ fonction.designation }}{% else %}Aucune fonction assignée{% endif %}
-                    {% endwith %}
-                </p>
-                <div class="flex items-center gap-2 mt-2">
-                    {% if profil %}
-                        {% if profil.actif %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
-                                <i class="fa-solid fa-check text-[10px]"></i>Actif
+
+                <!-- Texte -->
+                <div>
+                    <p style="font-size:17px; font-weight:700; color:white; margin:0 0 3px 0;">{{ agent.nom_complet }}</p>
+                    <p style="font-size:12px; color:rgba(255,255,255,0.7); margin:0 0 10px 0;">
+                        {% with fonction=agent.personne.membres.first.fonction %}
+                            {% if fonction %}{{ fonction.designation }}{% else %}Aucune fonction assignée{% endif %}
+                        {% endwith %}
+                    </p>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        {% if profil %}
+                            {% if profil.actif %}
+                                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:#dcfce7; color:#166534; font-size:11px; font-weight:600; border-radius:20px;">
+                                    <i class="fa-solid fa-circle-check" style="font-size:9px;"></i>Actif
+                                </span>
+                            {% else %}
+                                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:#f1f5f9; color:#475569; font-size:11px; font-weight:600; border-radius:20px;">
+                                    <i class="fa-solid fa-circle-xmark" style="font-size:9px;"></i>Inactif
+                                </span>
+                            {% endif %}
+                            <span style="display:inline-flex; align-items:center; padding:3px 10px; background:rgba(255,255,255,0.15); color:white; font-size:11px; font-weight:500; border-radius:20px;">
+                                {{ profil.get_role_display }}
                             </span>
                         {% else %}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full">
-                                <i class="fa-solid fa-xmark text-[10px]"></i>Inactif
+                            <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:#fef9c3; color:#854d0e; font-size:11px; font-weight:600; border-radius:20px;">
+                                <i class="fa-solid fa-exclamation-circle" style="font-size:9px;"></i>Sans compte
                             </span>
                         {% endif %}
-                        <span class="inline-flex items-center px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">
-                            {{ profil.get_role_display }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infos personnelles -->
+            <div class="px-6 py-5">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
+                    <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:#eff6ff; border-radius:6px;">
+                        <i class="fa-solid fa-id-card" style="color:#0036ca; font-size:12px;"></i>
+                    </span>
+                    <span style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em;">Informations personnelles</span>
+                </div>
+
+                <!-- Chaque ligne : label à gauche, valeur à droite -->
+                <div style="display:flex; flex-direction:column; gap:0;">
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-user" style="color:#cbd5e1; width:12px;"></i>Nom
                         </span>
-                    {% else %}
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">
-                            <i class="fa-solid fa-exclamation text-[10px]"></i>Sans compte
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b;">{{ agent.personne.nom|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-user" style="color:#cbd5e1; width:12px;"></i>Postnom
                         </span>
-                    {% endif %}
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b;">{{ agent.personne.postnom|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-user" style="color:#cbd5e1; width:12px;"></i>Prénom
+                        </span>
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b;">{{ agent.personne.prenom|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-venus-mars" style="color:#cbd5e1; width:12px;"></i>Sexe
+                        </span>
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b;">{{ agent.personne.get_sexe_display|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-envelope" style="color:#cbd5e1; width:12px;"></i>Email
+                        </span>
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b; word-break:break-all;">{{ agent.email|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f8fafc;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-phone" style="color:#cbd5e1; width:12px;"></i>Téléphone
+                        </span>
+                        <span style="flex:1; font-size:13px; font-weight:600; color:#1e293b;">{{ agent.telephone|default:"—" }}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; padding:10px 0;">
+                        <span style="width:40%; font-size:11px; color:#94a3b8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-hashtag" style="color:#cbd5e1; width:12px;"></i>Matricule
+                        </span>
+                        <span style="flex:1;">
+                            <span style="display:inline-block; font-size:12px; font-weight:700; color:#0036ca; background:#eff6ff; padding:3px 10px; border-radius:4px; letter-spacing:0.04em;">{{ agent.matricule|default:"—" }}</span>
+                        </span>
+                    </div>
+
                 </div>
             </div>
         </div>
 
-        <!-- Infos personnelles en grille -->
-        <div class="px-6 py-5 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Nom</p>
-                <p class="text-sm font-semibold text-slate-800">{{ agent.personne.nom|default:"—" }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Postnom</p>
-                <p class="text-sm font-semibold text-slate-800">{{ agent.personne.postnom|default:"—" }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Prénom</p>
-                <p class="text-sm font-semibold text-slate-800">{{ agent.personne.prenom|default:"—" }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Sexe</p>
-                <p class="text-sm font-semibold text-slate-800">{{ agent.personne.get_sexe_display|default:"—" }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Email</p>
-                <p class="text-sm font-semibold text-slate-800 break-all">{{ agent.email|default:"—" }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Téléphone</p>
-                <p class="text-sm font-semibold text-slate-800">{{ agent.telephone|default:"—" }}</p>
-            </div>
-        </div>
-    </div>
+        <!-- Colonne droite : Mandats + Accès système empilés -->
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:20px;">
 
-    <!-- Layout 2 colonnes : Mandats + Accès système -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-        <!-- Mandats -->
-        <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue">
-                    <i class="fa-solid fa-briefcase text-sm"></i>
-                </span>
-                <h2 class="text-sm font-bold text-slate-800">Mandats</h2>
-            </div>
-            <div class="px-5 py-4">
-                {% if mandats %}
-                    <div class="space-y-3">
-                        {% for mandat in mandats %}
-                            <div class="border border-slate-100 rounded-xl p-3 hover:border-slate-200 hover:shadow-sm transition-all">
-                                <p class="text-sm font-semibold text-slate-800 mb-1">{{ mandat.fonction.designation }}</p>
-                                <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-2">
-                                    <i class="fa-solid fa-calendar text-rdc-blue"></i>
-                                    {{ mandat.date_debut|date:"d/m/Y" }}
-                                    {% if mandat.date_fin %} — {{ mandat.date_fin|date:"d/m/Y" }}{% else %} — En cours{% endif %}
-                                </p>
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-rdc-blue text-xs font-semibold rounded-full">
-                                    <i class="fa-solid fa-circle-check text-[10px]"></i>{{ mandat.statut_mandat }}
-                                </span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-8">
-                        <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-2"></i>
-                        <p class="text-sm text-slate-400">Aucun mandat enregistré</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Accès système -->
-        <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue">
-                    <i class="fa-solid fa-lock text-sm"></i>
-                </span>
-                <h2 class="text-sm font-bold text-slate-800">Accès Système</h2>
-            </div>
-            <div class="px-5 py-5">
-                {% if profil %}
-                    <div class="flex items-center gap-3 p-3 rounded-xl {% if profil.actif %}bg-emerald-50 border border-emerald-100{% else %}bg-slate-50 border border-slate-200{% endif %} mb-4">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-full {% if profil.actif %}bg-emerald-100 text-emerald-600{% else %}bg-slate-200 text-slate-500{% endif %}">
-                            <i class="fa-solid fa-{% if profil.actif %}check{% else %}xmark{% endif %}"></i>
-                        </span>
-                        <div>
-                            <p class="text-sm font-bold {% if profil.actif %}text-emerald-800{% else %}text-slate-600{% endif %}">
-                                {% if profil.actif %}Compte actif{% else %}Compte inactif{% endif %}
-                            </p>
-                            <p class="text-xs text-slate-500">{{ profil.get_role_display }}</p>
+            <!-- Mandats -->
+            <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue">
+                        <i class="fa-solid fa-briefcase text-sm"></i>
+                    </span>
+                    <h2 class="text-sm font-bold text-slate-800">Mandats</h2>
+                </div>
+                <div class="px-5 py-4">
+                    {% if mandats %}
+                        <div class="space-y-3">
+                            {% for mandat in mandats %}
+                                <div class="border border-slate-100 rounded-xl p-3 hover:border-slate-200 hover:shadow-sm transition-all">
+                                    <p class="text-sm font-semibold text-slate-800 mb-1">{{ mandat.fonction.designation }}</p>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-2">
+                                        <i class="fa-solid fa-calendar text-rdc-blue"></i>
+                                        {{ mandat.date_debut|date:"d/m/Y" }}
+                                        {% if mandat.date_fin %} — {{ mandat.date_fin|date:"d/m/Y" }}{% else %} — En cours{% endif %}
+                                    </p>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-rdc-blue text-xs font-semibold rounded-full">
+                                        <i class="fa-solid fa-circle-check text-[10px]"></i>{{ mandat.statut_mandat }}
+                                    </span>
+                                </div>
+                            {% endfor %}
                         </div>
-                    </div>
-                    {% if profil.actif %}
-                        <form method="post" action="{% url 'gouvernance:desactiver_compte' agent.uid %}">
-                            {% csrf_token %}
-                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-rdc-red text-sm font-semibold rounded-xl border border-red-100 transition-colors">
-                                <i class="fa-solid fa-ban"></i>Désactiver le compte
-                            </button>
-                        </form>
                     {% else %}
-                        <form method="post" action="{% url 'gouvernance:reactiver_compte' agent.uid %}">
-                            {% csrf_token %}
-                            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-xl border border-emerald-100 transition-colors">
-                                <i class="fa-solid fa-check"></i>Réactiver le compte
-                            </button>
-                        </form>
-                    {% endif %}
-                {% else %}
-                    <div class="flex items-center gap-3 p-3 rounded-xl bg-yellow-50 border border-yellow-100 mb-4">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
-                            <i class="fa-solid fa-exclamation"></i>
-                        </span>
-                        <div>
-                            <p class="text-sm font-bold text-yellow-800">Aucun compte</p>
-                            <p class="text-xs text-slate-500">Accès système non créé</p>
+                        <div class="text-center py-8">
+                            <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-2"></i>
+                            <p class="text-sm text-slate-400">Aucun mandat enregistré</p>
                         </div>
-                    </div>
-                    <a href="{% url 'core:creer_compte_agent' %}?agent={{ agent.uid }}"
-                       class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-xl transition-colors">
-                        <i class="fa-solid fa-user-plus"></i>Créer un accès système
-                    </a>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
-        </div>
 
+            <!-- Accès système -->
+            <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-rdc-blue">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                    <h2 class="text-sm font-bold text-slate-800">Accès Système</h2>
+                </div>
+                <div class="px-5 py-5">
+                    {% if profil %}
+                        <div class="flex items-center gap-3 p-3 rounded-xl {% if profil.actif %}bg-emerald-50 border border-emerald-100{% else %}bg-slate-50 border border-slate-200{% endif %} mb-4">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-full {% if profil.actif %}bg-emerald-100 text-emerald-600{% else %}bg-slate-200 text-slate-500{% endif %}">
+                                <i class="fa-solid fa-{% if profil.actif %}check{% else %}xmark{% endif %}"></i>
+                            </span>
+                            <div>
+                                <p class="text-sm font-bold {% if profil.actif %}text-emerald-800{% else %}text-slate-600{% endif %}">
+                                    {% if profil.actif %}Compte actif{% else %}Compte inactif{% endif %}
+                                </p>
+                                <p class="text-xs text-slate-500">{{ profil.get_role_display }}</p>
+                            </div>
+                        </div>
+                        {% if profil.actif %}
+                            <form method="post" action="{% url 'gouvernance:desactiver_compte' agent.uid %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-rdc-red text-sm font-semibold rounded-xl border border-red-100 transition-colors">
+                                    <i class="fa-solid fa-ban"></i>Désactiver le compte
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'gouvernance:reactiver_compte' agent.uid %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-xl border border-emerald-100 transition-colors">
+                                    <i class="fa-solid fa-check"></i>Réactiver le compte
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="flex items-center gap-3 p-3 rounded-xl bg-yellow-50 border border-yellow-100 mb-4">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
+                                <i class="fa-solid fa-exclamation"></i>
+                            </span>
+                            <div>
+                                <p class="text-sm font-bold text-yellow-800">Aucun compte</p>
+                                <p class="text-xs text-slate-500">Accès système non créé</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'core:creer_compte_agent' %}?agent={{ agent.uid }}"
+                           class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-semibold rounded-xl transition-colors">
+                            <i class="fa-solid fa-user-plus"></i>Créer un accès système
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 {% endblock %}

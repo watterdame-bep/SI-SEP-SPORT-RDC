@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Enrôlement Athlètes | {{ ligue.nom_officiel }}{% endblock %}
@@ -168,7 +168,8 @@
                         </a>
                         {% else %}
                         <a href="{% url 'gouvernance:ligue_athlete_enroll' athlete.uid %}" 
-                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                           style="background:#0036ca"
                            title="Voir le dossier">
                             <i class="fa-solid fa-eye text-base"></i>
                         </a>

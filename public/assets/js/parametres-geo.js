@@ -1,4 +1,4 @@
-﻿// Variables globales
+// Variables globales
 let currentTab = 'provinces';
 let deleteCallback = null;
 
@@ -86,9 +86,9 @@ function loadProvinces() {
             </td>
             <td class="px-4 py-2.5 text-xs text-slate-500">${p.nb_territoires} territoire(s)</td>
             <td class="px-4 py-2.5 text-center">
-                <button onclick="editProvince('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
+                <button onclick="editProvince('${p.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#0036ca;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#002aaa'" onmouseout="this.style.background='#0036ca'" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                 </button>
-                <button onclick="deleteProvince('${p.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
+                <button onclick="deleteProvince('${p.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#ED1C24;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c0151b'" onmouseout="this.style.background='#ED1C24'" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                 </button>
             </td>
         </tr>
@@ -154,9 +154,9 @@ function loadTerritoires() {
                 <td class="px-4 py-2.5 text-xs text-slate-500">${t.province.designation}</td>
                 <td class="px-4 py-2.5 text-xs text-slate-500">${t.nb_secteurs || 0} secteur(s)</td>
                 <td class="px-4 py-2.5 text-center">
-                    <button onclick="editTerritoire('${t.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
+                    <button onclick="editTerritoire('${t.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#0036ca;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#002aaa'" onmouseout="this.style.background='#0036ca'" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                     </button>
-                    <button onclick="deleteTerritoire('${t.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
+                    <button onclick="deleteTerritoire('${t.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#ED1C24;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c0151b'" onmouseout="this.style.background='#ED1C24'" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                     </button>
                 </td>
             </tr>
@@ -246,9 +246,9 @@ function loadSecteurs() {
                     <td class="px-4 py-2.5 text-xs text-slate-500">${s.territoire.designation}</td>
                     <td class="px-4 py-2.5 text-xs text-slate-500">${s.nb_groupements || 0} groupement(s)</td>
                     <td class="px-4 py-2.5 text-center">
-                        <button onclick="editSecteur('${s.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
+                        <button onclick="editSecteur('${s.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#0036ca;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#002aaa'" onmouseout="this.style.background='#0036ca'" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                         </button>
-                        <button onclick="deleteSecteur('${s.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
+                        <button onclick="deleteSecteur('${s.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#ED1C24;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c0151b'" onmouseout="this.style.background='#ED1C24'" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </td>
                 </tr>
@@ -352,9 +352,9 @@ function loadGroupements() {
                         </td>
                         <td class="px-4 py-2.5 text-xs text-slate-500">${g.secteur.designation}</td>
                         <td class="px-4 py-2.5 text-center">
-                            <button onclick="editGroupement('${g.id}')" class="inline-flex items-center justify-center w-8 h-8 text-rdc-blue bg-white border border-rdc-blue rounded-lg hover:bg-blue-50 transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
+                            <button onclick="editGroupement('${g.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#0036ca;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#002aaa'" onmouseout="this.style.background='#0036ca'" title="Modifier"><i class="fa-solid fa-pen text-xs"></i>
                             </button>
-                            <button onclick="deleteGroupement('${g.id}')" class="inline-flex items-center justify-center w-8 h-8 text-white bg-rdc-red border border-rdc-red rounded-lg hover:bg-red-700 transition-colors" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
+                            <button onclick="deleteGroupement('${g.id}')" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;color:#fff;background:#ED1C24;border:none;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c0151b'" onmouseout="this.style.background='#ED1C24'" title="Supprimer"><i class="fa-solid fa-trash text-xs"></i>
                             </button>
                         </td>
                     </tr>
@@ -564,5 +564,7 @@ function confirmDelete() {
         deleteCallback = null;
     }
 }
+
+
 
 

@@ -11,11 +11,11 @@
 :root {
   /* Variables thème Duralux remplacées par la Charte SI-SEP Sport */
   --bs-primary: #0036ca;
-  --bs-warning: #FDE015;
+  --bs-warning: #f59e0b;
   --bs-danger: #ED1C24;
   /* Référence explicite pour réutilisation */
   --sisep-bleu-royal: #0036ca;
-  --sisep-jaune-drapeau: #FDE015;
+  --sisep-jaune-drapeau: #f59e0b;
   --sisep-rouge-drapeau: #ED1C24;
   --sisep-fond-page: #fff;
 }

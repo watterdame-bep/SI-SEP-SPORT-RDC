@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Clubs en Attente de Validation | SI-SEP Sport RDC{% endblock %}
@@ -159,17 +159,17 @@ input:focus, select:focus {
                     <div class="flex items-center justify-center gap-1.5">
                         <!-- Voir -->
                         <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}" 
-                           class="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
                            title="Voir">
-                            <i class="fa-solid fa-eye text-base"></i>
+                            <i class="fa-solid fa-eye text-base text-white"></i>
                         </a>
                         
                         <!-- Valider (si en attente) -->
                         {% if validation.statut == 'EN_ATTENTE' %}
                         <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}" 
-                           class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
                            title="Valider">
-                            <i class="fa-solid fa-check text-base"></i>
+                            <i class="fa-solid fa-check text-base text-white"></i>
                         </a>
                         {% endif %}
                     </div>

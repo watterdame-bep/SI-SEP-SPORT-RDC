@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Fédérations Nationales | SI-SEP Sport RDC{% endblock %}
@@ -37,47 +37,47 @@ input:focus, select:focus {
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-building-columns text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Fédérations</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Fédérations</p>
                         <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-clock text-2xl text-orange-300"></i>
+                    <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">En attente</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Agréées</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.agreees }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">En attente</p>
                         <p class="text-2xl font-bold text-white">{{ stats.en_attente }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-exclamation-triangle text-2xl text-red-300"></i>
+                    <i class="fa-solid fa-exclamation-triangle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Agrément Expiré</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Agrément Expiré</p>
                         <p class="text-2xl font-bold text-white">{{ stats.agrement_expire }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                    <i class="fa-solid fa-ban text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Refusées</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Refusées</p>
                         <p class="text-2xl font-bold text-white">{{ stats.refusees }}</p>
                     </div>
                 </div>
             </div>
-            <a href="{% url 'gouvernance:inspections_a_transferer' %}" class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all cursor-pointer group">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-arrow-right text-2xl text-green-300 group-hover:translate-x-1 transition-transform"></i>
-                    <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">À Transférer</p>
-                        <p class="text-2xl font-bold text-white">Inspections</p>
-                    </div>
-                </div>
-            </a>
         </div>
     </div>
 </div>
@@ -86,37 +86,46 @@ input:focus, select:focus {
 {% block content %}
 <div id="message-container" class="mb-6 space-y-3"></div>
 
+<!-- Bouton Inspections à transférer — déplacé dans la toolbar -->
+
 <!-- Modale de confirmation de suppression -->
 <div id="delete-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6">
         <div class="flex items-center gap-3 mb-4">
-            <div class="flex h-12 w-12 items-center justify-center bg-red-100 rounded-full">
-                <i class="fa-solid fa-exclamation-triangle text-red-600 text-xl"></i>
+            <div class="flex h-12 w-12 items-center justify-center rounded-full flex-shrink-0" style="background:#fee2e2;">
+                <i class="fa-solid fa-exclamation-triangle text-xl" style="color:#dc2626;"></i>
             </div>
             <h2 class="text-lg font-bold text-slate-900">Confirmer la suppression</h2>
         </div>
-        
-        <p class="text-sm text-slate-600 mb-2">
-            Êtes-vous sûr de vouloir supprimer la fédération :
-        </p>
-        <p id="federation-name" class="text-sm font-bold text-slate-900 mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200"></p>
-        
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p class="text-sm text-red-800">
+
+        <p class="text-sm text-slate-600 mb-2">Êtes-vous sûr de vouloir supprimer la fédération :</p>
+        <p id="federation-name" class="text-sm font-bold text-slate-900 mb-4 p-3 rounded-lg" style="background:#f8fafc;"></p>
+
+        <!-- Avertissement ligues (affiché si la fédération a des ligues) -->
+        <div id="ligues-warning" class="hidden mb-4 p-3 rounded-lg" style="background:#fff7ed;">
+            <p class="text-sm font-semibold" style="color:#c2410c;">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                Cette fédération possède <span id="ligues-count" class="font-bold"></span> ligue(s) rattachée(s).
+            </p>
+            <p class="text-xs mt-1" style="color:#9a3412;">Toutes les ligues associées seront également supprimées.</p>
+        </div>
+
+        <div class="mb-5 p-3 rounded-lg" style="background:#fef2f2;">
+            <p class="text-sm" style="color:#991b1b;">
                 <i class="fa-solid fa-info-circle mr-2"></i>
                 <strong>Cette action est irréversible.</strong> Toutes les données associées seront supprimées.
             </p>
         </div>
-        
+
         <div class="flex gap-3">
-            <button type="button" onclick="closeDeleteModal()" 
-                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+            <button type="button" onclick="closeDeleteModal()"
+                    class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm">
                 Annuler
             </button>
-            <button type="button" onclick="confirmDelete()" 
-                    class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
-                <i class="fa-solid fa-trash mr-2"></i>
-                Supprimer
+            <button type="button" onclick="confirmDelete()"
+                    class="flex-1 px-4 py-2 font-semibold rounded-lg transition-colors text-sm text-white"
+                    style="background:#dc2626;">
+                <i class="fa-solid fa-trash mr-2"></i>Supprimer
             </button>
         </div>
     </div>
@@ -127,8 +136,8 @@ input:focus, select:focus {
     <div class="p-6">
         <h2 class="text-lg font-bold text-slate-800 mb-4">Télécharger les documents</h2>
         
-        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p class="text-sm text-blue-800">
+        <div class="mb-6 p-4 rounded-lg" style="background:#eff6ff;">
+            <p class="text-sm" style="color:#1e40af;">
                 <i class="fa-solid fa-info-circle mr-2"></i>
                 Sélectionnez le(s) document(s) à télécharger
             </p>
@@ -137,7 +146,7 @@ input:focus, select:focus {
         <!-- Options de téléchargement -->
         <div class="space-y-3 mb-6">
             <!-- Arrêté -->
-            <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+            <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors" style="background:#f8fafc;">
                 <input type="checkbox" id="download-arrete-liste" class="w-4 h-4 text-rdc-blue rounded" checked>
                 <div class="flex-1">
                     <p class="font-semibold text-slate-800">Arrêté Ministériel</p>
@@ -147,7 +156,7 @@ input:focus, select:focus {
             </label>
             
             <!-- Certificat -->
-            <label class="flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+            <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors" style="background:#f8fafc;">
                 <input type="checkbox" id="download-certificat-liste" class="w-4 h-4 text-rdc-blue rounded" checked>
                 <div class="flex-1">
                     <p class="font-semibold text-slate-800">Certificat d'Homologation</p>
@@ -215,6 +224,13 @@ input:focus, select:focus {
             <i class="fa-solid fa-plus"></i>
             <span>Nouvelle Fédération</span>
         </a>
+        <!-- Bouton Inspections -->
+        <a href="{% url 'gouvernance:inspections_a_transferer' %}"
+           class="md:w-auto px-4 py-2.5 text-white text-sm font-semibold rounded-lg whitespace-nowrap flex items-center justify-center gap-2 transition-colors"
+           style="background:#16a34a;">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <span>Inspections à transférer</span>
+        </a>
     </div>
 </div>
 
@@ -246,8 +262,8 @@ input:focus, select:focus {
                 <td class="px-6 py-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <div class="text-sm font-semibold text-slate-900">{{ federation.nom_officiel }}</div>
-                            <div class="text-xs text-slate-500 font-bold">{{ federation.sigle }}</div>
+                            <div class="text-sm text-slate-900 capitalize">{{ federation.nom_officiel }}</div>
+                            <div class="text-xs text-slate-500">{{ federation.sigle }}</div>
                         </div>
                         {% if federation.document_arrete and not federation.arrete_vu_par_sg %}
                         <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
@@ -320,41 +336,46 @@ input:focus, select:focus {
                 <td class="px-6 py-4">
                     <div class="flex items-center justify-center gap-1.5">
                         <!-- Bouton Voir -->
-                        <a href="{% url 'gouvernance:federation_detail' federation.uid %}" 
-                           class="p-1.5 {% if federation.statut_signature == 'REFUSE' %}text-slate-300 cursor-not-allowed pointer-events-none{% else %}text-slate-600 hover:text-slate-800 hover:bg-slate-100{% endif %} rounded transition-all" 
-                           title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée - Suppression requise{% else %}Voir{% endif %}"
+                        <a href="{% url 'gouvernance:federation_detail' federation.uid %}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-white"
+                           style="{% if federation.statut_signature == 'REFUSE' %}background:#e2e8f0;color:#94a3b8;pointer-events:none{% else %}background:#0036ca{% endif %}"
+                           title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée{% else %}Voir{% endif %}"
                            {% if federation.statut_signature == 'REFUSE' %}onclick="return false"{% endif %}>
-                            <i class="fa-solid fa-eye text-base"></i>
+                            <i class="fa-solid fa-eye text-xs"></i>
                         </a>
-                        
+
                         <!-- Bouton Modifier -->
-                        <button onclick="editFederation('{{ federation.uid }}')" 
-                                class="p-1.5 {% if federation.statut_signature == 'REFUSE' %}text-slate-300 cursor-not-allowed{% else %}text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50{% endif %} rounded transition-all" 
-                                title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée - Suppression requise{% else %}Modifier{% endif %}"
+                        <button onclick="editFederation('{{ federation.uid }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-white"
+                                style="{% if federation.statut_signature == 'REFUSE' %}background:#e2e8f0;color:#94a3b8;cursor:not-allowed{% else %}background:#0036ca{% endif %}"
+                                title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée{% else %}Modifier{% endif %}"
                                 {% if federation.statut_signature == 'REFUSE' %}disabled{% endif %}>
-                            <i class="fa-solid fa-edit text-base"></i>
+                            <i class="fa-solid fa-edit text-xs"></i>
                         </button>
-                        
+
                         <!-- Bouton Arrêté -->
                         {% if federation.document_arrete %}
-                        <button onclick="downloadArrete('{{ federation.uid }}')" 
-                                class="p-1.5 {% if federation.statut_signature == 'REFUSE' %}text-slate-300 cursor-not-allowed{% else %}text-green-600 hover:text-green-700 hover:bg-green-50{% endif %} rounded transition-all" 
-                                title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée - Suppression requise{% else %}Télécharger l'Arrêté{% endif %}"
+                        <button onclick="downloadArrete('{{ federation.uid }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-white"
+                                style="{% if federation.statut_signature == 'REFUSE' %}background:#e2e8f0;color:#94a3b8;cursor:not-allowed{% else %}background:#16a34a{% endif %}"
+                                title="{% if federation.statut_signature == 'REFUSE' %}Fédération refusée{% else %}Télécharger l'Arrêté{% endif %}"
                                 {% if federation.statut_signature == 'REFUSE' %}disabled{% endif %}>
-                            <i class="fa-solid fa-file-pdf text-base"></i>
+                            <i class="fa-solid fa-file-pdf text-xs"></i>
                         </button>
                         {% else %}
-                        <button class="p-1.5 text-slate-300 cursor-not-allowed" 
+                        <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg cursor-not-allowed"
+                                style="background:#e2e8f0;color:#94a3b8;"
                                 title="Arrêté non disponible" disabled>
-                            <i class="fa-solid fa-file-pdf text-base"></i>
+                            <i class="fa-solid fa-file-pdf text-xs"></i>
                         </button>
                         {% endif %}
-                        
-                        <!-- Bouton Supprimer (toujours actif) -->
-                        <button onclick="deleteFederation('{{ federation.uid }}', '{{ federation.nom_officiel }}')" 
-                                class="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-all" 
-                                title="{% if federation.statut_signature == 'REFUSE' %}Supprimer cette fédération refusée{% else %}Supprimer{% endif %}">
-                            <i class="fa-solid fa-trash text-base"></i>
+
+                        <!-- Bouton Supprimer -->
+                        <button onclick="deleteFederation('{{ federation.uid }}', '{{ federation.nom_officiel|escapejs }}', {{ federation.nb_ligues }})"
+                                class="inline-flex items-center justify-center w-8 h-8 text-white rounded-lg transition-colors"
+                                style="background:#dc2626;"
+                                title="Supprimer">
+                            <i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </div>
                 </td>
@@ -408,9 +429,19 @@ function editFederation(id) {
     alert('Édition de la fédération: ' + id);
 }
 
-function deleteFederation(id, nom) {
+function deleteFederation(id, nom, nbLigues) {
     federationToDelete = { id, nom };
     document.getElementById('federation-name').textContent = nom;
+
+    // Afficher ou masquer l'avertissement ligues
+    const warning = document.getElementById('ligues-warning');
+    if (nbLigues && nbLigues > 0) {
+        document.getElementById('ligues-count').textContent = nbLigues;
+        warning.classList.remove('hidden');
+    } else {
+        warning.classList.add('hidden');
+    }
+
     document.getElementById('delete-modal').classList.remove('hidden');
 }
 

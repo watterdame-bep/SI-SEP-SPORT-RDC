@@ -1,7 +1,30 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Prise des empreintes — {{ athlete.personne.nom_complet }}{% endblock %}
+
+{% block extra_style %}
+<style>
+@keyframes ring-draw {
+    0%   { stroke-dashoffset: 113; opacity: 0.4; }
+    60%  { stroke-dashoffset: 0;   opacity: 1; }
+    100% { stroke-dashoffset: 0;   opacity: 1; }
+}
+.finger-ring-svg circle {
+    stroke-dasharray: 113;
+    stroke-dashoffset: 113;
+    animation: ring-draw 0.6s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes check-pop {
+    0%   { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.finger-check-icon {
+    animation: check-pop 0.35s 0.4s cubic-bezier(.34,1.56,.64,1) both;
+}
+</style>
+{% endblock %}
 
 {% block page_header %}
 <div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
@@ -177,27 +200,35 @@
                 </div>
             </div>
 
-            <!-- ■ 2 POUCES : pris ensemble, une section à part -->
-            <div class="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden">
-                <div class="px-4 py-2.5 border-b border-slate-300">
-                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">■ 2 pouces (pris ensemble)</h3>
-                </div>
-                <div class="p-4 flex flex-row gap-8 justify-center">
-                    <div class="flex flex-col items-center">
-                        <div class="w-[160px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
-                            <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L1">
-                                <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
-                            </div>
-                        </div>
-                        <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center">Pouce</span>
+            <!-- ■ 2 POUCES : alignés à droite, même largeur que Main droite -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Colonne gauche vide pour aligner à droite -->
+                <div></div>
+                <!-- Colonne droite : pouces -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-300 overflow-hidden">
+                    <div class="px-4 py-2.5 border-b border-slate-300">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">■ 2 pouces (pris ensemble)</h3>
                     </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-[160px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
-                            <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R1">
-                                <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                    <div class="p-4 flex flex-row gap-3 justify-between">
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-L1">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
                             </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Pouce gauche</span>
                         </div>
-                        <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center">Pouce</span>
+                        <div class="flex flex-col items-center flex-1 min-w-0">
+                            <div class="w-full max-w-[80px] rounded-md border-2 border-slate-400 bg-slate-100 flex items-center justify-center p-2" style="height: 180px;">
+                                <div class="finger-cell w-[88%] h-[88%] rounded border-2 border-slate-500 bg-white flex items-center justify-center transition-colors shadow-inner" id="cell-R1">
+                                    <div class="finger-box w-full h-full flex items-center justify-center rounded-sm"></div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-semibold text-slate-700 uppercase tracking-tight mt-2 text-center leading-tight">Pouce droit</span>
+                        </div>
+                        <!-- 2 colonnes vides pour garder la même largeur de doigt que les 4 doigts -->
+                        <div class="flex-1 min-w-0"></div>
+                        <div class="flex-1 min-w-0"></div>
                     </div>
                 </div>
             </div>
@@ -306,12 +337,24 @@
         (cellIds || []).forEach(function(id) {
             var cell = document.getElementById(id);
             if (!cell) return;
+            var parent = cell.parentElement;
+            if (parent) {
+                parent.style.backgroundColor = '#4ade80'; /* green-400 — bien visible */
+                parent.style.borderColor = '#16a34a';
+            }
+            cell.style.backgroundColor = '#4ade80';
+            cell.style.borderColor = '#16a34a';
             var box = cell.querySelector('.finger-box');
-            cell.classList.remove('border-slate-500', 'bg-white');
-            cell.classList.add('border-emerald-600', 'bg-emerald-500');
-            cell.style.backgroundColor = '#10b981';
-            cell.style.borderColor = '#059669';
-            if (box) box.innerHTML = '<i class="fa-solid fa-check text-white text-lg"></i>';
+            if (box) {
+                box.innerHTML = [
+                    '<div style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;">',
+                    '<svg class="finger-ring-svg" style="position:absolute;top:0;left:0;width:44px;height:44px;" viewBox="0 0 44 44">',
+                    '<circle cx="22" cy="22" r="18" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>',
+                    '</svg>',
+                    '<i class="fa-solid fa-check finger-check-icon" style="color:white;font-size:16px;position:relative;z-index:1;"></i>',
+                    '</div>'
+                ].join('');
+            }
         });
     }
 

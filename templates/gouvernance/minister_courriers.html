@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Courriers à Signer | SI-SEP Sport RDC{% endblock %}
@@ -130,7 +130,8 @@ input:focus, select:focus {
                     <div class="flex items-center justify-center gap-1.5">
                         <!-- Bouton Examiner -->
                         <a href="{% url 'gouvernance:parapheur_detail' courrier.pk %}" 
-                           class="p-1.5 text-rdc-blue hover:text-rdc-blue-dark hover:bg-blue-50 rounded transition-all" 
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
+                           style="background:#0036ca"
                            title="Examiner">
                             <i class="fa-solid fa-eye text-base"></i>
                         </a>

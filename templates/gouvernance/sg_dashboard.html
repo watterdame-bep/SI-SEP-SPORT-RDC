@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Tableau de bord | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
@@ -141,19 +141,6 @@
         </div>
     </div>
     
-    <!-- Card 9: Fédérations refusées -->
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Fédérations</p>
-                <h3 class="text-3xl font-bold text-red-600 mt-1">{{ federations_refusees|length }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Refusées</p>
-            </div>
-            <div class="bg-red-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-ban text-xl text-red-600"></i>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Validations complétées - À transférer au Ministre -->
