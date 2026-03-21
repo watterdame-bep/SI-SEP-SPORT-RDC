@@ -34,23 +34,32 @@ def _get_role(request):
 # Liste des arbitres
 # ─────────────────────────────────────────────
 @login_required
-@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'LIGUE_SECRETARY', 'MEDECIN_LIGUE')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE')
 def arbitres_list(request):
     role = _get_role(request)
     institution = _get_institution(request)
     is_ministre = role == 'MINISTRE'
     is_medecin = role == 'MEDECIN_LIGUE'
 
+    # Détecter si c'est un secrétaire de ligue (FEDERATION_SECRETARY sur institution LIGUE)
+    is_ligue = (
+        role == 'FEDERATION_SECRETARY'
+        and institution is not None
+        and getattr(institution, 'niveau_territorial', None) == 'LIGUE'
+    )
+
     if is_ministre:
         arbitres = Arbitre.objects.select_related('personne', 'discipline', 'institution')
-    elif role == 'FEDERATION_SECRETARY' and institution:
-        arbitres = Arbitre.objects.select_related(
-            'personne', 'discipline', 'institution'
-        ).filter(institution__institution_tutelle=institution)
-    elif role in ('LIGUE_SECRETARY', 'INSTITUTION_ADMIN', 'MEDECIN_LIGUE') and institution:
+    elif is_ligue or role in ('INSTITUTION_ADMIN', 'MEDECIN_LIGUE'):
+        # Ligue : uniquement ses propres arbitres
         arbitres = Arbitre.objects.select_related(
             'personne', 'discipline', 'institution'
         ).filter(institution=institution)
+    elif role == 'FEDERATION_SECRETARY' and institution:
+        # Fédération nationale : arbitres de toutes ses ligues
+        arbitres = Arbitre.objects.select_related(
+            'personne', 'discipline', 'institution'
+        ).filter(institution__institution_tutelle=institution)
     else:
         arbitres = Arbitre.objects.none()
 
@@ -71,7 +80,8 @@ def arbitres_list(request):
         'disciplines': disciplines,
         'is_ministre': is_ministre,
         'is_medecin': is_medecin,
-        'user_role': role.lower() if role else '',
+        'is_ligue': is_ligue,
+        # Ne pas écraser user_role — le context processor le gère correctement
     }
     return render(request, 'gouvernance/ministre_arbitres_list.html', context)
 
@@ -80,7 +90,7 @@ def arbitres_list(request):
 # Enregistrement (Ligue Secretary)
 # ─────────────────────────────────────────────
 @login_required
-@require_role('FEDERATION_SECRETARY', 'LIGUE_SECRETARY', 'INSTITUTION_ADMIN')
+@require_role('FEDERATION_SECRETARY', 'INSTITUTION_ADMIN')
 def arbitre_register(request):
     institution = _get_institution(request)
     if not institution:
@@ -108,7 +118,7 @@ def arbitre_register(request):
         telephone = request.POST.get('telephone', '').strip()
         email = request.POST.get('email', '').strip()
         discipline_uid = request.POST.get('discipline', '').strip()
-        niveau = request.POST.get('niveau', 'PROVINCIAL').strip()
+        niveau = 'PROVINCIAL'  # fixé pour la ligue — arbitres provinciaux uniquement
         categorie = request.POST.get('categorie', 'STAGIAIRE').strip()
 
         if not nom:
@@ -196,7 +206,7 @@ def arbitre_verdict_medical(request, uid):
 # Validation finale + génération licence (Ligue Secretary)
 # ─────────────────────────────────────────────
 @login_required
-@require_role('LIGUE_SECRETARY', 'INSTITUTION_ADMIN')
+@require_role('FEDERATION_SECRETARY', 'INSTITUTION_ADMIN')
 def arbitre_valider(request, uid):
     arbitre = get_object_or_404(Arbitre, uid=uid)
 
@@ -218,18 +228,24 @@ def arbitre_valider(request, uid):
 # Détail arbitre
 # ─────────────────────────────────────────────
 @login_required
-@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'LIGUE_SECRETARY', 'MEDECIN_LIGUE')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE')
 def arbitre_detail(request, uid):
     arbitre = get_object_or_404(
         Arbitre.objects.select_related('personne', 'discipline', 'institution'),
         uid=uid
     )
     role = _get_role(request)
+    institution = _get_institution(request)
+    is_ligue = (
+        role == 'FEDERATION_SECRETARY'
+        and institution is not None
+        and getattr(institution, 'niveau_territorial', None) == 'LIGUE'
+    )
     context = {
         'arbitre': arbitre,
-        'can_biometrie': role in ('LIGUE_SECRETARY', 'INSTITUTION_ADMIN'),
+        'can_biometrie': is_ligue or role == 'INSTITUTION_ADMIN',
         'can_verdict': role == 'MEDECIN_LIGUE' and arbitre.statut == 'EN_ATTENTE_MEDICALE',
-        'can_valider': role in ('LIGUE_SECRETARY', 'INSTITUTION_ADMIN') and arbitre.statut == 'INSTRUIT',
+        'can_valider': (is_ligue or role == 'INSTITUTION_ADMIN') and arbitre.statut == 'INSTRUIT',
     }
     return render(request, 'gouvernance/arbitre_detail.html', context)
 
@@ -238,7 +254,7 @@ def arbitre_detail(request, uid):
 # Biométrie : photo + empreintes
 # ─────────────────────────────────────────────
 @login_required
-@require_role('LIGUE_SECRETARY', 'INSTITUTION_ADMIN')
+@require_role('FEDERATION_SECRETARY', 'INSTITUTION_ADMIN')
 def arbitre_biometrie(request, uid):
     arbitre = get_object_or_404(Arbitre, uid=uid)
 
@@ -258,3 +274,17 @@ def arbitre_biometrie(request, uid):
         return redirect('gouvernance:arbitre_detail', uid=arbitre.uid)
 
     return render(request, 'gouvernance/arbitre_biometrie.html', {'arbitre': arbitre})
+
+
+# ─────────────────────────────────────────────
+# Suppression arbitre (Ligue Secretary)
+# ─────────────────────────────────────────────
+@login_required
+@require_role('FEDERATION_SECRETARY', 'INSTITUTION_ADMIN')
+def arbitre_supprimer(request, uid):
+    arbitre = get_object_or_404(Arbitre, uid=uid)
+    if request.method == 'POST':
+        nom = arbitre.personne.nom_complet
+        arbitre.personne.delete()  # cascade supprime l'arbitre aussi
+        messages.success(request, f"Arbitre {nom} supprimé.")
+    return redirect('gouvernance:arbitres_list')

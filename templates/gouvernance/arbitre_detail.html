@@ -11,8 +11,8 @@
                 <i class="fa-solid fa-arrow-left text-white"></i>
             </a>
             <div>
-                <h1 class="text-2xl font-bold text-white">{{ arbitre.personne.nom_complet }}</h1>
-                <p class="text-sm text-white/80 mt-1">{{ arbitre.discipline|default:"Discipline non définie" }} · {{ arbitre.get_niveau_display }}</p>
+                <h1 class="text-2xl font-bold text-white">Dossier Arbitre</h1>
+                <p class="mt-0.5" style="font-size:0.875rem;color:rgba(255,255,255,0.55);">{{ arbitre.discipline|default:"Discipline non définie" }} · {{ arbitre.get_niveau_display }}</p>
             </div>
         </div>
     </div>
@@ -35,129 +35,211 @@
 
 <div style="display:grid; grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start;">
 
-    <!-- Colonne gauche -->
+    <!-- ── Colonne gauche ── -->
     <div class="space-y-5">
 
-        <!-- Identité -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                <h2 class="text-base font-semibold text-slate-700">Identité</h2>
-                <span class="px-2.5 py-1 text-xs font-bold rounded-full
-                    {% if arbitre.statut == 'ACTIF' %}bg-green-100 text-green-700
-                    {% elif arbitre.statut == 'INSTRUIT' %}bg-blue-100 text-blue-700
-                    {% elif arbitre.statut == 'EN_ATTENTE_MEDICALE' %}bg-yellow-100 text-yellow-700
-                    {% elif arbitre.statut == 'INAPTE' %}bg-red-100 text-red-700
-                    {% else %}bg-slate-100 text-slate-600{% endif %}">
-                    {{ arbitre.get_statut_display }}
-                </span>
-            </div>
-            <div class="p-6">
-                <div class="flex items-start gap-5">
-                    <!-- Photo -->
-                    <div class="flex-shrink-0">
-                        {% if arbitre.photo %}
-                            <img src="{{ arbitre.photo.url }}" alt="Photo" class="w-20 h-24 object-cover rounded-lg border border-slate-200">
+        <!-- Card identité bleue -->
+        <div style="background:#1e3a5f; border-radius:0.75rem; overflow:hidden;">
+            <div style="padding:1.5rem; display:flex; align-items:center; gap:1.5rem;">
+                <!-- Photo -->
+                <div style="flex-shrink:0;">
+                    {% if arbitre.photo %}
+                        <img src="{{ arbitre.photo.url }}" alt="Photo"
+                             style="width:90px;height:110px;object-fit:cover;border-radius:0.5rem;border:3px solid rgba(255,255,255,0.25);">
+                    {% else %}
+                        <div style="width:90px;height:110px;border-radius:0.5rem;border:2px dashed rgba(255,255,255,0.3);background:rgba(255,255,255,0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.4rem;">
+                            <i class="fa-solid fa-user" style="font-size:2rem;color:rgba(255,255,255,0.35);"></i>
+                            <span style="font-size:0.6rem;color:rgba(255,255,255,0.4);">Aucune photo</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- Nom + statut + ligue -->
+                <div style="flex:1; min-width:0;">
+                    <div style="margin-bottom:0.5rem;">
+                        {% if arbitre.statut == 'ACTIF' %}
+                            <span style="display:inline-block;padding:0.2rem 0.75rem;background:#4ade80;color:#14532d;font-size:0.7rem;font-weight:700;border-radius:999px;">Actif</span>
+                        {% elif arbitre.statut == 'INSTRUIT' %}
+                            <span style="display:inline-block;padding:0.2rem 0.75rem;background:#93c5fd;color:#1e3a8a;font-size:0.7rem;font-weight:700;border-radius:999px;">Instruit</span>
+                        {% elif arbitre.statut == 'EN_ATTENTE_MEDICALE' %}
+                            <span style="display:inline-block;padding:0.2rem 0.75rem;background:#fde68a;color:#92400e;font-size:0.7rem;font-weight:700;border-radius:999px;">En attente médicale</span>
+                        {% elif arbitre.statut == 'INAPTE' %}
+                            <span style="display:inline-block;padding:0.2rem 0.75rem;background:#fca5a5;color:#7f1d1d;font-size:0.7rem;font-weight:700;border-radius:999px;">Inapte</span>
                         {% else %}
-                            <div class="w-20 h-24 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50">
-                                <i class="fa-solid fa-user text-2xl text-slate-300"></i>
-                                <p class="text-xs text-slate-400 mt-1">Aucune photo</p>
-                            </div>
+                            <span style="display:inline-block;padding:0.2rem 0.75rem;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;border-radius:999px;">{{ arbitre.get_statut_display }}</span>
                         {% endif %}
                     </div>
-                    <!-- Infos -->
-                    <div class="grid grid-cols-2 gap-x-8 gap-y-3 flex-1 text-sm">
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">Nom complet</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.personne.nom_complet }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">Sexe</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.personne.get_sexe_display|default:"—" }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">Téléphone</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.personne.telephone|default:"—" }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">E-mail</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.personne.email|default:"—" }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">Enregistré le</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.date_enregistrement|date:"d/m/Y" }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-500 text-xs font-medium mb-0.5">Ligue</p>
-                            <p class="font-semibold text-slate-800">{{ arbitre.institution.nom_officiel|default:"—" }}</p>
-                        </div>
+                    <h2 style="color:#fff;font-size:1.35rem;font-weight:800;margin:0 0 0.25rem;line-height:1.2;">{{ arbitre.personne.nom_complet }}</h2>
+                    <p style="color:rgba(255,255,255,0.65);font-size:0.8rem;margin:0 0 0.75rem;">
+                        <i class="fa-solid fa-building" style="margin-right:0.35rem;color:#FDE015;"></i>
+                        {{ arbitre.institution.nom_officiel|default:"Ligue non définie" }}
+                    </p>
+                    {% if arbitre.numero_licence %}
+                    <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:0.4rem;padding:0.3rem 0.75rem;">
+                        <i class="fa-solid fa-id-card" style="color:#FDE015;font-size:0.75rem;"></i>
+                        <span style="color:#fff;font-family:monospace;font-size:0.85rem;font-weight:700;">{{ arbitre.numero_licence }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Infos identité complémentaires -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" style="font-family:'Inter',-apple-system,sans-serif;">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eef2ff;">
+                    <i class="fa-solid fa-user text-sm" style="color:#0036ca;"></i>
+                </div>
+                <h2 style="font-size:0.75rem;font-weight:700;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Informations personnelles</h2>
+            </div>
+            <div class="p-6" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Nom</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.nom|default:"—" }}</span>
                     </div>
                 </div>
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Post-nom</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.postnom|default:"—" }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Prénom</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.prenom|default:"—" }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Téléphone</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.telephone|default:"—" }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Genre</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.get_sexe_display|default:"—" }}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Date d'enregistrement</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.date_enregistrement|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+
+                {% if arbitre.personne.email %}
+                <div style="grid-column:span 3;">
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">E-mail</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.personne.email }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
         </div>
 
-        <!-- Qualification -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">Qualification sportive</h2>
+        <!-- Qualification sportive -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" style="font-family:'Inter',-apple-system,sans-serif;">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eef2ff;">
+                    <i class="fa-solid fa-trophy text-sm" style="color:#0036ca;"></i>
+                </div>
+                <h2 style="font-size:0.75rem;font-weight:700;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Qualification sportive</h2>
             </div>
-            <div class="p-6 grid grid-cols-3 gap-4 text-sm">
+            <div class="p-6" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+
                 <div>
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Discipline</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.discipline|default:"—" }}</p>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Discipline</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.discipline|default:"—" }}</span>
+                    </div>
                 </div>
+
                 <div>
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Niveau</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.get_niveau_display }}</p>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Niveau</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1d4ed8;">{{ arbitre.get_niveau_display }}</span>
+                    </div>
                 </div>
+
                 <div>
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Catégorie</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.get_categorie_display }}</p>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Catégorie</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#475569;">{{ arbitre.get_categorie_display }}</span>
+                    </div>
                 </div>
+
                 {% if arbitre.numero_licence %}
-                <div class="col-span-3">
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">N° Licence</p>
-                    <p class="font-mono font-bold text-rdc-blue text-base">{{ arbitre.numero_licence }}</p>
+                <div style="grid-column:span 3;">
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">N° Licence</p>
+                    <div style="border:1px solid #c7d2fe;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#eef2ff;">
+                        <span style="font-size:0.95rem;font-weight:700;color:#0036ca;font-family:monospace;">{{ arbitre.numero_licence }}</span>
+                    </div>
                 </div>
                 {% endif %}
+
             </div>
         </div>
 
-        <!-- Résultat médical (si disponible) -->
+        <!-- Résultat médical -->
         {% if arbitre.resultat_medical %}
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">Résultat médical</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden" style="font-family:'Inter',-apple-system,sans-serif;">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eef2ff;">
+                    <i class="fa-solid fa-stethoscope text-sm" style="color:#0036ca;"></i>
+                </div>
+                <h2 style="font-size:0.75rem;font-weight:700;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Résultat médical</h2>
             </div>
-            <div class="p-6 grid grid-cols-2 gap-4 text-sm">
+            <div class="p-6" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+
                 <div>
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Verdict</p>
-                    <p class="font-semibold
-                        {% if arbitre.resultat_medical == 'APTE' %}text-green-700
-                        {% elif arbitre.resultat_medical == 'INAPTE' %}text-red-700
-                        {% else %}text-yellow-700{% endif %}">
-                        {{ arbitre.get_resultat_medical_display }}
-                    </p>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Verdict</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:700;
+                            {% if arbitre.resultat_medical == 'APTE' %}color:#16a34a;
+                            {% elif arbitre.resultat_medical == 'INAPTE' %}color:#dc2626;
+                            {% else %}color:#d97706;{% endif %}">
+                            {{ arbitre.get_resultat_medical_display }}
+                        </span>
+                    </div>
                 </div>
+
                 <div>
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Date examen</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.date_examen_medical|date:"d/m/Y"|default:"—" }}</p>
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Date d'examen</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;font-weight:600;color:#1e293b;">{{ arbitre.date_examen_medical|date:"d/m/Y"|default:"—" }}</span>
+                    </div>
                 </div>
+
                 {% if arbitre.notes_medicales %}
-                <div class="col-span-2">
-                    <p class="text-slate-500 text-xs font-medium mb-0.5">Observations</p>
-                    <p class="text-slate-700 italic">{{ arbitre.notes_medicales }}</p>
+                <div style="grid-column:span 3;">
+                    <p style="font-size:0.68rem;font-weight:700;color:#94a3b8;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Observations</p>
+                    <div style="border:1px solid #e2e8f0;border-radius:0.4rem;padding:0.55rem 0.75rem;background:#f8fafc;">
+                        <span style="font-size:0.875rem;color:#475569;font-style:italic;">{{ arbitre.notes_medicales }}</span>
+                    </div>
                 </div>
                 {% endif %}
+
             </div>
         </div>
         {% endif %}
 
-        <!-- Actions workflow -->
+        <!-- Boutons d'action workflow -->
+        {% if can_verdict or can_valider %}
         <div class="flex gap-3">
             {% if can_verdict %}
             <a href="{% url 'gouvernance:arbitre_verdict_medical' arbitre.uid %}"
                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-lg"
-               style="background:#0036ca;">
+               style="background:#7c3aed;">
                 <i class="fa-solid fa-stethoscope"></i> Saisir le verdict médical
             </a>
             {% endif %}
@@ -169,75 +251,92 @@
             </a>
             {% endif %}
         </div>
+        {% endif %}
 
     </div><!-- fin colonne gauche -->
 
-    <!-- Card droite -->
-    <div style="background:#0036ca; border-radius:0.75rem; overflow:hidden; display:flex; flex-direction:column;">
+    <!-- ── Card droite ── -->
+    <div style="background:#2d5a8e; border-radius:0.75rem; overflow:hidden; display:flex; flex-direction:column;">
 
-        <!-- En-tête -->
         <div style="padding:1.25rem 1.25rem 1rem; text-align:center; border-bottom:1px solid rgba(255,255,255,0.12);">
-            <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
-                <i class="fa-solid fa-scale-balanced" style="font-size:1.25rem;color:#FDE015;"></i>
+            <div style="width:44px;height:44px;background:rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.6rem;">
+                <i class="fa-solid fa-scale-balanced" style="font-size:1.1rem;color:#FDE015;"></i>
             </div>
-            <p style="color:#fff;font-size:0.9rem;font-weight:700;margin:0 0 0.2rem;">Corps Arbitral</p>
-            <p style="color:rgba(255,255,255,0.6);font-size:0.7rem;margin:0;">SI-SEP Sport RDC</p>
+            <p style="color:#fff;font-size:0.85rem;font-weight:700;margin:0 0 0.15rem;">Corps Arbitral</p>
+            <p style="color:rgba(255,255,255,0.55);font-size:0.68rem;margin:0;">SI-SEP Sport RDC</p>
         </div>
 
-        <!-- Statut biométrie -->
-        <div style="padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="padding:1.1rem 1.25rem; display:flex; flex-direction:column; gap:0.7rem;">
 
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-                <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-camera" style="color:#FDE015;font-size:0.75rem;"></i>
+            <div style="display:flex;align-items:center;gap:0.7rem;">
+                <div style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-camera" style="color:#FDE015;font-size:0.7rem;"></i>
                 </div>
-                <div style="flex:1;">
-                    <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Photo</p>
+                <div>
+                    <p style="color:#fff;font-size:0.72rem;font-weight:600;margin:0 0 0.1rem;">Photo</p>
                     {% if arbitre.photo %}
-                        <p style="color:#4ade80;font-size:0.68rem;margin:0;"><i class="fa-solid fa-circle-check"></i> Enregistrée</p>
+                        <p style="color:#4ade80;font-size:0.65rem;margin:0;"><i class="fa-solid fa-circle-check"></i> Enregistrée</p>
                     {% else %}
-                        <p style="color:rgba(255,255,255,0.45);font-size:0.68rem;margin:0;"><i class="fa-solid fa-circle-xmark"></i> Non enregistrée</p>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;"><i class="fa-solid fa-circle-xmark"></i> Non enregistrée</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-                <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-fingerprint" style="color:#FDE015;font-size:0.75rem;"></i>
+            <div style="display:flex;align-items:center;gap:0.7rem;">
+                <div style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-fingerprint" style="color:#FDE015;font-size:0.7rem;"></i>
                 </div>
-                <div style="flex:1;">
-                    <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Empreintes</p>
+                <div>
+                    <p style="color:#fff;font-size:0.72rem;font-weight:600;margin:0 0 0.1rem;">Empreintes</p>
                     {% if arbitre.empreintes_capturees %}
-                        <p style="color:#4ade80;font-size:0.68rem;margin:0;"><i class="fa-solid fa-circle-check"></i> Capturées</p>
+                        <p style="color:#4ade80;font-size:0.65rem;margin:0;"><i class="fa-solid fa-circle-check"></i> Capturées</p>
                     {% else %}
-                        <p style="color:rgba(255,255,255,0.45);font-size:0.68rem;margin:0;"><i class="fa-solid fa-circle-xmark"></i> Non capturées</p>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;"><i class="fa-solid fa-circle-xmark"></i> Non capturées</p>
                     {% endif %}
                 </div>
             </div>
 
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-                <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-id-card" style="color:#FDE015;font-size:0.75rem;"></i>
+            <div style="display:flex;align-items:center;gap:0.7rem;">
+                <div style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-stethoscope" style="color:#FDE015;font-size:0.7rem;"></i>
                 </div>
-                <div style="flex:1;">
-                    <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Licence</p>
-                    {% if arbitre.numero_licence %}
-                        <p style="color:#4ade80;font-size:0.68rem;margin:0;font-family:monospace;">{{ arbitre.numero_licence }}</p>
+                <div>
+                    <p style="color:#fff;font-size:0.72rem;font-weight:600;margin:0 0 0.1rem;">Examen médical</p>
+                    {% if arbitre.resultat_medical %}
+                        <p style="font-size:0.65rem;margin:0;
+                            {% if arbitre.resultat_medical == 'APTE' %}color:#4ade80;
+                            {% elif arbitre.resultat_medical == 'INAPTE' %}color:#f87171;
+                            {% else %}color:#fde68a;{% endif %}">
+                            <i class="fa-solid fa-circle-check"></i> {{ arbitre.get_resultat_medical_display }}
+                        </p>
                     {% else %}
-                        <p style="color:rgba(255,255,255,0.45);font-size:0.68rem;margin:0;">En attente de validation</p>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;"><i class="fa-solid fa-circle-xmark"></i> Non effectué</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:0.7rem;">
+                <div style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-id-card" style="color:#FDE015;font-size:0.7rem;"></i>
+                </div>
+                <div>
+                    <p style="color:#fff;font-size:0.72rem;font-weight:600;margin:0 0 0.1rem;">Licence</p>
+                    {% if arbitre.numero_licence %}
+                        <p style="color:#4ade80;font-size:0.65rem;margin:0;font-family:monospace;">{{ arbitre.numero_licence }}</p>
+                    {% else %}
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;">En attente de validation</p>
                     {% endif %}
                 </div>
             </div>
 
         </div>
 
-        <!-- Bouton Biométrie -->
         {% if can_biometrie %}
-        <div style="padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.12);">
+        <div style="padding:0.9rem 1.25rem; border-top:1px solid rgba(255,255,255,0.12); margin-top:auto;">
             <a href="{% url 'gouvernance:arbitre_biometrie' arbitre.uid %}"
-               style="display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:0.6rem 1rem;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:0.5rem;color:#fff;font-size:0.8rem;font-weight:600;text-decoration:none;transition:background 0.2s;"
-               onmouseover="this.style.background='rgba(255,255,255,0.22)'"
-               onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+               style="display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:0.6rem 1rem;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.22);border-radius:0.5rem;color:#fff;font-size:0.78rem;font-weight:600;text-decoration:none;"
+               onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+               onmouseout="this.style.background='rgba(255,255,255,0.13)'">
                 <i class="fa-solid fa-fingerprint" style="color:#FDE015;"></i>
                 Enregistrer la biométrie
             </a>

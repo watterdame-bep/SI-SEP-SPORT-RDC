@@ -1,136 +1,53 @@
+# -*- coding: utf-8 -*-
 """
-Vues pour le Gestionnaire d'Infrastructure (rôle INFRA_MANAGER).
-Accès aux tableaux de bord, maintenance, réservations et photos de l'infrastructure assignée.
+Vues pour le gestionnaire d'infrastructure (INFRA_MANAGER).
 """
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.messages import get_messages
 from django.utils import timezone
-
+from datetime import timedelta
 from core.permissions import require_role
-from .models import Infrastructure, PhotoInfrastructure, MaintenanceLog, ZoneStade, Evenement
-
-
-def _get_infrastructure_for_manager(request):
-    """Retourne l'infrastructure associée au profil INFRA_MANAGER ou None."""
-    try:
-        profil = request.user.profil_sisep
-        if profil.role != 'INFRA_MANAGER' or not profil.actif:
-            return None
-        return profil.infrastructure
-    except Exception:
-        return None
+from infrastructures.models import Infrastructure, MaintenanceLog, StateChangeLog, ReservationSlot, PhotoInfrastructure
 
 
 @login_required
 @require_role('INFRA_MANAGER')
 def infra_manager_dashboard(request):
     """Tableau de bord du gestionnaire d'infrastructure."""
-    # Ne pas afficher sur le dashboard les messages des autres interfaces
-    list(get_messages(request))
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
     
-    # Importer les modèles nécessaires
-    from infrastructures.models import Vente, Ticket, EvenementZone
-    from django.db.models import Sum, Count, Q
-    from datetime import datetime, timedelta
-    import json
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
     
-    # Calculer la recette du mois (seulement paiements validés)
-    now = timezone.now()
-    first_day_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    recette_mois = 0
-    ventes_mois = 0
-    tickets_vendus_mois = 0
-    
-    # Parcourir toutes les ventes du mois pour les infrastructures
-    from gouvernance.models import Rencontre
-    rencontres_infra = Rencontre.objects.filter(stade=infrastructure)
-    
-    for rencontre in rencontres_infra:
-        if rencontre.evenement:
-            ventes_rencontre = Vente.objects.filter(
-                evenement=rencontre.evenement,
-                date_vente__gte=first_day_month,
-                date_vente__lte=now
-            )
-            
-            for vente in ventes_rencontre:
-                try:
-                    if vente.notes:
-                        notes_data = json.loads(vente.notes)
-                        statut = notes_data.get('statut_paiement', 'INITIE')
-                        if statut == 'VALIDE':
-                            recette_mois += float(vente.montant_total)
-                            ventes_mois += 1
-                except (json.JSONDecodeError, TypeError):
-                    continue
-    
-    # Calculer les tickets vendus du mois
-    for rencontre in rencontres_infra:
-        if rencontre.evenement:
-            tickets_vendus_mois += Ticket.objects.filter(
-                evenement_zone__evenement=rencontre.evenement,
-                statut='VENDU',
-                date_creation__gte=first_day_month,
-                date_creation__lte=now
-            ).count()
-    
-    # Calculer les réservations du mois (rencontres programmées)
-    reservations_mois = 0
-    for rencontre in rencontres_infra:
-        if rencontre.date_heure and rencontre.date_heure >= first_day_month and rencontre.date_heure <= now:
-            reservations_mois += 1
-    
-    # Réservations de la semaine (placeholder - données factices)
-    reservations_week = 12
-    
-    # Taux de présence (placeholder - calcul basé sur les maintenances)
-    taux_presence = 85
-    
-    # Maintenances récentes
-    recent_maintenance = list(infrastructure.maintenance_logs.all().order_by('-date_intervention')[:5])
-    
-    # Photos (pour la card galerie)
-    photos_count = infrastructure.photos.count()
-    
-    # Réservations aujourd'hui (placeholder - données factices)
-    from datetime import date
-    today = date.today()
-    reservations_today = []  # Placeholder
-    
-    # Calculer les événements à venir
-    evenements_a_venir = []
-    # Utiliser la relation correcte: infrastructure.rencontres (pas infrastructure.stade.rencontres)
-    evenements_a_venir = list(
-        infrastructure.rencontres.filter(
-            date_heure__gte=now
-        ).order_by('date_heure')[:3]
-    )
+    today = timezone.now().date()
+    reservations_today = ReservationSlot.objects.filter(infrastructure=infrastructure, date_reservation=today).select_related('club').order_by('heure_debut')
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    reservations_week = ReservationSlot.objects.filter(infrastructure=infrastructure, date_reservation__range=[week_start, week_end]).count()
+    recent_maintenance = MaintenanceLog.objects.filter(infrastructure=infrastructure).order_by('-date_intervention')[:5]
+    recent_state_changes = StateChangeLog.objects.filter(infrastructure=infrastructure).order_by('-date_creation')[:5]
+    seven_days_ago = today - timedelta(days=7)
+    total_reservations = ReservationSlot.objects.filter(infrastructure=infrastructure, date_reservation__gte=seven_days_ago).count()
+    present_reservations = ReservationSlot.objects.filter(infrastructure=infrastructure, date_reservation__gte=seven_days_ago, present=True).count()
+    taux_presence = round((present_reservations / total_reservations * 100), 1) if total_reservations > 0 else 0
+    photos_count = PhotoInfrastructure.objects.filter(infrastructure=infrastructure).count()
     
     context = {
         'infrastructure': infrastructure,
-        'user_role': 'infra_manager',
-        # Données réelles
-        'recette_mois': recette_mois,
-        'ventes_mois': ventes_mois,
-        'tickets_vendus_mois': tickets_vendus_mois,
-        # Données existantes
-        'reservations_week': reservations_week,
-        'reservations_mois': reservations_mois,
-        'taux_presence': taux_presence,
-        'recent_maintenance': recent_maintenance,
-        'photos_count': photos_count,
         'reservations_today': reservations_today,
-        # Événements à venir
-        'evenements_a_venir': evenements_a_venir,
-        # Ajouter now pour le template
-        'now': now,
+        'reservations_week': reservations_week,
+        'recent_maintenance': recent_maintenance,
+        'recent_state_changes': recent_state_changes,
+        'taux_presence': taux_presence,
+        'photos_count': photos_count,
+        'user_role': 'infra_manager',
     }
     return render(request, 'infrastructures/infra_manager_dashboard.html', context)
 
@@ -139,31 +56,41 @@ def infra_manager_dashboard(request):
 @require_role('INFRA_MANAGER')
 def infra_manager_maintenance(request):
     """Journal de maintenance de l'infrastructure."""
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
-    maintenance_logs = list(infrastructure.maintenance_logs.all().order_by('-date_intervention'))
-    context = {
-        'infrastructure': infrastructure,
-        'maintenance_logs': maintenance_logs,
-        'user_role': 'infra_manager',
-    }
+    
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
+    
+    maintenance_logs = MaintenanceLog.objects.filter(infrastructure=infrastructure).order_by('-date_intervention')
+    context = {'infrastructure': infrastructure, 'maintenance_logs': maintenance_logs, 'user_role': 'infra_manager'}
     return render(request, 'infrastructures/infra_manager_maintenance.html', context)
 
 
 @login_required
 @require_role('INFRA_MANAGER')
 def infra_manager_reservations(request):
-    """Réservations / planning de l'infrastructure (placeholder)."""
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
+    """Gestion des réservations de l'infrastructure."""
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
-    context = {
-        'infrastructure': infrastructure,
-        'user_role': 'infra_manager',
-    }
+    
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
+    
+    today = timezone.now().date()
+    next_week = today + timedelta(days=7)
+    reservations = ReservationSlot.objects.filter(infrastructure=infrastructure, date_reservation__range=[today, next_week]).select_related('club').order_by('date_reservation', 'heure_debut')
+    context = {'infrastructure': infrastructure, 'reservations': reservations, 'user_role': 'infra_manager'}
     return render(request, 'infrastructures/infra_manager_reservations.html', context)
 
 
@@ -171,218 +98,377 @@ def infra_manager_reservations(request):
 @require_role('INFRA_MANAGER')
 def infra_manager_photos(request):
     """Galerie photos de l'infrastructure."""
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
-    photos = list(infrastructure.photos.all().order_by('date_upload'))
-    context = {
-        'infrastructure': infrastructure,
-        'photos': photos,
-        'user_role': 'infra_manager',
-    }
+    
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
+    
+    photos = PhotoInfrastructure.objects.filter(infrastructure=infrastructure).order_by('-date_upload')
+    context = {'infrastructure': infrastructure, 'photos': photos, 'user_role': 'infra_manager'}
     return render(request, 'infrastructures/infra_manager_photos.html', context)
-
-
-@login_required
-@require_role('INFRA_MANAGER')
-def infra_manager_zones(request):
-    """Zones du stade (Tribune d'honneur, Latérale, Pourtour, etc.) pour la billetterie."""
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
-        return redirect('core:home')
-
-    zones = infrastructure.zones.all().order_by('ordre', 'nom')
-
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'create':
-            nom = (request.POST.get('nom') or '').strip()
-            if not nom:
-                messages.error(request, "Le nom de la zone est obligatoire.")
-            else:
-                ordre = request.POST.get('ordre')
-                try:
-                    ordre = int(ordre) if ordre not in (None, '') else zones.count()
-                except (ValueError, TypeError):
-                    ordre = zones.count()
-                if ZoneStade.objects.filter(infrastructure=infrastructure, nom__iexact=nom).exists():
-                    messages.error(request, f"Une zone nommée « {nom} » existe déjà pour ce stade.")
-                else:
-                    ZoneStade.objects.create(infrastructure=infrastructure, nom=nom, ordre=ordre)
-                    messages.success(request, f"Zone « {nom} » créée avec succès.")
-            return redirect('infrastructures:infra_manager_zones')
-        if action == 'delete':
-            zone_uid = request.POST.get('zone_uid')
-            try:
-                zone = ZoneStade.objects.get(uid=zone_uid, infrastructure=infrastructure)
-                nom = zone.nom
-                if zone.evenements_tarifs.exists():
-                    messages.error(
-                        request,
-                        f"Impossible de supprimer la zone « {nom} » : elle est utilisée par des événements (tarifs)."
-                    )
-                else:
-                    zone.delete()
-                    messages.success(request, f"Zone « {nom} » supprimée.")
-            except ZoneStade.DoesNotExist:
-                messages.error(request, "Zone introuvable.")
-            return redirect('infrastructures:infra_manager_zones')
-
-    context = {
-        'infrastructure': infrastructure,
-        'zones': zones,
-        'user_role': 'infra_manager',
-    }
-    return render(request, 'infrastructures/infra_manager_zones.html', context)
 
 
 @login_required
 @require_role('INFRA_MANAGER')
 def infra_manager_evenements(request):
     """
-    Rencontres / événements prévus dans l'infrastructure.
-    Le gestionnaire voit les matchs planifiés par la ligue et les réservations privées.
+    Liste des rencontres programmées dans l'infrastructure du gestionnaire.
+    Permet de gérer la billetterie.
     """
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
     
-    # Événements officiels (matchs) - exclure les réservations
-    evenements = Evenement.objects.filter(
-        infrastructure=infrastructure,
-        actif=True
-    ).exclude(type_evenement='RESERVATION').select_related('organisateur').order_by('date_evenement', 'heure_debut')
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
     
-    # Réservations privées (non officielles)
-    reservations = Evenement.objects.filter(
-        infrastructure=infrastructure,
-        actif=True,
-        type_evenement='RESERVATION'
-    ).select_related('organisateur').order_by('date_evenement', 'heure_debut')
+    # Importer les modèles nécessaires
+    from gouvernance.models import Rencontre
+    
+    # Récupérer les rencontres à venir dans ce stade
+    rencontres = Rencontre.objects.filter(
+        stade=infrastructure,
+        date_heure__gte=timezone.now()
+    ).select_related(
+        'journee__competition',
+        'equipe_a',
+        'equipe_b',
+        'evenement'
+    ).prefetch_related(
+        'evenement__zones_tarifs__zone_stade'
+    ).order_by('date_heure')
     
     context = {
         'infrastructure': infrastructure,
-        'evenements': evenements,
-        'reservations': reservations,
+        'rencontres': rencontres,
         'user_role': 'infra_manager',
     }
+    
     return render(request, 'infrastructures/infra_manager_evenements.html', context)
 
 
 @login_required
 @require_role('INFRA_MANAGER')
-def infra_manager_create_reservation(request):
+def infra_manager_evenement_billetterie(request, rencontre_uid):
     """
-    Créer une réservation privée pour l'infrastructure.
-    Événements non officiels (activités privées, événements spéciaux, etc.).
-    """
-    infrastructure = _get_infrastructure_for_manager(request)
-    if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
-        return redirect('core:home')
-    
-    if request.method == 'POST':
-        titre = request.POST.get('titre', '').strip()
-        date_evenement = request.POST.get('date_evenement', '')
-        heure_debut = request.POST.get('heure_debut', '')
-        description = request.POST.get('description', '').strip()
-        
-        # Validation
-        if not titre or not date_evenement or not heure_debut:
-            messages.error(request, "Veuillez remplir tous les champs obligatoires.")
-        else:
-            try:
-                from datetime import datetime
-                from django.utils import timezone
-                
-                # Créer l'événement de réservation
-                reservation = Evenement.objects.create(
-                    titre=titre,
-                    infrastructure=infrastructure,
-                    type_evenement='RESERVATION',  # Type pour réservations privées
-                    date_evenement=date_evenement,
-                    heure_debut=heure_debut,
-                    description=description,
-                    organisateur=None,  # Pas d'institution obligatoire pour les réservations privées
-                    actif=True,
-                    date_creation=timezone.now()
-                )
-                
-                messages.success(request, f"Réservation '{titre}' créée avec succès!")
-                return redirect('infrastructures:infra_manager_evenements')
-                
-            except Exception as e:
-                messages.error(request, f"Erreur lors de la création: {str(e)}")
-    
-    context = {
-        'infrastructure': infrastructure,
-        'user_role': 'infra_manager',
-    }
-    return render(request, 'infrastructures/infra_manager_create_reservation.html', context)
-
-
-@login_required
-@require_role('INFRA_MANAGER')
-def infra_manager_reservation_configurer_billetterie(request, evenement_uid):
-    """
-    Configuration de la billetterie pour une réservation privée.
-    Définir les tarifs par zone et générer les billets.
+    Configuration de la billetterie pour une rencontre spécifique.
     """
     infrastructure = _get_infrastructure_for_manager(request)
     if not infrastructure:
-        messages.error(request, "Aucune infrastructure n'est associée à votre compte.")
-        return redirect('core:home')
+        return redirect('infrastructures:infra_manager_dashboard')
     
-    # Récupérer l'événement de réservation
-    from infrastructures.models import Evenement
-    evenement = get_object_or_404(
-        Evenement,
-        uid=evenement_uid,
-        infrastructure=infrastructure,
-        type_evenement='RESERVATION'
+    # Importer les modèles nécessaires
+    from gouvernance.models import Rencontre
+    from infrastructures.models import Evenement, EvenementZone
+    from django.shortcuts import get_object_or_404
+    
+    rencontre = get_object_or_404(
+        Rencontre,
+        uid=rencontre_uid,
+        stade=infrastructure
     )
+    
+    if not rencontre.evenement:
+        messages.error(request, "L'événement billetterie n'a pas été créé pour cette rencontre.")
+        return redirect('infrastructures:infra_manager_evenements')
+    
+    evenement = rencontre.evenement
     
     # Récupérer les zones du stade
     zones_stade = infrastructure.zones.all().order_by('ordre', 'nom')
     
-    # Récupérer les tarifs existants pour cet événement
-    from infrastructures.models import EvenementZone
-    tarifs_existants = EvenementZone.objects.filter(evenement=evenement).select_related('zone_stade')
+    # Récupérer les tarifs déjà configurés
+    tarifs_existants = EvenementZone.objects.filter(
+        evenement=evenement
+    ).select_related('zone_stade')
+    
+    # Ajouter les compteurs de tickets à chaque tarif
+    for tarif in tarifs_existants:
+        tarif.tickets_vendus_count = tarif.tickets.filter(statut='VENDU').count()
+        tarif.tickets_utilises_count = tarif.tickets.filter(statut='UTILISE').count()
+        tarif.tickets_disponibles_count = tarif.tickets.filter(statut='DISPONIBLE').count()
     
     if request.method == 'POST':
-        # Traiter la configuration des tarifs pour chaque zone
-        from infrastructures.models import EvenementZone
+        action = request.POST.get('action')
         
-        for zone in zones_stade:
-            prix_unitaire = request.POST.get(f'prix_zone_{zone.uid}', '').strip()
-            capacite_max = request.POST.get(f'capacite_zone_{zone.uid}', '').strip()
+        if action == 'configurer_tarifs':
+            # Sauvegarder les tarifs pour chaque zone
+            for zone in zones_stade:
+                prix_key = f'prix_zone_{zone.uid}'
+                capacite_key = f'capacite_zone_{zone.uid}'
+                
+                prix = request.POST.get(prix_key)
+                capacite = request.POST.get(capacite_key)
+                
+                if prix and capacite:
+                    try:
+                        prix_decimal = float(prix)
+                        capacite_int = int(capacite)
+                        
+                        # Vérifier que la capacité ne dépasse pas la capacité du stade
+                        if infrastructure.capacite_spectateurs and capacite_int > infrastructure.capacite_spectateurs:
+                            messages.warning(request, f"La capacité pour {zone.nom} dépasse la capacité totale du stade ({infrastructure.capacite_spectateurs} places).")
+                            continue
+                        
+                        # Créer ou mettre à jour le tarif
+                        EvenementZone.objects.update_or_create(
+                            evenement=evenement,
+                            zone_stade=zone,
+                            defaults={
+                                'prix_unitaire': prix_decimal,
+                                'capacite_max': capacite_int,
+                                'devise': 'CDF'
+                            }
+                        )
+                    except (ValueError, TypeError):
+                        messages.error(request, f"Valeurs invalides pour {zone.nom}")
+                        continue
             
-            if prix_unitaire and capacite_max:
-                try:
-                    # Créer ou mettre à jour le tarif pour cette zone
-                    EvenementZone.objects.update_or_create(
-                        evenement=evenement,
-                        zone_stade=zone,
-                        defaults={
-                            'prix_unitaire': float(prix_unitaire),
-                            'capacite_max': int(capacite_max),
-                            'disponible': True
-                        }
-                    )
-                except (ValueError, TypeError):
-                    continue
+            messages.success(request, "Tarifs configurés avec succès!")
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
         
-        messages.success(request, f"Billetterie pour '{evenement.titre}' configurée avec succès!")
-        return redirect('infrastructures:infra_manager_rencontres_list')
+        elif action == 'generer_billets':
+            # Générer les billets pour toutes les zones configurées
+            total_generes = 0
+            for tarif in tarifs_existants:
+                nb_generes = tarif.generer_tickets()
+                total_generes += nb_generes
+            
+            if total_generes > 0:
+                messages.success(request, f"{total_generes} billets générés avec succès!")
+            else:
+                messages.info(request, "Tous les billets ont déjà été générés.")
+            
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
     
     context = {
         'infrastructure': infrastructure,
+        'rencontre': rencontre,
         'evenement': evenement,
         'zones_stade': zones_stade,
         'tarifs_existants': tarifs_existants,
         'user_role': 'infra_manager',
     }
-    return render(request, 'infrastructures/infra_manager_reservation_configurer_billetterie.html', context)
+    
+    return render(request, 'infrastructures/infra_manager_evenement_billetterie.html', context)
+def infra_manager_evenement_billetterie(request, rencontre_uid):
+    """
+    Configuration de la billetterie pour une rencontre spécifique.
+    """
+    try:
+        profil = request.user.profil_sisep
+    except:
+        messages.error(request, "Profil utilisateur introuvable.")
+        return redirect('core:home')
+    
+    infrastructure = profil.infrastructure
+    if not infrastructure:
+        messages.error(request, "Vous n'êtes pas associé à une infrastructure.")
+        return redirect('core:home')
+    
+    # Importer les modèles nécessaires
+    from gouvernance.models import Rencontre
+    from infrastructures.models import Evenement, EvenementZone
+    from django.shortcuts import get_object_or_404
+    
+    rencontre = get_object_or_404(
+        Rencontre,
+        uid=rencontre_uid,
+        stade=infrastructure
+    )
+    
+    if not rencontre.evenement:
+        messages.error(request, "L'événement billetterie n'a pas été créé pour cette rencontre.")
+        return redirect('infrastructures:infra_manager_evenements')
+    
+    evenement = rencontre.evenement
+    
+    # Récupérer les zones du stade
+    zones_stade = infrastructure.zones.all().order_by('ordre', 'nom')
+    
+    # Récupérer les tarifs déjà configurés
+    tarifs_existants = EvenementZone.objects.filter(
+        evenement=evenement
+    ).select_related('zone_stade')
+    
+    # Ajouter les compteurs de tickets à chaque tarif
+    for tarif in tarifs_existants:
+        tarif.tickets_vendus_count = tarif.tickets.filter(statut='VENDU').count()
+        tarif.tickets_utilises_count = tarif.tickets.filter(statut='UTILISE').count()
+        tarif.tickets_disponibles_count = tarif.tickets.filter(statut='DISPONIBLE').count()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'configurer_tarifs':
+            # Sauvegarder les tarifs pour chaque zone
+            for zone in zones_stade:
+                prix_key = f'prix_zone_{zone.uid}'
+                capacite_key = f'capacite_zone_{zone.uid}'
+                
+                prix = request.POST.get(prix_key)
+                capacite = request.POST.get(capacite_key)
+                
+                if prix and capacite:
+                    try:
+                        prix_decimal = float(prix)
+                        capacite_int = int(capacite)
+                        
+                        # Vérifier que la capacité ne dépasse pas la capacité du stade
+                        if infrastructure.capacite_spectateurs and capacite_int > infrastructure.capacite_spectateurs:
+                            messages.warning(request, f"La capacité pour {zone.nom} dépasse la capacité totale du stade ({infrastructure.capacite_spectateurs} places).")
+                            continue
+                        
+                        # Créer ou mettre à jour le tarif
+                        EvenementZone.objects.update_or_create(
+                            evenement=evenement,
+                            zone_stade=zone,
+                            defaults={
+                                'prix_unitaire': prix_decimal,
+                                'capacite_max': capacite_int,
+                                'devise': 'CDF'
+                            }
+                        )
+                    except (ValueError, TypeError):
+                        messages.error(request, f"Valeurs invalides pour {zone.nom}")
+                        continue
+            
+            messages.success(request, "Tarifs configurés avec succès!")
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
+        
+        elif action == 'generer_billets':
+            # Générer les billets pour toutes les zones configurées
+            total_generes = 0
+            for tarif in tarifs_existants:
+                nb_generes = tarif.generer_tickets()
+                total_generes += nb_generes
+            
+            if total_generes > 0:
+                messages.success(request, f"{total_generes} billets générés avec succès!")
+            else:
+                messages.info(request, "Tous les billets ont déjà été générés.")
+            
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
+    
+    context = {
+        'infrastructure': infrastructure,
+        'rencontre': rencontre,
+        'evenement': evenement,
+        'zones_stade': zones_stade,
+        'tarifs_existants': tarifs_existants,
+        'user_role': 'infra_manager',
+    }
+    
+    return render(request, 'infrastructures/infra_manager_evenement_billetterie.html', context)
+def infra_manager_evenement_billetterie(request, rencontre_uid):
+    """
+    Configuration de la billetterie pour une rencontre spécifique.
+    """
+    infrastructure = _get_infrastructure_for_manager(request)
+    if not infrastructure:
+        return redirect('infrastructures:infra_manager_dashboard')
+    
+    # Importer les modèles nécessaires
+    from gouvernance.models import Rencontre
+    from infrastructures.models import Evenement, EvenementZone
+    from django.shortcuts import get_object_or_404
+    
+    rencontre = get_object_or_404(
+        Rencontre,
+        uid=rencontre_uid,
+        stade=infrastructure
+    )
+    
+    if not rencontre.evenement:
+        messages.error(request, "L'événement billetterie n'a pas été créé pour cette rencontre.")
+        return redirect('infrastructures:infra_manager_evenements')
+    
+    evenement = rencontre.evenement
+    
+    # Récupérer les zones du stade
+    zones_stade = infrastructure.zones.all().order_by('ordre', 'nom')
+    
+    # Récupérer les tarifs déjà configurés
+    tarifs_existants = EvenementZone.objects.filter(
+        evenement=evenement
+    ).select_related('zone_stade')
+    
+    # Ajouter les compteurs de tickets à chaque tarif
+    for tarif in tarifs_existants:
+        tarif.tickets_vendus_count = tarif.tickets.filter(statut='VENDU').count()
+        tarif.tickets_utilises_count = tarif.tickets.filter(statut='UTILISE').count()
+        tarif.tickets_disponibles_count = tarif.tickets.filter(statut='DISPONIBLE').count()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'configurer_tarifs':
+            # Sauvegarder les tarifs pour chaque zone
+            for zone in zones_stade:
+                prix_key = f'prix_zone_{zone.uid}'
+                capacite_key = f'capacite_zone_{zone.uid}'
+                
+                prix = request.POST.get(prix_key)
+                capacite = request.POST.get(capacite_key)
+                
+                if prix and capacite:
+                    try:
+                        prix_decimal = float(prix)
+                        capacite_int = int(capacite)
+                        
+                        # Vérifier que la capacité ne dépasse pas la capacité du stade
+                        if infrastructure.capacite_spectateurs and capacite_int > infrastructure.capacite_spectateurs:
+                            messages.warning(request, f"La capacité pour {zone.nom} dépasse la capacité totale du stade ({infrastructure.capacite_spectateurs} places).")
+                            continue
+                        
+                        # Créer ou mettre à jour le tarif
+                        EvenementZone.objects.update_or_create(
+                            evenement=evenement,
+                            zone_stade=zone,
+                            defaults={
+                                'prix_unitaire': prix_decimal,
+                                'capacite_max': capacite_int,
+                                'devise': 'CDF'
+                            }
+                        )
+                    except (ValueError, TypeError):
+                        messages.error(request, f"Valeurs invalides pour {zone.nom}")
+                        continue
+            
+            messages.success(request, "Tarifs configurés avec succès!")
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
+        
+        elif action == 'generer_billets':
+            # Générer les billets pour toutes les zones configurées
+            total_generes = 0
+            for tarif in tarifs_existants:
+                nb_generes = tarif.generer_tickets()
+                total_generes += nb_generes
+            
+            if total_generes > 0:
+                messages.success(request, f"{total_generes} billets générés avec succès!")
+            else:
+                messages.info(request, "Tous les billets ont déjà été générés.")
+            
+            return redirect('infrastructures:infra_manager_evenement_billetterie', rencontre_uid=rencontre_uid)
+    
+    context = {
+        'infrastructure': infrastructure,
+        'rencontre': rencontre,
+        'evenement': evenement,
+        'zones_stade': zones_stade,
+        'tarifs_existants': tarifs_existants,
+        'user_role': 'infra_manager',
+    }
+    
+    return render(request, 'infrastructures/infra_manager_evenement_billetterie.html', context)

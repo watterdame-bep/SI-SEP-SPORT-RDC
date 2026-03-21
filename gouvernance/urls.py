@@ -121,6 +121,7 @@ urlpatterns = [
     path('arbitres/<uuid:uid>/biometrie/', views_arbitres.arbitre_biometrie, name='arbitre_biometrie'),
     path('arbitres/<uuid:uid>/verdict-medical/', views_arbitres.arbitre_verdict_medical, name='arbitre_verdict_medical'),
     path('arbitres/<uuid:uid>/valider/', views_arbitres.arbitre_valider, name='arbitre_valider'),
+    path('arbitres/<uuid:uid>/supprimer/', views_arbitres.arbitre_supprimer, name='arbitre_supprimer'),
     
     # Division Provinciale - Gestion des Ligues Provinciales
     path('division/ligues/<uuid:validation_id>/', views_division_ligues.division_ligue_detail, name='division_ligue_detail'),

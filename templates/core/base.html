@@ -470,8 +470,8 @@
                 </div>
             </div>
 
-            <a href="{% url 'gouvernance:ministre_arbitres_list' %}"
-               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ministre_arbitres_list' %}bg-white/15 text-white shadow-lg{% endif %}">
+            <a href="{% url 'gouvernance:arbitres_list' %}"
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'arbitres_list' or request.resolver_match.url_name == 'arbitre_register' or request.resolver_match.url_name == 'arbitre_detail' or request.resolver_match.url_name == 'arbitre_biometrie' %}bg-white/15 text-white shadow-lg{% endif %}">
                 <i class="fa-solid fa-scale-balanced text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
                 <span class="font-medium text-sm">Arbitres</span>
             </a>
@@ -593,8 +593,8 @@
                 </div>
             </div>
 
-            <a href="{% url 'gouvernance:ministre_arbitres_list' %}"
-               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'ministre_arbitres_list' %}bg-white/15 text-white shadow-lg{% endif %}">
+            <a href="{% url 'gouvernance:arbitres_list' %}"
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'arbitres_list' or request.resolver_match.url_name == 'arbitre_register' or request.resolver_match.url_name == 'arbitre_detail' %}bg-white/15 text-white shadow-lg{% endif %}">
                 <i class="fa-solid fa-scale-balanced text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
                 <span class="font-medium text-sm">Arbitres</span>
             </a>

@@ -107,10 +107,9 @@ input:focus, select:focus { outline: none !important; }
                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">N° Licence</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Niveau</th>
-                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
                 <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Catégorie</th>
                 <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:140px;">Statut</th>
-                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:120px;">Actions</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:160px;">Actions</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100" id="athletes-tbody">
@@ -125,7 +124,7 @@ input:focus, select:focus { outline: none !important; }
                             {{ arbitre.personne.nom|first|upper }}
                         </div>
                         <div>
-                            <div class="text-sm text-slate-900 capitalize">{{ arbitre.personne.prenom }} {{ arbitre.personne.nom }}</div>
+                            <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}" class="text-sm font-medium text-rdc-blue hover:underline capitalize">{{ arbitre.personne.prenom }} {{ arbitre.personne.nom }}</a>
                             <div class="text-xs text-slate-400">{{ arbitre.personne.telephone|default:"" }}</div>
                         </div>
                     </div>
@@ -146,49 +145,69 @@ input:focus, select:focus { outline: none !important; }
                     {% endif %}
                 </td>
                 <td class="px-6 py-4">
-                    <span class="text-sm text-slate-600">{{ arbitre.institution.province_admin.designation|default:"—" }}</span>
-                </td>
-                <td class="px-6 py-4">
                     <span class="text-sm text-slate-600">{{ arbitre.get_categorie_display }}</span>
                 </td>
                 <td class="px-6 py-4 text-center">
                     {% if arbitre.statut == 'ACTIF' %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dcfce7;color:#16a34a;">Actif</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#dcfce7;color:#16a34a;">Actif</span>
                     {% elif arbitre.statut == 'INSTRUIT' %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dbeafe;color:#1d4ed8;">Instruit</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#dbeafe;color:#1d4ed8;">Instruit</span>
                     {% elif arbitre.statut == 'EN_ATTENTE_MEDICALE' %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef3c7;color:#d97706;">Att. médicale</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fef3c7;color:#d97706;">Att. médicale</span>
                     {% elif arbitre.statut == 'INAPTE' %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fee2e2;color:#dc2626;">Inapte</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fee2e2;color:#dc2626;">Inapte</span>
                     {% elif arbitre.statut == 'SUSPENDU' %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef3c7;color:#d97706;">Suspendu</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fef3c7;color:#d97706;">Suspendu</span>
                     {% else %}
-                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">Inactif</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#f1f5f9;color:#64748b;">Inactif</span>
                     {% endif %}
                 </td>
                 <td class="px-6 py-4 text-center">
-                    <div class="flex items-center justify-center gap-2">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Voir détail — toujours visible -->
+                        <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                           style="background:#0036ca;" title="Voir le dossier">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
                         {% if is_medecin and arbitre.statut == 'EN_ATTENTE_MEDICALE' %}
+                            <!-- Médecin : saisir verdict -->
                             <a href="{% url 'gouvernance:arbitre_verdict_medical' arbitre.uid %}"
-                               class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white rounded-lg"
-                               style="background:#0036ca;" title="Saisir le verdict médical">
-                                <i class="fa-solid fa-stethoscope"></i> Examiner
+                               class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                               style="background:#7c3aed;" title="Saisir le verdict médical">
+                                <i class="fa-solid fa-stethoscope text-xs"></i>
                             </a>
-                        {% elif not is_ministre and not is_medecin and arbitre.statut == 'INSTRUIT' %}
-                            <a href="{% url 'gouvernance:arbitre_valider' arbitre.uid %}"
-                               class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white rounded-lg"
-                               style="background:#16a34a;" title="Valider et générer la licence">
-                                <i class="fa-solid fa-check"></i> Valider
-                            </a>
-                        {% else %}
-                            <span class="text-xs text-slate-400">—</span>
+                        {% endif %}
+                        {% if not is_ministre and not is_medecin %}
+                            {% if arbitre.statut == 'INSTRUIT' %}
+                                <!-- Valider -->
+                                <a href="{% url 'gouvernance:arbitre_valider' arbitre.uid %}"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                                   style="background:#16a34a;" title="Valider et générer la licence">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </a>
+                            {% endif %}
+                            {% if arbitre.statut == 'EN_ATTENTE_MEDICALE' %}
+                                <!-- Biométrie -->
+                                <a href="{% url 'gouvernance:arbitre_biometrie' arbitre.uid %}"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                                   style="background:#0891b2;" title="Compléter la biométrie">
+                                    <i class="fa-solid fa-fingerprint text-xs"></i>
+                                </a>
+                            {% endif %}
+                            <!-- Supprimer -->
+                            <button onclick="confirmerSuppression('{{ arbitre.uid }}', '{{ arbitre.personne.nom }} {{ arbitre.personne.prenom }}')"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                                    style="background:#dc2626;" title="Supprimer">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
                         {% endif %}
                     </div>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="8" class="px-6 py-20 text-center">
+                <td colspan="7" class="px-6 py-20 text-center">
                     <i class="fa-solid fa-scale-balanced text-5xl text-slate-200 mb-5 block"></i>
                     <p class="text-base font-bold text-slate-700">Aucun arbitre enregistré</p>
                     {% if not is_ministre %}
@@ -206,6 +225,29 @@ input:focus, select:focus { outline: none !important; }
     <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-4 block"></i>
     <p class="text-base font-bold text-slate-900">Aucun résultat</p>
     <p class="text-sm text-slate-500 mt-1">Modifiez vos critères de recherche</p>
+</div>
+
+<!-- Modale suppression -->
+<div id="modal-suppression" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:#fee2e2;">
+                <i class="fa-solid fa-trash text-sm" style="color:#dc2626;"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Supprimer l'arbitre</h3>
+                <p class="text-xs text-slate-500">Cette action est irréversible</p>
+            </div>
+        </div>
+        <p class="text-sm text-slate-700 mb-5">Voulez-vous vraiment supprimer <strong id="modal-nom-arbitre"></strong> ?</p>
+        <div class="flex gap-3">
+            <button onclick="fermerModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Annuler</button>
+            <form id="form-suppression" method="post" action="" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors" style="background:#dc2626;">Supprimer</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -236,6 +278,24 @@ input:focus, select:focus { outline: none !important; }
     if (filterDiscipline) filterDiscipline.addEventListener('change', filterTable);
     if (filterNiveau) filterNiveau.addEventListener('change', filterTable);
 })();
+
+function confirmerSuppression(uid, nom) {
+    document.getElementById('modal-nom-arbitre').textContent = nom;
+    document.getElementById('form-suppression').action = '/gouvernance/arbitres/' + uid + '/supprimer/';
+    const modal = document.getElementById('modal-suppression');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function fermerModal() {
+    const modal = document.getElementById('modal-suppression');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('modal-suppression').addEventListener('click', function(e) {
+    if (e.target === this) fermerModal();
+});
 </script>
 
 {% endblock %}

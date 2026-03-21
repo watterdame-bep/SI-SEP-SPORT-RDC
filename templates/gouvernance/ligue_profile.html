@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Mon Profil - {{ ligue.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
@@ -121,7 +121,7 @@ input[type="file"] {
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+<div class="bg-gradient-to-r from-rdc-blue via-rdc-blue-dark to-rdc-blue-darker border-b border-rdc-blue-darker/20">
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
@@ -266,43 +266,6 @@ input[type="file"] {
         </div>
     </div>
     
-    <!-- Logo de la ligue -->
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mb-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-image text-rdc-blue"></i>
-            Logo de la ligue
-        </h2>
-        <p class="text-sm text-slate-600 mb-4">Ce logo peut apparaître sur les documents officiels et les licences. Format recommandé : image carrée ou paysage (PNG ou JPG, max 5 Mo).</p>
-        {% if ligue.logo %}
-        <div class="current-file mb-4">
-            <div class="current-file-image">
-                <img src="{{ ligue.logo.url }}" alt="Logo actuel de la ligue">
-            </div>
-            <div class="current-file-info">
-                <div class="current-file-label">Logo actuel</div>
-                <div class="current-file-name">{{ ligue.logo.name|truncatechars:40 }}</div>
-            </div>
-        </div>
-        {% endif %}
-        <form method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="logo">
-            <div class="upload-box">
-                <label class="upload-label" for="logo_image">
-                    <i class="upload-icon fa-solid fa-cloud-arrow-up"></i>
-                    <div class="upload-text">
-                        <span class="upload-title">Cliquez pour télécharger le logo</span>
-                        <span class="upload-subtitle">PNG, JPG • Max 5MB</span>
-                    </div>
-                </label>
-                <input type="file" id="logo_image" name="logo_image" accept="image/*">
-            </div>
-            <button type="submit" class="w-full px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold rounded-lg transition-colors">
-                Mettre à jour le logo
-            </button>
-        </form>
-    </div>
-    
     <!-- Signature et Sceau -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Signature -->
@@ -324,7 +287,7 @@ input[type="file"] {
             </div>
             {% endif %}
             
-            <form id="signatureForm" method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
+            <form id="signatureForm" method="POST" enctype="multipart/form-data" class="space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="signature">
                 
@@ -365,7 +328,7 @@ input[type="file"] {
             </div>
             {% endif %}
             
-            <form id="sceauForm" method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
+            <form id="sceauForm" method="POST" enctype="multipart/form-data" class="space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="sceau">
                 
@@ -387,132 +350,6 @@ input[type="file"] {
             </form>
         </div>
     </div>
-    
-    <!-- Adresse de Contact -->
-    {% if adresse %}
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mt-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-map-location-dot text-rdc-blue"></i>
-            Adresse de Contact
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Avenue</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">{{ adresse.avenue }}</p>
-            </div>
-            {% if adresse.commune %}
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Commune</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">{{ adresse.commune }}</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Attestation d'Homologation -->
-    {% if attestation %}
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mt-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-certificate text-rdc-blue"></i>
-            Attestation d'Homologation
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Numéro</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">{{ attestation.numero_attestation }}</p>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Statut</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">
-                    <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
-                        ✓ {{ attestation.get_statut_display }}
-                    </span>
-                </p>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Date d'Approbation</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">
-                    {% if attestation.date_approbation %}
-                        {{ attestation.date_approbation|date:"d/m/Y" }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </p>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Validité</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">
-                    {% if attestation.date_validite %}
-                        Jusqu'au {{ attestation.date_validite|date:"d/m/Y" }}
-                    {% else %}
-                        Permanente
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-        
-        {% if attestation.document_attestation %}
-        <div class="pt-4 border-t border-slate-200">
-            <a href="{{ attestation.document_attestation.url }}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-blue hover:bg-rdc-blue-dark text-white text-sm font-bold rounded-lg transition-colors">
-                <i class="fa-solid fa-download"></i>
-                Télécharger l'Attestation
-            </a>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
-    
-    <!-- Disciplines -->
-    {% if disciplines %}
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mt-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-trophy text-rdc-blue"></i>
-            Disciplines Pratiquées
-        </h2>
-        
-        <div class="flex flex-wrap gap-2">
-            {% for discipline in disciplines %}
-            <span class="inline-block px-3 py-1 bg-rdc-blue/10 text-rdc-blue rounded-full text-sm font-semibold">
-                {{ discipline.designation }}
-            </span>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Fédération Parente -->
-    {% if federation %}
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-6 mt-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-link text-rdc-blue"></i>
-            Fédération Parente
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Nom</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">{{ federation.nom_officiel }}</p>
-            </div>
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sigle</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">{{ federation.sigle }}</p>
-            </div>
-            <div class="md:col-span-2">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Email</p>
-                <p class="text-sm font-semibold text-slate-800 mt-1">
-                    {% if federation.email_officiel %}
-                        <a href="mailto:{{ federation.email_officiel }}" class="text-rdc-blue hover:underline">{{ federation.email_officiel }}</a>
-                    {% else %}
-                        <span class="text-slate-500">N/A</span>
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 </div>
 
 <script>

@@ -10,10 +10,7 @@ from .views_infra_manager import (
     infra_manager_maintenance,
     infra_manager_reservations,
     infra_manager_photos,
-    infra_manager_zones,
     infra_manager_evenements,
-    infra_manager_create_reservation,
-    infra_manager_reservation_configurer_billetterie
 )
 
 app_name = 'infrastructures'
@@ -32,10 +29,7 @@ urlpatterns = [
     path('manager/maintenance/', infra_manager_maintenance, name='infra_manager_maintenance'),
     path('manager/reservations/', infra_manager_reservations, name='infra_manager_reservations'),
     path('manager/photos/', infra_manager_photos, name='infra_manager_photos'),
-    path('manager/zones/', infra_manager_zones, name='infra_manager_zones'),
     path('manager/evenements/', infra_manager_evenements, name='infra_manager_evenements'),
-    path('manager/create-reservation/', infra_manager_create_reservation, name='infra_manager_create_reservation'),
-    path('manager/reservation/<uuid:evenement_uid>/configurer-billetterie/', infra_manager_reservation_configurer_billetterie, name='infra_manager_reservation_configurer_billetterie'),
 
     # SG Infrastructure validation
     path('sg/validation/', views_sg_validation.infrastructure_validation_list, name='sg_infrastructure_validation_list'),
