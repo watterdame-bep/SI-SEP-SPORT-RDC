@@ -1,0 +1,178 @@
+﻿{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Clubs Sportifs | Secrétaire Général | SI-SEP Sport RDC{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="mb-4">
+            <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Clubs Sportifs</h1>
+            <p class="text-sm text-white/80 mt-1">Vue nationale de tous les clubs enregistrés</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Clubs</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-double text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Affiliés</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.affilies }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Validés</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.valides }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-hourglass-half text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">En attente</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.en_attente }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="py-4 space-y-4">
+
+{% if messages %}
+<div class="space-y-2">
+    {% for message in messages %}
+    <div class="flex items-start gap-2 px-3 py-2 rounded text-sm border-l-4
+        {% if message.tags == 'success' %}bg-green-50 text-green-800 border-green-400
+        {% elif message.tags == 'error' %}bg-red-50 text-red-800 border-red-400
+        {% else %}bg-blue-50 text-blue-800 border-blue-400{% endif %}">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mt-0.5"></i>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filtres -->
+<form method="get" class="bg-white border border-slate-200 px-3 py-2 flex flex-wrap items-center gap-2">
+    <div class="flex-1 min-w-48 relative">
+        <i class="fa-solid fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un club..."
+            class="w-full pl-7 pr-3 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+    <select name="province" class="text-sm border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40">
+        <option value="">Toutes les provinces</option>
+        {% for prov in provinces %}
+        <option value="{{ prov.uid }}" {% if province_id == prov.uid|stringformat:"s" %}selected{% endif %}>{{ prov.designation }}</option>
+        {% endfor %}
+    </select>
+    <select name="statut" class="text-sm border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40">
+        <option value="">Tous les statuts</option>
+        <option value="AFFILIEE" {% if statut == 'AFFILIEE' %}selected{% endif %}>Affilié</option>
+        <option value="VALIDEE_PROVINCIALE" {% if statut == 'VALIDEE_PROVINCIALE' %}selected{% endif %}>Validé provincial</option>
+        <option value="EN_ATTENTE_VALIDATION" {% if statut == 'EN_ATTENTE_VALIDATION' %}selected{% endif %}>En attente</option>
+        <option value="REJETEE_PROVINCIALE" {% if statut == 'REJETEE_PROVINCIALE' %}selected{% endif %}>Rejeté</option>
+    </select>
+    <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white rounded" style="background:#0036ca;">
+        <i class="fa-solid fa-filter"></i> Filtrer
+    </button>
+    {% if q or province_id or statut %}
+    <a href="?" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded hover:bg-slate-200">
+        <i class="fa-solid fa-times"></i> Réinitialiser
+    </a>
+    {% endif %}
+</form>
+
+<!-- Tableau -->
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden">
+    {% if clubs %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Club</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Sigle</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ligue tutelle</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Province</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">N° Affiliation</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for club in clubs %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-2">
+                        <div class="text-sm text-slate-800">{{ club.nom_officiel|lower|capfirst }}</div>
+                        <div class="text-xs text-slate-400">{{ club.code }}</div>
+                    </td>
+                    <td class="px-4 py-2">
+                        <span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded">
+                            {{ club.sigle|default:"—" }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2 text-sm text-slate-600">
+                        {{ club.institution_tutelle.nom_officiel|lower|capfirst|default:"—" }}
+                    </td>
+                    <td class="px-4 py-2 text-sm text-slate-600">
+                        {{ club.province_admin.designation|default:"—" }}
+                    </td>
+                    <td class="px-4 py-2">
+                        {% if club.statut_validation_club == 'AFFILIEE' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-check-double"></i> Affilié
+                        </span>
+                        {% elif club.statut_validation_club == 'VALIDEE_PROVINCIALE' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-check-circle"></i> Validé
+                        </span>
+                        {% elif club.statut_validation_club == 'EN_ATTENTE_VALIDATION' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-hourglass-half"></i> En attente
+                        </span>
+                        {% elif club.statut_validation_club == 'REJETEE_PROVINCIALE' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-times-circle"></i> Rejeté
+                        </span>
+                        {% else %}
+                        <span class="text-xs text-slate-400">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2 text-sm text-slate-600 font-mono">
+                        {{ club.numero_affiliation|default:"—" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="px-4 py-12 text-center">
+        <i class="fa-solid fa-shield-halved text-3xl text-slate-300 mb-3 block"></i>
+        <p class="text-sm font-semibold text-slate-700">Aucun club trouvé</p>
+        {% if q or province_id or statut %}
+        <p class="text-xs text-slate-500 mt-1">Essayez de modifier vos filtres</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+</div>
+
+</div>
+{% endblock %}

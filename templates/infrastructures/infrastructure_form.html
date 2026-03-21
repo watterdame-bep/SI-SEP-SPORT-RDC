@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {# Template version: 2.0 - Manager Identity Complete #}
@@ -63,7 +63,7 @@
 </div>
 {% endif %}
 
-<form method="post" class="space-y-6">
+<form method="post" class="px-4 lg:px-8 space-y-6">
     {% csrf_token %}
     
     <!-- Section 1: Informations Générales -->
@@ -394,7 +394,7 @@
             <h2 class="text-lg font-bold text-slate-800">Paramètres Spéciaux</h2>
         </div>
         
-        <div class="space-y-4">
+        <div class="px-4 lg:px-8 space-y-4">
             <!-- Infrastructure d'intérêt national -->
             <div class="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
                 <div class="flex items-center h-6">

@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+
+{% block title %}Valider l'arbitre — {{ arbitre.personne.nom_complet }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:arbitres_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Validation finale — Arbitre</h1>
+                <p class="text-sm text-white/80 mt-1">{{ arbitre.personne.nom_complet }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+            <h2 class="text-base font-semibold text-slate-700">Confirmer la validation</h2>
+        </div>
+        <div class="p-6 space-y-4">
+
+            <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                <i class="fa-solid fa-circle-check mr-2"></i>
+                Le dossier médical est validé. En confirmant, vous générez la licence officielle de l'arbitre.
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-slate-500 mb-0.5">Arbitre</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.personne.nom_complet }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 mb-0.5">Discipline</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.discipline|default:"—" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 mb-0.5">Niveau</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.get_niveau_display }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 mb-0.5">Résultat médical</p>
+                    <p class="font-semibold text-green-700">{{ arbitre.get_resultat_medical_display }}</p>
+                </div>
+                {% if arbitre.notes_medicales %}
+                <div class="col-span-2">
+                    <p class="text-slate-500 mb-0.5">Observations médicales</p>
+                    <p class="text-slate-700 italic">{{ arbitre.notes_medicales }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <form method="post" class="flex gap-4 pt-2">
+                {% csrf_token %}
+                <a href="{% url 'gouvernance:arbitres_list' %}"
+                   class="flex-1 text-center px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-lg"
+                        style="background:#16a34a;">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    Valider et générer la licence
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

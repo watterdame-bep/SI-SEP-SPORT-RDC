@@ -107,9 +107,12 @@ def validation_submit(request, uid):
                 validation.marquer_comme_rejetee()
                 message = f'Validation rejetée pour {validation.federation.nom_officiel} dans {province.designation}'
             
-            # NE PAS mettre à jour le statut de la fédération ici
-            # Seul le SG peut transférer au Ministre via la vue validation_transfer_to_minister
-            # La fédération reste en EN_INSPECTION jusqu'à ce que le SG la transfère
+            # Mettre à jour le statut de la fédération → Province rendu
+            # Le SG verra le dossier dans sa liste pour le transférer au Ministre
+            federation = validation.federation
+            if federation.statut_inspection == 'AUDIT':
+                federation.statut_inspection = 'PROVINCE_RENDU'
+                federation.save(update_fields=['statut_inspection'])
             
             return JsonResponse({
                 'success': True,
@@ -148,7 +151,7 @@ def sg_validation_verifier(request, uid):
     )
     if validation.statut not in ('VALIDEE', 'REJETEE'):
         return redirect('gouvernance:sg_dashboard')
-    if validation.federation.statut_inspection != 'EN_INSPECTION':
+    if validation.federation.statut_inspection not in ('AUDIT', 'EN_INSPECTION', 'PROVINCE_RENDU'):
         return redirect('gouvernance:sg_dashboard')
     context = {
         'validation': validation,
@@ -186,15 +189,15 @@ def validation_transfer_to_minister(request, uid):
         with transaction.atomic():
             # Mettre à jour le statut de la fédération
             if validation.statut == 'VALIDEE':
-                # Inspection approuvée → transférer au Ministre
-                federation.statut_inspection = 'INSPECTION_VALIDEE'
+                # Audit approuvé → statut "Attente agrément" + transférer au Ministre
+                federation.statut_inspection = 'ATTENTE_AGREMENT'
                 federation.statut_signature = 'ATTENTE_SIGNATURE'
                 message = f'{federation.nom_officiel} a été transférée au Ministre pour signature'
             else:  # REJETEE
-                # Inspection rejetée → marquer comme rejetée
+                # Audit rejeté → marquer comme rejetée
                 federation.statut_inspection = 'INSPECTION_REJETEE'
                 federation.statut_signature = 'REFUSE'
-                message = f'{federation.nom_officiel} a été rejetée suite à l\'inspection'
+                message = f'{federation.nom_officiel} a été rejetée suite à l\'audit'
             
             federation.save(update_fields=['statut_inspection', 'statut_signature'])
             

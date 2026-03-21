@@ -11,7 +11,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from core.models import ProfilUtilisateur, RoleUtilisateur
-from core.permissions import est_secretaire_general_ministere
+from core.permissions import est_secretaire_general_ministere, est_sg_ou_ministre
 from gouvernance.models import (
     Institution,
     Agent,
@@ -40,7 +40,7 @@ def _get_ministere_racine():
 
 
 @login_required(login_url='/login/')
-@_user_passes_test(est_secretaire_general_ministere, login_url='/login/')
+@_user_passes_test(est_sg_ou_ministre, login_url='/login/')
 def divisions_provinciales(request):
     """
     Liste des Divisions Provinciales avec option de créer/modifier le Chef de Division.
@@ -253,10 +253,14 @@ def divisions_provinciales(request):
         
         return redirect('gouvernance:divisions_provinciales')
     
+    from core.permissions import est_ministre as _est_ministre
+    is_ministre = _est_ministre(request.user)
+
     return render(request, 'gouvernance/divisions_provinciales.html', {
         'ministere': ministere,
         'divisions': divisions,
-        'user_role': 'sg',
+        'user_role': 'ministre' if is_ministre else 'sg',
+        'is_ministre': is_ministre,
     })
 
 

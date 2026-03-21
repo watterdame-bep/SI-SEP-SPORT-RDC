@@ -13,7 +13,7 @@ from gouvernance.models import Institution, ValidationLigue, AttestationReconnai
 
 
 @login_required
-@require_role('INSTITUTION_ADMIN')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE')
 def sg_ligues_en_attente(request):
     """
     Liste de toutes les Ligues Provinciales pour le SG.
@@ -30,6 +30,12 @@ def sg_ligues_en_attente(request):
         'validations_division'  # Précharger les validations
     ).order_by('-date_creation')
     
+    is_ministre = request.user.profil_sisep.role == 'MINISTRE'
+
+    # Le ministre ne voit que les ligues officiellement approuvées (signées)
+    if is_ministre:
+        ligues = ligues.filter(statut_signature='SIGNE')
+
     # Compter les ligues par statut
     nombre_en_inspection = ligues.filter(statut_inspection='EN_INSPECTION').count()
     nombre_attente_sg = ligues.filter(
@@ -38,21 +44,22 @@ def sg_ligues_en_attente(request):
     ).count()
     nombre_approuvees = ligues.filter(statut_signature='SIGNE').count()
     nombre_rejetees = ligues.filter(statut_signature='REFUSE').count()
-    
+
     context = {
         'ligues': ligues,
         'nombre_en_inspection': nombre_en_inspection,
         'nombre_attente_sg': nombre_attente_sg,
         'nombre_approuvees': nombre_approuvees,
         'nombre_rejetees': nombre_rejetees,
-        'user_role': 'sg',
+        'user_role': 'ministre' if is_ministre else 'sg',
+        'is_ministre': is_ministre,
     }
     
     return render(request, 'gouvernance/sg_ligues_en_attente.html', context)
 
 
 @login_required
-@require_role('INSTITUTION_ADMIN')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE')
 def sg_ligue_detail(request, ligue_id):
     """
     Détail d'une ligue avec validation et approbation.

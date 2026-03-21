@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Inspections à Transférer | SI-SEP Sport RDC{% endblock %}
@@ -72,6 +72,43 @@ input:focus, select:focus {
 {% endblock %}
 
 {% block content %}
+<!-- Modale de confirmation de transfert -->
+<div id="transfer-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full flex-shrink-0" style="background:#eff6ff;">
+                <i class="fa-solid fa-arrow-right text-xl" style="color:#0036ca;"></i>
+            </div>
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Transférer au Ministre</h2>
+                <p class="text-xs text-slate-500">Confirmation requise</p>
+            </div>
+        </div>
+        <p class="text-sm text-slate-600 mb-2">Vous êtes sur le point de transférer l'inspection de :</p>
+        <p id="modal-federation-name" class="text-sm font-bold text-slate-900 mb-4 p-3 rounded-lg capitalize" style="background:#f8fafc;"></p>
+        <div class="mb-5 p-3 rounded-lg" style="background:#eff6ff;">
+            <p class="text-sm" style="color:#1e40af;">
+                <i class="fa-solid fa-info-circle mr-2"></i>
+                Le dossier sera transmis au Ministre pour signature de l'agrément.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeTransferModal()"
+                    class="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-sm">
+                Annuler
+            </button>
+            <button type="button" onclick="confirmTransfer()"
+                    class="flex-1 px-4 py-2.5 text-white font-semibold rounded-lg transition-colors text-sm"
+                    style="background:#0036ca;">
+                <i class="fa-solid fa-arrow-right mr-2"></i>Confirmer le transfert
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Message container -->
+<div id="message-container" class="mb-6 space-y-3"></div>
+
 <!-- Barre d'outils -->
 <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
     <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -151,7 +188,7 @@ input:focus, select:focus {
                     <div class="flex items-center justify-center gap-1.5">
                         {% if validation.federation.statut_signature == '' %}
                         <!-- Pas encore transféré — bouton actif -->
-                        <button onclick="transferToMinister('{{ validation.uid }}')"
+                        <button onclick="transferToMinister('{{ validation.uid }}', '{{ validation.federation.nom_officiel|escapejs }}')"
                                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all"
                                 style="background:#0036ca"
                                 title="Transférer au Ministre">
@@ -227,32 +264,56 @@ function getCookie(name) {
     return cookieValue;
 }
 
-async function transferToMinister(validationUid) {
-    if (!confirm('Êtes-vous sûr de vouloir transférer cette inspection au Ministre?')) {
-        return;
-    }
-    
+let pendingTransferUid = null;
+
+function transferToMinister(validationUid, federationNom) {
+    pendingTransferUid = validationUid;
+    document.getElementById('modal-federation-name').textContent = federationNom;
+    document.getElementById('transfer-modal').classList.remove('hidden');
+}
+
+function closeTransferModal() {
+    document.getElementById('transfer-modal').classList.add('hidden');
+    pendingTransferUid = null;
+}
+
+function showMessage(message, type) {
+    const container = document.getElementById('message-container');
+    const ok = type === 'success';
+    const div = document.createElement('div');
+    div.className = `border-l-4 p-4 rounded-lg flex items-start gap-3 ${ok ? 'bg-green-50 border-green-400 text-green-800' : 'bg-red-50 border-red-400 text-red-800'}`;
+    div.innerHTML = `<i class="fa-solid ${ok ? 'fa-check-circle' : 'fa-exclamation-circle'} text-xl mt-0.5"></i><p class="text-sm font-semibold flex-1">${message}</p>`;
+    container.appendChild(div);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => div.remove(), 8000);
+}
+
+async function confirmTransfer() {
+    if (!pendingTransferUid) return;
+    closeTransferModal();
     try {
-        const response = await fetch(`/gouvernance/validations/${validationUid}/transfer/`, {
+        const response = await fetch(`/gouvernance/validations/${pendingTransferUid}/transfer/`, {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
+            headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
         });
-        
         const data = await response.json();
-        
         if (data.success) {
-            alert(data.message);
-            window.location.reload();
+            showMessage(data.message, 'success');
+            setTimeout(() => window.location.reload(), 2000);
         } else {
-            alert('Erreur: ' + data.message);
+            showMessage('Erreur : ' + data.message, 'error');
         }
     } catch (error) {
-        console.error('Erreur:', error);
-        alert('Une erreur est survenue');
+        showMessage('Une erreur est survenue', 'error');
     }
 }
+
+// Fermer la modale en cliquant en dehors
+document.getElementById('transfer-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTransferModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeTransferModal();
+});
 </script>
 {% endblock %}

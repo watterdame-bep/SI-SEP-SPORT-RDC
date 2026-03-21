@@ -1,0 +1,188 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Biométrie — {{ arbitre.personne.nom_complet }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}" class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Biométrie — {{ arbitre.personne.nom_complet }}</h1>
+                <p class="text-sm text-white/80 mt-1">Photo d'identité et empreintes digitales</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="mb-4 space-y-2">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-lg text-sm font-medium
+        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+        {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="empreintes_template" id="empreintes-template-input">
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start;">
+
+        <!-- Photo d'identité -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h2 class="text-base font-semibold text-slate-700">
+                    <i class="fa-solid fa-camera text-rdc-blue mr-2"></i>Photo d'identité
+                </h2>
+            </div>
+            <div class="p-6 space-y-4">
+
+                <!-- Aperçu photo actuelle -->
+                <div class="flex justify-center">
+                    {% if arbitre.photo %}
+                        <img id="photo-preview" src="{{ arbitre.photo.url }}" alt="Photo actuelle"
+                             class="w-32 h-40 object-cover rounded-lg border border-slate-200">
+                    {% else %}
+                        <div id="photo-preview-placeholder" class="w-32 h-40 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50">
+                            <i class="fa-solid fa-user text-3xl text-slate-300 mb-2"></i>
+                            <p class="text-xs text-slate-400">Aucune photo</p>
+                        </div>
+                        <img id="photo-preview" src="" alt="" class="w-32 h-40 object-cover rounded-lg border border-slate-200 hidden">
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Sélectionner une photo</label>
+                    <input type="file" name="photo" id="photo-input" accept="image/*"
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue">
+                    <p class="text-xs text-slate-400 mt-1">Format JPG ou PNG, fond blanc recommandé.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Empreintes digitales -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h2 class="text-base font-semibold text-slate-700">
+                    <i class="fa-solid fa-fingerprint text-rdc-blue mr-2"></i>Empreintes digitales
+                </h2>
+            </div>
+            <div class="p-6 space-y-4">
+
+                <!-- Statut actuel -->
+                {% if arbitre.empreintes_capturees %}
+                <div class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-700">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Empreintes déjà capturées. Vous pouvez les recapturer ci-dessous.
+                </div>
+                {% endif %}
+
+                <!-- Zone de capture -->
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50" id="fingerprint-zone">
+                    <i class="fa-solid fa-fingerprint text-4xl text-slate-300 mb-3 block"></i>
+                    <p class="text-sm font-semibold text-slate-600 mb-1">Capteur d'empreintes</p>
+                    <p class="text-xs text-slate-400 mb-4">Connectez le capteur biométrique puis cliquez sur "Capturer"</p>
+                    <button type="button" id="btn-capture"
+                            onclick="lancerCapture()"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
+                            style="background:#0036ca;">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        Capturer les empreintes
+                    </button>
+                </div>
+
+                <!-- Résultat capture -->
+                <div id="capture-result" class="hidden p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span id="capture-result-text">Empreintes capturées avec succès.</span>
+                </div>
+                <div id="capture-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <span id="capture-error-text">Erreur lors de la capture.</span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-4 mt-6">
+        <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}"
+           class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+            Annuler
+        </a>
+        <button type="submit"
+                class="inline-flex items-center gap-2 px-8 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
+                style="background:#0036ca;">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Enregistrer la biométrie
+        </button>
+    </div>
+
+</form>
+
+<script>
+// Aperçu photo en temps réel
+document.getElementById('photo-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const preview = document.getElementById('photo-preview');
+        const placeholder = document.getElementById('photo-preview-placeholder');
+        preview.src = ev.target.result;
+        preview.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+});
+
+// Capture empreintes via le capteur MorFin (même interface que pour les athlètes)
+function lancerCapture() {
+    const btn = document.getElementById('btn-capture');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Capture en cours…';
+
+    // Tentative de connexion au service capteur local (port 9734 — MorFinEnroll)
+    const url = 'http://localhost:9734/capture';
+    fetch(url, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.template) {
+                document.getElementById('empreintes-template-input').value = JSON.stringify(data);
+                document.getElementById('capture-result').classList.remove('hidden');
+                document.getElementById('capture-error').classList.add('hidden');
+                document.getElementById('capture-result-text').textContent =
+                    'Empreintes capturées avec succès (' + (data.fingers || 1) + ' doigt(s)).';
+                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Capturées';
+                btn.style.background = '#16a34a';
+            } else {
+                throw new Error('Template vide');
+            }
+        })
+        .catch(() => {
+            // Pas de capteur connecté — permettre de continuer sans empreintes
+            document.getElementById('capture-error').classList.remove('hidden');
+            document.getElementById('capture-result').classList.add('hidden');
+            document.getElementById('capture-error-text').textContent =
+                'Capteur non détecté. Vous pouvez enregistrer sans empreintes et les ajouter plus tard.';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> Réessayer';
+        });
+}
+</script>
+
+{% endblock %}

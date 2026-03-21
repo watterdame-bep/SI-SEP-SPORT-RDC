@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Journal de Maintenance | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
@@ -100,7 +100,7 @@
     </h2>
     
     {% if maintenance_logs %}
-    <div class="space-y-3">
+    <div class="px-4 lg:px-8 space-y-3">
         {% for log in maintenance_logs %}
         <div class="border border-slate-200 rounded-lg p-4 hover:border-rdc-blue hover:shadow-sm transition-all">
             <div class="flex items-start gap-4">

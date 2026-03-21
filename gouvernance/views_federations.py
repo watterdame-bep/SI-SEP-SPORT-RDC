@@ -13,7 +13,7 @@ import json
 from gouvernance.models import Institution, TypeInstitution
 from gouvernance.models.discipline import DisciplineSport
 from gouvernance.models.agrement import EtatAdministrative
-from core.permissions import est_secretaire_general_ministere
+from core.permissions import est_secretaire_general_ministere, est_sg_ou_ministre, est_ministre
 
 
 def _user_passes_test(test_func, login_url=None):
@@ -27,8 +27,8 @@ def _user_passes_test(test_func, login_url=None):
     return decorator
 
 
-@login_required(login_url='/login/')
-@_user_passes_test(est_secretaire_general_ministere, login_url='/login/')
+@login_required(login_url='/auth/login/')
+@_user_passes_test(est_sg_ou_ministre, login_url='/auth/login/')
 def federations_nationales(request):
     """
     Page principale de gestion des Fédérations Nationales
@@ -93,6 +93,22 @@ def federations_nationales(request):
     from gouvernance.models.localisation import ProvAdmin
     provinces = ProvAdmin.objects.all().order_by('designation')
     
+    is_ministre = est_ministre(request.user)
+
+    # Le ministre ne voit que les fédérations officiellement agréées (signées)
+    if is_ministre:
+        federations = federations.filter(statut_signature='SIGNE')
+        total = federations.count()
+        stats = {
+            'total': total,
+            'agreees': total,
+            'en_attente': 0,
+            'agrement_expire': 0,
+            'refusees': 0,
+            'disciplines': disciplines_couvertes,
+            'taux_conformite': 100 if total > 0 else 0,
+        }
+
     context = {
         'federations': federations,
         'stats': stats,
@@ -100,7 +116,8 @@ def federations_nationales(request):
         'repartition_geo': repartition_geo,
         'disciplines': disciplines,
         'provinces': provinces,
-        'user_role': 'sg',
+        'user_role': 'ministre' if is_ministre else 'sg',
+        'is_ministre': is_ministre,
     }
     
     return render(request, 'gouvernance/federations_nationales.html', context)
@@ -306,7 +323,7 @@ def federation_store(request):
             site_web=site_web,
             niveau_territorial='FEDERATION',
             statut_activation='ACTIVE',
-            statut_inspection='EN_INSPECTION',  # En attente d'inspection provinciale
+            statut_inspection='AUDIT',  # En attente d'audit provincial
             statut_signature='',  # Pas encore en attente de signature
             # Agrément
             type_agrement_sollicite=type_agrement_sollicite,
@@ -354,11 +371,11 @@ def federation_store(request):
         }, status=500)
 
 
-@login_required(login_url='/login/')
-@_user_passes_test(est_secretaire_general_ministere, login_url='/login/')
+@login_required(login_url='/auth/login/')
+@_user_passes_test(est_sg_ou_ministre, login_url='/auth/login/')
 def federation_detail(request, pk):
     """
-    Détails d'une fédération
+    Détails d'une fédération — accessible SG et Ministre
     """
     federation = get_object_or_404(
         Institution.objects.select_related(
@@ -371,16 +388,17 @@ def federation_detail(request, pk):
         pk=pk,
         niveau_territorial='FEDERATION'
     )
-    
-    # Ligues rattachées
+
     ligues = federation.institutions_fille.filter(niveau_territorial='LIGUE')
-    
+    is_ministre = est_ministre(request.user)
+
     context = {
         'federation': federation,
         'ligues': ligues,
-        'user_role': 'sg',
+        'user_role': 'ministre' if is_ministre else 'sg',
+        'is_ministre': is_ministre,
     }
-    
+
     return render(request, 'gouvernance/federation_detail.html', context)
 
 

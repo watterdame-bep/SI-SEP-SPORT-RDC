@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Valider Athlète | {{ ligue.nom_officiel }}{% endblock %}
@@ -478,7 +478,7 @@
                 <span>Les athlètes suivants ont un nom similaire ou une date de naissance identique dans votre province. Vérifiez qu'il ne s'agit pas de la même personne avant de valider.</span>
             </p>
             
-            <div class="space-y-3">
+            <div class="px-4 lg:px-8 space-y-3">
                 {% for doublon in doublons_potentiels %}
                 <div class="bg-white rounded-lg p-4 border-2 border-yellow-300 shadow-sm hover:shadow-md transition-shadow">
                     <div class="flex items-start gap-4">
@@ -561,7 +561,7 @@
             </h3>
         </div>
         <div class="p-6">
-            <form method="post" class="space-y-5">
+            <form method="post" class="px-4 lg:px-8 space-y-5">
                 {% csrf_token %}
                 
                 <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">

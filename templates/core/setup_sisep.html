@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -153,7 +153,7 @@
 
     {% else %}
     <!-- Formulaire d'initialisation -->
-    <form method="post" action="" enctype="multipart/form-data" class="space-y-6">
+    <form method="post" action="" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-6">
         {% csrf_token %}
         
         <!-- Section 1: Institution -->
@@ -229,7 +229,7 @@
                     <!-- Ministre -->
                     <div class="p-5 bg-slate-50 border border-slate-200">
                         <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-300">Ministre</h3>
-                        <div class="space-y-4">
+                        <div class="px-4 lg:px-8 space-y-4">
                             <div>
                                 <label for="id_ministre_nom" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Nom complet <span class="text-red-600">*</span></label>
                                 <input type="text" name="ministre_nom" id="id_ministre_nom" 
@@ -254,7 +254,7 @@
                     <!-- Secrétaire Général -->
                     <div class="p-5 bg-slate-50 border border-slate-200">
                         <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-slate-300">Secrétaire Général</h3>
-                        <div class="space-y-4">
+                        <div class="px-4 lg:px-8 space-y-4">
                             <div>
                                 <label for="id_sg_nom" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Nom complet <span class="text-red-600">*</span></label>
                                 <input type="text" name="sg_nom" id="id_sg_nom" 

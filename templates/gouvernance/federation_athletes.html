@@ -1,26 +1,228 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Mes Athlètes - {{ federation.sigle }}{% endblock %}
+{% block title %}Athlètes de la Fédération | SI-SEP Sport RDC{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">👥 Mes Athlètes & Licenciés</h1>
-                    <p class="text-muted mb-0">{{ federation.nom_officiel }}</p>
+{% block extra_css %}
+<style>
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, select:focus { outline: none !important; }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-person-running text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Athlètes de la Fédération</h1>
+                <p class="text-sm text-white/80 mt-1">{{ federation.nom_officiel }}</p>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Athlètes</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+                    </div>
                 </div>
-                <a href="{% url 'gouvernance:federation_secretary_dashboard' %}" class="btn btn-outline-secondary">
-                    ← Retour
-                </a>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-medal text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Certifiés National</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.certifies_national }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-certificate text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Certifiés Provincial</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.certifies_provincial }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">En Attente</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.en_attente }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <div class="alert alert-info">
-        <p class="mb-0">Cette fonctionnalité sera bientôt disponible. Vous pourrez enregistrer et gérer vos athlètes licenciés (Fiche F08).</p>
+{% block content %}
+
+<!-- Barre de recherche temps réel -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <div class="relative flex-1">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="search-input" placeholder="Rechercher par nom, prénom, numéro licence…"
+                   class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+        </div>
+        <select id="filter-province" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <option value="">Toutes les provinces</option>
+            {% for p in provinces %}
+                <option value="{{ p.designation|lower }}">{{ p.designation }}</option>
+            {% endfor %}
+        </select>
+        <select id="filter-discipline" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <option value="">Toutes les disciplines</option>
+            {% for d in disciplines %}
+                <option value="{{ d.designation|lower }}">{{ d.designation }}</option>
+            {% endfor %}
+        </select>
+        <select id="filter-certification" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <option value="">Toutes les certifications</option>
+            <option value="certifie_national">Certifié national</option>
+            <option value="certifie_provincial">Certifié provincial</option>
+        </select>
     </div>
 </div>
+
+<!-- Tableau -->
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200" id="athletes-table">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">N° Licence</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Catégorie</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:160px;">Certification</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="athletes-tbody">
+            {% for athlete in athletes %}
+            <tr class="hover:bg-slate-50 transition-colors athlete-row"
+                data-search="{{ athlete.personne.nom|lower }} {{ athlete.personne.postnom|lower }} {{ athlete.personne.prenom|lower }} {{ athlete.numero_licence|lower|default:'' }}"
+                data-province="{{ athlete.club.province_admin.designation|lower|default:'' }}"
+                data-discipline="{{ athlete.discipline.designation|lower|default:'' }}"
+                data-certification="{{ athlete.statut_certification|lower }}">
+                <td class="px-6 py-2.5">
+                    <div class="flex items-center gap-3">
+                        {% if athlete.personne.photo %}
+                            <img src="{{ athlete.personne.photo.url }}" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#0036ca;">
+                                {{ athlete.personne.nom|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div class="text-sm text-slate-900 capitalize">{{ athlete.personne.prenom }} {{ athlete.personne.nom }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm font-mono text-slate-700">{{ athlete.numero_licence|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-2.5">
+                    {% if athlete.discipline %}
+                        <span class="text-sm text-slate-700">{{ athlete.discipline.designation }}</span>
+                    {% else %}
+                        <span class="text-sm text-slate-400">—</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-2.5">
+                    <div class="text-sm text-slate-700 capitalize">{{ athlete.club.nom_officiel|lower|default:"—" }}</div>
+                    {% if athlete.club.sigle %}<div class="text-xs text-slate-400">{{ athlete.club.sigle }}</div>{% endif %}
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm text-slate-600">{{ athlete.club.province_admin.designation|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm text-slate-600">{{ athlete.get_categorie_display|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-2.5 text-center">
+                    {% if athlete.statut_certification == 'CERTIFIE_NATIONAL' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dcfce7;color:#16a34a;">Certifié national</span>
+                    {% elif athlete.statut_certification == 'CERTIFIE_PROVINCIAL' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dbeafe;color:#1d4ed8;">Certifié provincial</span>
+                    {% elif athlete.statut_certification == 'EN_ATTENTE_VALIDATION_LIGUE' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef3c7;color:#d97706;">Attente ligue</span>
+                    {% elif athlete.statut_certification == 'EN_ATTENTE_VALIDATION_FEDERATION' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef3c7;color:#d97706;">Attente fédération</span>
+                    {% elif athlete.statut_certification == 'PROVISOIRE' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">Provisoire</span>
+                    {% elif athlete.statut_certification == 'REJETE_LIGUE' or athlete.statut_certification == 'REJETE_FEDERATION' %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fee2e2;color:#dc2626;">Rejeté</span>
+                    {% else %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">{{ athlete.get_statut_certification_display }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr id="empty-row">
+                <td colspan="7" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-person-running text-4xl text-slate-300 mb-4 block"></i>
+                    <p class="text-base font-bold text-slate-900">Aucun athlète trouvé</p>
+                    <p class="text-sm text-slate-500 mt-1">Aucun athlète n'est enregistré pour cette fédération</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="no-results" class="hidden px-6 py-16 text-center">
+        <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-4 block"></i>
+        <p class="text-base font-bold text-slate-900">Aucun résultat</p>
+        <p class="text-sm text-slate-500 mt-1">Modifiez vos critères de recherche</p>
+    </div>
+</div>
+</div>
+
+<script>
+(function() {
+    const searchInput = document.getElementById('search-input');
+    const filterProvince = document.getElementById('filter-province');
+    const filterDiscipline = document.getElementById('filter-discipline');
+    const filterCertification = document.getElementById('filter-certification');
+    const rows = document.querySelectorAll('.athlete-row');
+    const noResults = document.getElementById('no-results');
+
+    function filterTable() {
+        const q = searchInput.value.toLowerCase().trim();
+        const prov = filterProvince.value.toLowerCase();
+        const disc = filterDiscipline.value.toLowerCase();
+        const cert = filterCertification.value.toLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const matchQ = !q || row.dataset.search.includes(q);
+            const matchP = !prov || row.dataset.province.includes(prov);
+            const matchD = !disc || row.dataset.discipline.includes(disc);
+            const matchC = !cert || row.dataset.certification === cert;
+            const show = matchQ && matchP && matchD && matchC;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        noResults.classList.toggle('hidden', visible > 0 || rows.length === 0);
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    filterProvince.addEventListener('change', filterTable);
+    filterDiscipline.addEventListener('change', filterTable);
+    filterCertification.addEventListener('change', filterTable);
+})();
+</script>
+
 {% endblock %}

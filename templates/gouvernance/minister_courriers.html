@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Courriers à Signer | SI-SEP Sport RDC{% endblock %}
@@ -74,16 +74,17 @@ input:focus, select:focus {
 </div>
 
 <!-- Vue Table -->
-<div id="table-view" class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+<div class="-mx-4 lg:-mx-8">
+<div id="table-view" class="bg-white border-y border-slate-200 overflow-hidden">
     <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
             <tr>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100" onclick="sortTable('nom')">
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase cursor-pointer hover:bg-slate-100" onclick="sortTable('nom')">
                     Fédération <i class="fa-solid fa-sort text-slate-400 ml-1"></i>
                 </th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date Demande</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Date Demande</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100" id="table-body">
@@ -94,46 +95,35 @@ input:focus, select:focus {
                 data-discipline="{% for disc in courrier.disciplines.all %}{{ disc.designation|lower }}{% if not forloop.last %},{% endif %}{% endfor %}">
                 
                 <!-- Fédération -->
-                <td class="px-6 py-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <div class="text-sm font-semibold text-slate-900">{{ courrier.nom_officiel }}</div>
-                            <div class="text-xs text-slate-500 font-bold">{{ courrier.sigle }}</div>
-                        </div>
-                    </div>
+                <td class="px-6 py-2.5">
+                    <div class="text-sm text-slate-900 capitalize">{{ courrier.nom_officiel }}</div>
+                    <div class="text-xs text-slate-500">{{ courrier.sigle }}</div>
                 </td>
                 
                 <!-- Discipline -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-2.5">
                     {% for discipline in courrier.disciplines.all %}
-                    <div class="text-sm text-slate-700">
-                        <span>{{ discipline.designation }}</span>
-                    </div>
+                    <span class="text-sm text-slate-700">{{ discipline.designation }}</span>
                     {% empty %}
-                    <span class="text-xs text-slate-400">Non définie</span>
+                    <span class="text-xs text-slate-400">—</span>
                     {% endfor %}
                 </td>
                 
                 <!-- Date Demande -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-2.5">
                     <span class="text-sm text-slate-600">
-                        {% if courrier.date_demande_agrement %}
-                            {{ courrier.date_demande_agrement|date:"d/m/Y" }}
-                        {% else %}
-                            —
-                        {% endif %}
+                        {% if courrier.date_demande_agrement %}{{ courrier.date_demande_agrement|date:"d/m/Y" }}{% else %}—{% endif %}
                     </span>
                 </td>
                 
                 <!-- Actions -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-2.5">
                     <div class="flex items-center justify-center gap-1.5">
-                        <!-- Bouton Examiner -->
                         <a href="{% url 'gouvernance:parapheur_detail' courrier.pk %}" 
                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all" 
                            style="background:#0036ca"
                            title="Examiner">
-                            <i class="fa-solid fa-eye text-base"></i>
+                            <i class="fa-solid fa-eye text-xs"></i>
                         </a>
                     </div>
                 </td>
@@ -141,7 +131,7 @@ input:focus, select:focus {
             {% empty %}
             <tr>
                 <td colspan="4" class="px-6 py-16 text-center">
-                    <i class="fa-solid fa-check-circle text-4xl text-green-500 mb-4"></i>
+                    <i class="fa-solid fa-check-circle text-4xl text-green-500 mb-4 block"></i>
                     <p class="text-base font-bold text-slate-900">Aucun courrier en attente</p>
                     <p class="text-sm text-slate-500 mt-1">Tous les courriers ont été traités.</p>
                 </td>
@@ -149,6 +139,7 @@ input:focus, select:focus {
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 {% endblock %}
 

@@ -40,46 +40,34 @@ def generer_qr_code(url):
 
 def creer_sceau_avec_fond_blanc(sceau_path, taille_cm=1.8):
     """
-    Crée une image du sceau avec un fond blanc pour éviter le fond noir.
-    
-    Args:
-        sceau_path: Chemin vers l'image du sceau
-        taille_cm: Taille en centimètres
-    
-    Returns:
-        Chemin temporaire du fichier PNG avec fond blanc
+    Crée une image du sceau haute résolution avec fond blanc.
+    Utilise 150 DPI pour éviter le flou dans le PDF.
     """
     try:
         from PIL import Image
         import tempfile
-        import os
-        
-        # Ouvrir l'image du sceau
+
+        DPI = 150
+        taille_px = int(taille_cm / 2.54 * DPI)  # cm → pouces → pixels
+
         sceau = Image.open(sceau_path)
-        
-        # Convertir en RGBA si nécessaire
         if sceau.mode != 'RGBA':
             sceau = sceau.convert('RGBA')
-        
-        # Créer une image avec fond blanc
-        taille_px = int(taille_cm * 28.35)  # Conversion cm to pixels (72 DPI)
-        fond_blanc = Image.new('RGBA', (taille_px, taille_px), (255, 255, 255, 255))
-        
-        # Redimensionner le sceau
+
+        # Redimensionner en haute résolution
         sceau_redim = sceau.resize((taille_px, taille_px), Image.Resampling.LANCZOS)
-        
-        # Coller le sceau sur le fond blanc
-        fond_blanc.paste(sceau_redim, (0, 0), sceau_redim)
-        
-        # Sauvegarder dans un fichier temporaire
+
+        # Fond blanc
+        fond = Image.new('RGBA', (taille_px, taille_px), (255, 255, 255, 255))
+        fond.paste(sceau_redim, (0, 0), sceau_redim)
+
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
-            fond_blanc.save(tmp_file.name, format='PNG')
+            fond.save(tmp_file.name, format='PNG', dpi=(DPI, DPI))
             return tmp_file.name
     except Exception as e:
         import logging
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Erreur lors de la création du sceau avec fond blanc: {str(e)}")
-        return sceau_path  # Retourner l'original en cas d'erreur
+        logging.getLogger(__name__).warning(f"Erreur sceau fond blanc: {e}")
+        return sceau_path
 
 
 def creer_filigrane(largeur, hauteur):
@@ -467,28 +455,22 @@ def generer_certificat_homologation(institution, base_url=None):
     c.rect(1*cm, 1*cm, largeur - 2*cm, hauteur - 2*cm)
     
     # ===== EN-TÊTE OFFICIEL =====
-    y_pos = hauteur - 1.3*cm
-    
-    # Ajouter le sceau du ministère au centre en haut
+    # Sceau centré en haut, à l'intérieur des bordures avec espace
+    sceau_taille = 1.8*cm
+    sceau_x = largeur/2 - sceau_taille/2
+    sceau_y = hauteur - 1.3*cm - sceau_taille  # 1.3cm depuis le haut = espace après bordure
+
     try:
         sceau_path = 'media/sceaux/logo-rdc.png'
-        # Créer une version du sceau avec fond blanc
         sceau_avec_fond = creer_sceau_avec_fond_blanc(sceau_path, taille_cm=1.8)
-        
-        # Positionner le sceau au-dessus de la bordure supérieure
-        sceau_x = largeur/2 - 0.9*cm  # Centré horizontalement
-        sceau_y = hauteur - 1.5*cm     # Légèrement au-dessus de la bordure
-        
         c.drawImage(
             sceau_avec_fond,
             sceau_x,
             sceau_y,
-            width=1.8*cm,
-            height=1.8*cm,
+            width=sceau_taille,
+            height=sceau_taille,
             preserveAspectRatio=True
         )
-        
-        # Nettoyer le fichier temporaire
         import os
         try:
             os.unlink(sceau_avec_fond)
@@ -498,19 +480,19 @@ def generer_certificat_homologation(institution, base_url=None):
         import logging
         logger = logging.getLogger(__name__)
         logger.warning(f"Impossible d'insérer le sceau du ministère: {str(e)}")
-    
-    y_pos -= 1.5*cm  # Décaler le texte vers le bas pour faire place au sceau
-    
+
+    y_pos = sceau_y - 0.4*cm  # texte commence sous le sceau avec petit espace
+
     # Texte en-tête
     c.setFont("Helvetica-Bold", 13)
     c.setFillColor(NOIR)
     c.drawCentredString(largeur/2, y_pos, "RÉPUBLIQUE DÉMOCRATIQUE DU CONGO")
-    
+
     y_pos -= 0.5*cm
     c.setFont("Helvetica-Bold", 11)
     c.setFillColor(BLEU_ROYAL)
     c.drawCentredString(largeur/2, y_pos, "MINISTÈRE DES SPORTS ET LOISIRS")
-    
+
     y_pos -= 0.5*cm
     c.setFont("Helvetica", 10)
     c.setFillColor(NOIR)
@@ -679,91 +661,72 @@ def generer_certificat_homologation(institution, base_url=None):
     # ===== QR CODE (bas gauche) =====
     qr_url = f"{base_url}/gouvernance/verifier-institution/{institution.uid}/"
     qr_img = generer_qr_code(qr_url)
-    
-    import tempfile
+
+    import tempfile, os
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
         qr_img.save(tmp_file.name, format='PNG')
         qr_path = tmp_file.name
-    
+
+    qr_size = 2*cm
     qr_x = 1.5*cm
-    qr_y = y_pos - 2.2*cm
+    qr_y = y_pos - qr_size - 0.3*cm
     try:
-        c.drawImage(qr_path, qr_x, qr_y, width=1.8*cm, height=1.8*cm)
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Impossible d'insérer le QR code: {str(e)}")
+        c.drawImage(qr_path, qr_x, qr_y, width=qr_size, height=qr_size)
+    except Exception:
+        pass
     finally:
-        import os
         try:
             os.unlink(qr_path)
         except:
             pass
-    
-    # Label QR
-    c.setFont("Helvetica", 7)
-    c.setFillColor(GRIS_CLAIR)
-    c.drawString(qr_x, qr_y - 0.35*cm, "Vérifier")
-    
-    # ===== SIGNATURE (bas droit) =====
-    sig_x = largeur - 4.5*cm
+
+    # ===== SIGNATURE (bas droit) — tout ancré à marge_droite =====
+    marge_droite = largeur - 1.5*cm   # bord droit utilisable
     sig_y = y_pos - 0.3*cm
-    
+
+    # Récupérer profil ministre
+    from core.models import ProfilUtilisateur
+    from gouvernance.arrete_generator import _get_ministre_profil, _get_ministre_nom
+    ministre_profil = _get_ministre_profil()
+    nom_ministre = _get_ministre_nom(ministre_profil)
+
     c.setFont("Helvetica", 9)
     c.setFillColor(NOIR)
-    
-    # Date et lieu
     date_jour = datetime.now().strftime("%d/%m/%Y")
-    c.drawString(sig_x, sig_y, f"Fait à Kinshasa, le {date_jour}")
-    
-    sig_y -= 0.7*cm
-    
-    # Titre
+    c.drawRightString(marge_droite, sig_y, f"Fait à Kinshasa, le {date_jour}")
+
+    sig_y -= 0.55*cm
     c.setFont("Helvetica-Bold", 9)
-    c.drawString(sig_x, sig_y, "Le Ministre des Sports")
-    
-    sig_y -= 0.35*cm
-    c.setFont("Helvetica", 8)
-    c.drawString(sig_x, sig_y, "et Loisirs,")
-    
-    sig_y -= 1*cm
-    
-    # Charger le cachet du Ministre depuis le profil
-    try:
-        from core.models import ProfilUtilisateur
-        ministre_profil = ProfilUtilisateur.objects.filter(role='MINISTERE').first()
-        
-        if ministre_profil and ministre_profil.sceau_image:
-            # Afficher le cachet du Ministre
-            cachet_x = sig_x + 0.3*cm
-            cachet_y = sig_y - 1.2*cm
-            try:
-                c.drawImage(
-                    ministre_profil.sceau_image.path,
-                    cachet_x,
-                    cachet_y,
-                    width=1.5*cm,
-                    height=1.5*cm
-                )
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning(f"Impossible d'insérer le cachet du Ministre: {str(e)}")
-            
-            sig_y -= 1.8*cm
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.warning(f"Erreur lors du chargement du cachet du Ministre: {str(e)}")
-    
-    # Espace pour signature
-    c.setLineWidth(1)
-    c.setStrokeColor(NOIR)
-    c.line(sig_x, sig_y, sig_x + 2.5*cm, sig_y)
-    
-    sig_y -= 0.3*cm
-    c.setFont("Helvetica", 8)
-    c.drawString(sig_x + 0.3*cm, sig_y, "Signature & Cachet")
+    c.drawRightString(marge_droite, sig_y, "Le Ministre des Sports et Loisirs")
+
+    sig_y -= 0.4*cm
+
+    # Image de signature
+    if ministre_profil and ministre_profil.signature_image:
+        try:
+            sig_w = 3.5*cm
+            sig_h = 1.8*cm
+            c.drawImage(
+                ministre_profil.signature_image.path,
+                marge_droite - sig_w,
+                sig_y - sig_h,
+                width=sig_w,
+                height=sig_h,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+            sig_y -= sig_h + 0.2*cm
+        except Exception:
+            sig_y -= 1.5*cm
+    else:
+        # Ligne de signature si pas d'image
+        c.setLineWidth(0.5)
+        c.setStrokeColor(NOIR)
+        c.line(marge_droite - 3*cm, sig_y - 1.2*cm, marge_droite, sig_y - 1.2*cm)
+        sig_y -= 1.5*cm
+
+    c.setFont("Helvetica-Bold", 9)
+    c.drawRightString(marge_droite, sig_y, nom_ministre)
     
     # ===== PIED DE PAGE =====
     c.setFont("Helvetica", 7)

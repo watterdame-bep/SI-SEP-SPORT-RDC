@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Ligues Provinciales - Secrétaire Général{% endblock %}
@@ -143,7 +143,8 @@
 </div>
 
 <!-- Vue Table -->
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden" id="table-view-wrap">
     {% if ligues %}
     <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
@@ -266,6 +267,7 @@
         <p class="text-sm text-slate-600 mt-2">Les ligues provinciales apparaîtront ici</p>
     </div>
     {% endif %}
+</div>
 </div>
 
 {% endblock %}

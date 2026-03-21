@@ -33,8 +33,9 @@ def infrastructure_list(request):
     # Déterminer le rôle et les permissions
     is_directeur_provincial = profil.role == 'DIRECTEUR_PROVINCIAL'
     is_sg = profil.role == 'INSTITUTION_ADMIN'
+    is_ministre = profil.role == 'MINISTRE'
     
-    if not (is_directeur_provincial or is_sg):
+    if not (is_directeur_provincial or is_sg or is_ministre):
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("Accès refusé. Vous n'avez pas les permissions nécessaires.")
     
@@ -59,7 +60,7 @@ def infrastructure_list(request):
         ).exclude(code_homologation='').select_related('type_infrastructure', 'province_admin').order_by('province_admin__designation', 'nom')
         
         province = None
-        user_role = 'sg'
+        user_role = 'sg' if is_sg else 'ministre'
     
     # Filtrage par état de viabilité (optionnel)
     etat_filter = request.GET.get('etat')
@@ -71,8 +72,8 @@ def infrastructure_list(request):
     if sol_filter:
         infrastructures = infrastructures.filter(type_sol=sol_filter)
     
-    # Filtrage par province (pour SG)
-    if is_sg:
+    # Filtrage par province (pour SG et Ministre)
+    if is_sg or is_ministre:
         province_filter = request.GET.get('province')
         if province_filter:
             infrastructures = infrastructures.filter(province_admin__uid=province_filter)
@@ -124,9 +125,9 @@ def infrastructure_list(request):
             ).exclude(code_homologation='').count(),
         }
     
-    # Récupérer les provinces pour le filtre SG
+    # Récupérer les provinces pour le filtre SG / Ministre
     provinces = None
-    if is_sg:
+    if is_sg or is_ministre:
         from gouvernance.models import ProvAdmin
         provinces = ProvAdmin.objects.all().order_by('designation')
     
@@ -141,15 +142,30 @@ def infrastructure_list(request):
             code_homologation=''
         ).count()
     
+    # Préparer les données JSON pour la carte Leaflet
+    import json
+    infrastructures_list = list(infrastructures)
+    infrastructures_json = json.dumps([{
+        'uid': str(i.uid),
+        'nom': i.nom,
+        'latitude': float(i.latitude) if i.latitude else 0,
+        'longitude': float(i.longitude) if i.longitude else 0,
+        'type': i.type_infrastructure.designation if i.type_infrastructure else '—',
+        'province': i.province_admin.designation if i.province_admin else '—',
+        'capacite': int(i.capacite_spectateurs) if i.capacite_spectateurs else 0,
+    } for i in infrastructures_list if i.latitude and i.longitude])
+
     context = {
         'province': province,
-        'infrastructures': infrastructures,
+        'infrastructures': infrastructures_list,
+        'infrastructures_json': infrastructures_json,
         'stats': stats,
         'etat_choices': Infrastructure.ETAT_VIABILITE_CHOICES,
         'sol_choices': Infrastructure.TYPE_SOL_CHOICES,
         'user_role': user_role,
         'is_directeur_provincial': is_directeur_provincial,
         'is_sg': is_sg,
+        'is_ministre': is_ministre,
         'provinces': provinces,
         'pending_count': pending_count if is_sg else 0,
     }
@@ -389,8 +405,9 @@ def infrastructure_detail(request, infrastructure_id):
     # Déterminer le rôle et les permissions
     is_directeur_provincial = profil.role == 'DIRECTEUR_PROVINCIAL'
     is_sg = profil.role == 'INSTITUTION_ADMIN'
+    is_ministre = profil.role == 'MINISTRE'
     
-    if not (is_directeur_provincial or is_sg):
+    if not (is_directeur_provincial or is_sg or is_ministre):
         from django.http import HttpResponseForbidden
         return HttpResponseForbidden("Accès refusé. Vous n'avez pas les permissions nécessaires.")
     
@@ -418,7 +435,8 @@ def infrastructure_detail(request, infrastructure_id):
         'infrastructure': infrastructure,
         'is_directeur_provincial': is_directeur_provincial,
         'is_sg': is_sg,
-        'user_role': 'sg' if is_sg else 'directeur_provincial',
+        'is_ministre': is_ministre,
+        'user_role': 'ministre' if is_ministre else ('sg' if is_sg else 'directeur_provincial'),
     }
     
     return render(request, 'infrastructures/infrastructure_detail.html', context)

@@ -294,24 +294,60 @@ def federation_profile(request):
 @login_required
 @require_role('FEDERATION_SECRETARY')
 def federation_athletes(request):
-    """
-    Gestion des athlètes licenciés (placeholder).
-    """
+    """Liste de tous les athlètes de la fédération avec recherche temps réel."""
+    from gouvernance.models.athlete import Athlete
+    from gouvernance.models.discipline import DisciplineSport
+    from gouvernance.models.localisation import ProvAdmin
+    from django.db.models import Q
+
     try:
         federation = request.user.profil_sisep.institution
     except:
         messages.error(request, "Profil utilisateur introuvable.")
         return redirect('core:home')
-    
+
     if not federation or federation.niveau_territorial != 'FEDERATION':
         messages.error(request, "Vous n'êtes pas associé à une fédération.")
         return redirect('core:home')
-    
+
+    STATUTS_VISIBLES = ['CERTIFIE_NATIONAL', 'CERTIFIE_PROVINCIAL']
+
+    # Athlètes des clubs affiliés à cette fédération
+    athletes = Athlete.objects.select_related(
+        'personne', 'club', 'club__province_admin', 'discipline'
+    ).filter(
+        club__institution_tutelle__institution_tutelle=federation,
+        statut_certification__in=STATUTS_VISIBLES
+    ).order_by('personne__nom')
+
+    # Fallback : via discipline de la fédération
+    if not athletes.exists():
+        disciplines_fed = federation.disciplines.all()
+        athletes = Athlete.objects.select_related(
+            'personne', 'club', 'club__province_admin', 'discipline'
+        ).filter(
+            discipline__in=disciplines_fed,
+            statut_certification__in=STATUTS_VISIBLES
+        ).order_by('personne__nom')
+
+    stats = {
+        'total': athletes.count(),
+        'certifies_national': athletes.filter(statut_certification='CERTIFIE_NATIONAL').count(),
+        'certifies_provincial': athletes.filter(statut_certification='CERTIFIE_PROVINCIAL').count(),
+        'en_attente': athletes.filter(statut_certification__in=['PROVISOIRE', 'EN_ATTENTE_VALIDATION_LIGUE', 'EN_ATTENTE_VALIDATION_FEDERATION']).count(),
+    }
+
+    provinces = ProvAdmin.objects.order_by('designation')
+    disciplines = DisciplineSport.objects.order_by('designation')
+
     context = {
         'federation': federation,
+        'athletes': athletes,
+        'stats': stats,
+        'provinces': provinces,
+        'disciplines': disciplines,
         'user_role': 'federation_secretary',
     }
-    
     return render(request, 'gouvernance/federation_athletes.html', context)
 
 
@@ -498,20 +534,28 @@ def federation_athletes_validation_list(request):
         messages.error(request, "Vous n'êtes pas associé à une fédération.")
         return redirect('core:home')
     
+    from gouvernance.models.discipline import DisciplineSport
+    from gouvernance.models.localisation import ProvAdmin
+
     # Récupérer tous les athlètes en statut CERTIFIE_PROVINCIAL pour cette discipline
     athletes_certifies_provinciaux = Athlete.objects.filter(
         discipline__in=federation.disciplines.all(),
         statut_certification='CERTIFIE_PROVINCIAL',
         actif=True
-    ).select_related('personne', 'club', 'club__institution_tutelle', 'discipline').order_by('-date_validation_ligue')
+    ).select_related('personne', 'club', 'club__province_admin', 'club__institution_tutelle', 'discipline').order_by('-date_validation_ligue')
     
     # Statistiques
     total_en_attente = athletes_certifies_provinciaux.count()
+
+    provinces = ProvAdmin.objects.order_by('designation')
+    disciplines = DisciplineSport.objects.order_by('designation')
     
     context = {
         'federation': federation,
         'athletes': athletes_certifies_provinciaux,
         'total_en_attente': total_en_attente,
+        'provinces': provinces,
+        'disciplines': disciplines,
         'user_role': 'federation_secretary',
     }
     

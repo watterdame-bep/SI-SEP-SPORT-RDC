@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Configuration Billetterie - SI-SEP Sport RDC{% endblock %}
@@ -77,7 +77,7 @@
                         Configuration des Tarifs par Zone
                     </h3>
 
-                    <form method="post" class="space-y-6">
+                    <form method="post" class="px-4 lg:px-8 space-y-6">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="configurer_tarifs">
                         
@@ -183,7 +183,7 @@
                         Statistiques
                     </h3>
                     
-                    <div class="space-y-4">
+                    <div class="px-4 lg:px-8 space-y-4">
                         {% for tarif in tarifs_existants %}
                         <div class="border-l-4 border-rdc-blue pl-3">
                             <p class="font-medium text-slate-900 text-sm mb-2">{{ tarif.zone_stade.nom }}</p>

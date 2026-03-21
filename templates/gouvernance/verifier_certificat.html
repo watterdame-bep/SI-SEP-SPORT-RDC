@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -74,7 +74,7 @@
                 <!-- Informations de la fédération -->
                 <div class="border-t border-slate-200 pt-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4">Fédération agréée</h3>
-                    <div class="space-y-3">
+                    <div class="px-4 lg:px-8 space-y-3">
                         <div>
                             <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Nom officiel</p>
                             <p class="text-base font-semibold text-slate-900">{{ institution.nom_officiel }}</p>
@@ -140,7 +140,7 @@
                 {% if institution.nom_president %}
                 <div class="border-t border-slate-200 pt-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4">Responsable</h3>
-                    <div class="space-y-2">
+                    <div class="px-4 lg:px-8 space-y-2">
                         <p class="text-base font-semibold text-slate-900">{{ institution.nom_president }}</p>
                         {% if institution.telephone_president %}
                         <p class="text-sm text-slate-600">

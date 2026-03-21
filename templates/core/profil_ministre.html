@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -63,7 +63,7 @@
             Entrez votre mot de passe pour modifier la signature ou le sceau (protection d'État).
         </p>
         
-        <form id="passwordForm" method="post" class="space-y-4">
+        <form id="passwordForm" method="post" class="px-4 lg:px-8 space-y-4">
             {% csrf_token %}
             <input type="hidden" id="formType" name="form_type" value="">
             <input type="hidden" id="fileInput" name="file_input" value="">

@@ -130,7 +130,10 @@ class Institution(models.Model):
     # Workflow inspection provinciale : Fédérations doivent passer par inspection avant signature
     STATUT_INSPECTION_CHOICES = [
         ('', '—'),
-        ('EN_INSPECTION', 'En inspection provinciale'),
+        ('AUDIT', 'Audit'),
+        ('PROVINCE_RENDU', 'Province rendu'),
+        ('ATTENTE_AGREMENT', 'Attente agrément'),
+        ('EN_INSPECTION', 'En inspection provinciale'),  # legacy — ligues uniquement
         ('INSPECTION_VALIDEE', 'Inspection validée'),
         ('INSPECTION_REJETEE', 'Inspection rejetée'),
     ]

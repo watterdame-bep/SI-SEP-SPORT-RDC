@@ -20,7 +20,12 @@ def user_role(request):
         
         # Ministre
         if role == RoleUtilisateur.MINISTRE:
-            return {'user_role': 'ministre'}
+            from gouvernance.models import Institution
+            nb_courriers_attente = Institution.objects.filter(
+                statut_signature='ATTENTE_SIGNATURE',
+                niveau_territorial='FEDERATION'
+            ).count()
+            return {'user_role': 'ministre', 'nb_courriers_attente': nb_courriers_attente}
         
         # Secrétaire Général (Admin Institution au niveau du Ministère)
         if role == RoleUtilisateur.INSTITUTION_ADMIN:

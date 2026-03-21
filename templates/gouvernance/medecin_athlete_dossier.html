@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Dossier médical — {{ athlete.nom_complet }} | SI-SEP Sport RDC{% endblock %}
@@ -95,7 +95,7 @@
                 </span>
             </div>
 
-            <div class="space-y-6">
+            <div class="px-4 lg:px-8 space-y-6">
                 <!-- Biométrie -->
                 <div class="rounded-lg border border-slate-200 bg-slate-50/50 p-4">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Biométrie</h3>
@@ -188,7 +188,7 @@
                 {% if v.resultats_examens.all %}
                 <div class="rounded-lg border border-slate-200 bg-slate-50/50 p-4">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Résultats par type d'examen</h3>
-                    <ul class="space-y-2">
+                    <ul class="px-4 lg:px-8 space-y-2">
                         {% for res in v.resultats_examens.all %}
                         <li class="flex flex-wrap items-center gap-2 py-2 px-3 bg-white rounded-lg border border-slate-100 text-sm">
                             <span class="font-medium text-slate-800">{{ res.type_examen.libelle }}</span>

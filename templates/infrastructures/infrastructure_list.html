@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Infrastructures Sportives{% endblock %}
@@ -6,16 +6,21 @@
 {% block page_header %}
 <div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Infrastructures Sportives</h1>
-                <p class="text-sm text-white/80 mt-1">
-                    {% if is_directeur_provincial %}
-                        {{ province.designation }} — Gestion complète
-                    {% else %}
-                        Vue nationale — Consultation
-                    {% endif %}
-                </p>
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                    <i class="fa-solid fa-building text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Infrastructures Sportives</h1>
+                    <p class="text-sm text-white/80 mt-1">
+                        {% if is_directeur_provincial %}
+                            {{ province.designation }} — Gestion complète
+                        {% else %}
+                            Vue nationale — Consultation
+                        {% endif %}
+                    </p>
+                </div>
             </div>
             <div class="flex items-center gap-3">
                 {% if is_sg %}
@@ -28,20 +33,52 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                <a href="{% url 'infrastructures:infrastructure_list_with_map' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-green hover:bg-rdc-green/90 text-white text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
-                    <i class="fa-solid fa-map"></i>
-                    <span>Voir la carte</span>
-                </a>
-                <button onclick="toggleView()" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
-                    <i class="fa-solid fa-map" id="toggle-icon"></i>
-                    <span id="toggle-text">Voir la carte</span>
-                </button>
                 {% if is_directeur_provincial %}
-                <a href="{% url 'infrastructures:infrastructure_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
+                <a href="{% url 'infrastructures:infrastructure_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors">
                     <i class="fa-solid fa-plus"></i>
                     <span>Nouvelle Infrastructure</span>
                 </a>
                 {% endif %}
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-building text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Total</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Opérationnels</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.operationnels }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-wrench text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">En Travaux</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.en_travaux }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-ban text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Impraticables</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.impraticables }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -61,67 +98,12 @@
 </div>
 {% endif %}
 
-<!-- Statistiques -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Total</p>
-                <h3 class="text-3xl font-bold text-rdc-blue mt-1">{{ stats.total }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Infrastructures</p>
-            </div>
-            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
-                <i class="fa-solid fa-building text-xl text-rdc-blue"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Opérationnels</p>
-                <h3 class="text-3xl font-bold text-green-600 mt-1">{{ stats.operationnels }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">En service</p>
-            </div>
-            <div class="bg-green-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-check-circle text-xl text-green-600"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">En Travaux</p>
-                <h3 class="text-3xl font-bold text-yellow-600 mt-1">{{ stats.en_travaux }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Maintenance</p>
-            </div>
-            <div class="bg-yellow-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-wrench text-xl text-yellow-600"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4 hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-            <div class="flex-1">
-                <p class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Impraticables</p>
-                <h3 class="text-3xl font-bold text-red-600 mt-1">{{ stats.impraticables }}</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Hors service</p>
-            </div>
-            <div class="bg-red-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-ban text-xl text-red-600"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Filtres et Recherche -->
-<div class="bg-white rounded-lg shadow border border-slate-200 p-4 mb-6">
-    <form method="get" class="flex flex-col md:flex-row gap-3">
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 mb-6">
+    <form method="get" class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
         <input type="text" name="search" placeholder="Rechercher par nom ou adresse..." value="{{ request.GET.search }}" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rdc-blue">
         
-        {% if is_sg and provinces %}
+        {% if is_sg or is_ministre and provinces %}
         <select name="province" class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rdc-blue">
             <option value="">Toutes les provinces</option>
             {% for prov in provinces %}
@@ -147,11 +129,17 @@
         <button type="submit" class="px-4 py-2 bg-rdc-blue hover:bg-rdc-blue/90 text-white text-sm font-semibold rounded-lg transition-colors">
             <i class="fa-solid fa-search"></i> Filtrer
         </button>
+        <button type="button" onclick="toggleView()" id="toggle-btn"
+            class="ml-auto px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2" style="background:#16a34a;">
+            <i class="fa-solid fa-map" id="toggle-icon"></i>
+            <span id="toggle-text">Voir la carte</span>
+        </button>
     </form>
 </div>
 
 <!-- Liste des Infrastructures -->
-<div id="list-view" class="bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+<div class="-mx-4 lg:-mx-8">
+<div id="list-view" class="bg-white border-y border-slate-200 overflow-hidden">
     {% if infrastructures %}
     <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
@@ -297,49 +285,80 @@
     </div>
     {% endif %}
 </div>
-
-<!-- Vue Carte (cachée par défaut) -->
-<div id="map-view" class="hidden bg-white rounded-lg shadow border border-slate-200 p-5">
-    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-map-marked-alt text-rdc-blue"></i>
-        Cartographie des Infrastructures Sportives
-    </h2>
-    
-    <div class="grid grid-cols-1 gap-6">
-        <div>
-            <div class="h-[800px] rounded-lg border border-slate-200 overflow-hidden">
-                <iframe 
-                    src="/carte/" 
-                    width="100%" 
-                    height="100%" 
-                    frameborder="0" 
-                    style="border: none;"
-                    title="Carte des infrastructures sportives">
-                </iframe>
-            </div>
-        </div>
-    </div>
 </div>
 
+<!-- Vue Carte (cachée par défaut) -->
+<div id="map-view" class="hidden bg-white rounded-lg shadow border border-slate-200 overflow-hidden">
+    <div class="px-4 py-2 border-b border-slate-100 bg-slate-50">
+        <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+            <i class="fa-solid fa-map-marked-alt mr-1 text-rdc-blue"></i>Cartographie — infrastructures filtrées
+        </span>
+    </div>
+    <div id="map-container" style="height:700px; width:100%;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
+const infrastructuresData = {{ infrastructures_json|safe }};
+let mapInitialized = false;
+let leafletMap = null;
+
 function toggleView() {
     const listView = document.getElementById('list-view');
     const mapView = document.getElementById('map-view');
     const toggleIcon = document.getElementById('toggle-icon');
     const toggleText = document.getElementById('toggle-text');
-    
+
     if (listView.classList.contains('hidden')) {
-        // Afficher la liste
         listView.classList.remove('hidden');
         mapView.classList.add('hidden');
         toggleIcon.className = 'fa-solid fa-map';
         toggleText.textContent = 'Voir la carte';
     } else {
-        // Afficher la carte
         listView.classList.add('hidden');
         mapView.classList.remove('hidden');
         toggleIcon.className = 'fa-solid fa-list';
         toggleText.textContent = 'Voir la liste';
+        if (!mapInitialized) initMap();
+    }
+}
+
+function initMap() {
+    mapInitialized = true;
+    leafletMap = L.map('map-container').setView([-4.0, 24.0], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(leafletMap);
+
+    const icon = L.divIcon({
+        className: '',
+        html: '<div style="background:#0036ca;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+
+    const validPoints = [];
+    infrastructuresData.forEach(function(infra) {
+        if (infra.latitude && infra.longitude) {
+            validPoints.push([infra.latitude, infra.longitude]);
+            L.marker([infra.latitude, infra.longitude], { icon: icon })
+                .bindPopup(
+                    '<div style="font-size:13px;min-width:180px;">' +
+                    '<strong style="color:#0036ca;">' + infra.nom + '</strong><br>' +
+                    '<span style="color:#64748b;font-size:11px;">' + infra.type + ' · ' + infra.province + '</span><br>' +
+                    '<span style="font-size:11px;">🏟 ' + infra.capacite.toLocaleString() + ' places</span>' +
+                    '</div>'
+                )
+                .addTo(leafletMap);
+        }
+    });
+
+    if (validPoints.length > 0) {
+        leafletMap.fitBounds(L.latLngBounds(validPoints), { padding: [30, 30] });
     }
 }
 </script>

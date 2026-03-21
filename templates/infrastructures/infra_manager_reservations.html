@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Réservations | {{ infrastructure.nom }} | SI-SEP Sport RDC{% endblock %}
@@ -87,7 +87,7 @@
     
     {% if reservations %}
     {% regroup reservations by date_reservation as reservations_by_date %}
-    <div class="space-y-6">
+    <div class="px-4 lg:px-8 space-y-6">
         {% for date_group in reservations_by_date %}
         <div class="border border-slate-200 rounded-lg overflow-hidden">
             <!-- En-tête de date -->

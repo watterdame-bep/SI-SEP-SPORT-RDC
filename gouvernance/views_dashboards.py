@@ -247,10 +247,10 @@ def sg_dashboard(request):
         parapheur_qs = parapheur_qs.filter(uid__in=inst_ids_province)
     parapheur = list(parapheur_qs)
     
-    # Fédérations en attente d'inspection provinciale
+    # Fédérations en attente d'audit provincial
     federations_en_inspection = Institution.objects.filter(
         niveau_territorial='FEDERATION',
-        statut_inspection='EN_INSPECTION'
+        statut_inspection='AUDIT'
     ).select_related('type_institution').order_by('-date_demande_agrement')
     if inst_ids_province is not None:
         federations_en_inspection = federations_en_inspection.filter(uid__in=inst_ids_province)
@@ -273,10 +273,9 @@ def sg_dashboard(request):
         federations_refusees = federations_refusees.filter(uid__in=inst_ids_province)
 
     # Validations d'inspection complétées par la direction provinciale — à vérifier / transférer au Ministre
-    # (fédération encore en EN_INSPECTION tant que le SG n'a pas cliqué sur Transférer)
     validations_completes = ValidationFederation.objects.filter(
         statut__in=['VALIDEE', 'REJETEE'],
-        federation__statut_inspection='EN_INSPECTION',
+        federation__statut_inspection__in=['AUDIT', 'PROVINCE_RENDU'],
         federation__niveau_territorial='FEDERATION',
     ).select_related('federation', 'province', 'chef_division__personne').order_by('-date_validation')
     if inst_ids_province is not None:
@@ -311,6 +310,22 @@ def sg_dashboard(request):
         'province_id': province_id or '',
         'quick_q': quick_q,
         'user_role': 'sg',
+        # Variables pour le graphique
+        'fed_signees': Institution.objects.filter(niveau_territorial='FEDERATION', statut_signature='SIGNE').count(),
+        'fed_attente': federations_attente_signature.count(),
+        'fed_refusees': federations_refusees.count(),
+        'fed_inspection': federations_en_inspection.count(),
+        'ligues_agreees': Institution.objects.filter(niveau_territorial='LIGUE', statut_signature='SIGNE').count(),
+        'ligues_attente': Institution.objects.filter(niveau_territorial='LIGUE', statut_signature='ATTENTE_SIGNATURE').count(),
+        'ligues_inspection': Institution.objects.filter(niveau_territorial='LIGUE', statut_inspection='EN_INSPECTION').count(),
+        # Infra stats
+        'infra_operationnelles': Infrastructure.objects.filter(etat_viabilite='OPERATIONNEL').count(),
+        'infra_travaux': Infrastructure.objects.filter(etat_viabilite='EN_TRAVAUX').count(),
+        'infra_impraticables': Infrastructure.objects.filter(etat_viabilite='IMPRATICABLE').count(),
+        # Athlètes stats
+        'athletes_certifies': Athlete.objects.filter(statut_certification='CERTIFIE_NATIONAL').count(),
+        'athletes_en_cours': Athlete.objects.filter(statut_certification='EN_COURS').count(),
+        'athletes_non_certifies': Athlete.objects.filter(statut_certification='NON_CERTIFIE').count(),
     })
 
 

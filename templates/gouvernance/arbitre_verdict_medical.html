@@ -1,0 +1,187 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Verdict médical — {{ arbitre.personne.nom_complet }}{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'gouvernance:arbitres_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+                <i class="fa-solid fa-arrow-left text-white"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Examen médical — Arbitre</h1>
+                <p class="text-sm text-white/80 mt-1">{{ arbitre.personne.nom_complet }} · {{ arbitre.discipline }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="mb-4 space-y-2">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-lg text-sm font-medium
+        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+        {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; align-items:start;">
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Récapitulatif arbitre -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h2 class="text-base font-semibold text-slate-700">Dossier de l'arbitre</h2>
+            </div>
+            <div class="p-6 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Nom complet</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.personne.nom_complet }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Discipline</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.discipline|default:"—" }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Niveau</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.get_niveau_display }}</p>
+                </div>
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Catégorie</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.get_categorie_display }}</p>
+                </div>
+                {% if arbitre.personne.telephone %}
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Téléphone</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.personne.telephone }}</p>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-slate-500 font-medium mb-0.5">Enregistré le</p>
+                    <p class="font-semibold text-slate-800">{{ arbitre.date_enregistrement|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verdict médical -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200">
+                <h2 class="text-base font-semibold text-slate-700">Verdict médical</h2>
+            </div>
+            <div class="p-6 space-y-5">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Date de l'examen <span class="text-red-500">*</span></label>
+                    <input type="date" name="date_examen_medical" required
+                           value="{{ today|date:'Y-m-d' }}"
+                           class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Résultat <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-green-400 has-[:checked]:border-green-500 has-[:checked]:bg-green-50 transition-colors">
+                            <input type="radio" name="resultat_medical" value="APTE" required class="accent-green-600">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">Apte</p>
+                                <p class="text-xs text-slate-500">Sans restriction</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-yellow-400 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50 transition-colors">
+                            <input type="radio" name="resultat_medical" value="APTE_AVEC_RESERVE" class="accent-yellow-600">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">Apte avec réserve</p>
+                                <p class="text-xs text-slate-500">Conditions particulières</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-red-400 has-[:checked]:border-red-500 has-[:checked]:bg-red-50 transition-colors">
+                            <input type="radio" name="resultat_medical" value="INAPTE" class="accent-red-600">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">Inapte</p>
+                                <p class="text-xs text-slate-500">Dossier bloqué</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Observations / Recommandations</label>
+                    <textarea name="notes_medicales" rows="4" placeholder="Observations médicales, recommandations de sécurité…"
+                              class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue resize-none"></textarea>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; margin-top:1.5rem;">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'gouvernance:arbitres_list' %}"
+                   class="flex-1 text-center px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
+                        style="background:#0036ca;">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    Soumettre le verdict
+                </button>
+            </div>
+            <div></div>
+        </div>
+
+    </form>
+
+    <!-- Card droite -->
+    <div style="background:#0036ca; border-radius:0.75rem; overflow:hidden; display:flex; flex-direction:column;">
+        <div style="padding:2rem 1.5rem 1.5rem; text-align:center; border-bottom:1px solid rgba(255,255,255,0.12);">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                <i class="fa-solid fa-stethoscope" style="font-size:1.75rem;color:#FDE015;"></i>
+            </div>
+            <p style="color:#fff;font-size:1rem;font-weight:700;margin:0 0 0.25rem;">Examen médical</p>
+            <p style="color:rgba(255,255,255,0.65);font-size:0.75rem;margin:0;">Commission Provinciale des Arbitres</p>
+        </div>
+        <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;">
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-circle-check" style="color:#FDE015;font-size:0.85rem;"></i>
+                </div>
+                <div>
+                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Apte / Apte avec réserve</p>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Le dossier passe au statut <span style="color:#FDE015;font-weight:600;">INSTRUIT</span> et devient validable par la ligue.</p>
+                </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-circle-xmark" style="color:#ED1C24;font-size:0.85rem;"></i>
+                </div>
+                <div>
+                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Inapte</p>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Le dossier est bloqué. Aucune licence ne peut être générée.</p>
+                </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-lock" style="color:#FDE015;font-size:0.85rem;"></i>
+                </div>
+                <div>
+                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Confidentialité</p>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Les observations médicales sont visibles uniquement par la ligue et le médecin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

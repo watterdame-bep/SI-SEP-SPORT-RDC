@@ -38,7 +38,11 @@ def est_ministre(user):
         return False
 
 
-def est_directeur_provincial(user):
+def est_sg_ou_ministre(user):
+    """Accès lecture SG ou Ministre."""
+    return est_secretaire_general_ministere(user) or est_ministre(user)
+
+
     """Accès tableau de bord Directeur Provincial (inspection provinciale)."""
     from .models import RoleUtilisateur
     if not user.is_authenticated:

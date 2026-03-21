@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Enquêtes de Viabilité | SI-SEP Sport RDC{% endblock %}
@@ -19,7 +19,7 @@ input:focus, select:focus {
     <div class="px-4 lg:px-8 py-6">
         <div class="flex items-center gap-4 mb-6">
             <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
-                <i class="fa-solid fa-folder-magnifying-glass text-2xl text-white"></i>
+                <i class="fa-solid fa-clipboard-list text-2xl text-white"></i>
             </div>
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Enquêtes de Viabilité</h1>
@@ -29,31 +29,31 @@ input:focus, select:focus {
         
         <!-- Statistiques Fédérations (affichées par défaut) -->
         <div id="stats-federations" class="stats-section">
-            <p class="text-xs text-white/70 uppercase tracking-wider font-bold mb-3">Fédérations</p>
+            <p class="text-xs text-white uppercase tracking-wider font-bold mb-3">Fédérations</p>
             <div class="flex gap-4">
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-clock text-2xl text-orange-300"></i>
+                        <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">En attente</p>
+                            <p class="text-xs text-white uppercase tracking-wider">En attente</p>
                             <p class="text-2xl font-bold text-white">{{ stats.enquetes_en_attente }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                        <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                            <p class="text-xs text-white uppercase tracking-wider">Validées</p>
                             <p class="text-2xl font-bold text-white">{{ stats.validations_acceptees }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                        <i class="fa-solid fa-ban text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                            <p class="text-xs text-white uppercase tracking-wider">Rejetées</p>
                             <p class="text-2xl font-bold text-white">{{ stats.validations_rejetees }}</p>
                         </div>
                     </div>
@@ -63,31 +63,31 @@ input:focus, select:focus {
         
         <!-- Statistiques Ligues (cachées par défaut) -->
         <div id="stats-ligues" class="stats-section hidden">
-            <p class="text-xs text-white/70 uppercase tracking-wider font-bold mb-3">Ligues Provinciales</p>
+            <p class="text-xs text-white uppercase tracking-wider font-bold mb-3">Ligues Provinciales</p>
             <div class="flex gap-4">
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-magnifying-glass text-2xl text-yellow-300"></i>
+                        <i class="fa-solid fa-magnifying-glass text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">En inspection</p>
+                            <p class="text-xs text-white uppercase tracking-wider">En inspection</p>
                             <p class="text-2xl font-bold text-white">{{ stats.ligues_en_inspection }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                        <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">Validées</p>
+                            <p class="text-xs text-white uppercase tracking-wider">Validées</p>
                             <p class="text-2xl font-bold text-white">{{ stats.ligues_validees }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-ban text-2xl text-red-300"></i>
+                        <i class="fa-solid fa-ban text-2xl text-rdc-yellow"></i>
                         <div>
-                            <p class="text-xs text-white/70 uppercase tracking-wider">Rejetées</p>
+                            <p class="text-xs text-white uppercase tracking-wider">Rejetées</p>
                             <p class="text-2xl font-bold text-white">{{ stats.ligues_rejetees }}</p>
                         </div>
                     </div>
@@ -172,8 +172,8 @@ input:focus, select:focus {
                     <td class="px-6 py-4">
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <div class="text-sm font-semibold text-slate-900">{{ validation.federation.nom_officiel }}</div>
-                                <div class="text-xs text-slate-500 font-bold">{{ validation.federation.sigle }}</div>
+                                <div class="text-sm text-slate-900 capitalize">{{ validation.federation.nom_officiel }}</div>
+                                <div class="text-xs text-slate-500">{{ validation.federation.sigle }}</div>
                             </div>
                         </div>
                     </td>
@@ -203,22 +203,22 @@ input:focus, select:focus {
                     <!-- Statut -->
                     <td class="px-6 py-4 text-center">
                         {% if validation.statut == 'EN_ATTENTE' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef3c7;color:#d97706;">
                             <i class="fa-solid fa-clock"></i>
                             En attente
                         </span>
                         {% elif validation.statut == 'VALIDEE' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dcfce7;color:#16a34a;">
                             <i class="fa-solid fa-check-circle"></i>
                             Validée
                         </span>
                         {% elif validation.statut == 'REJETEE' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fee2e2;color:#dc2626;">
                             <i class="fa-solid fa-ban"></i>
                             Rejetée
                         </span>
                         {% else %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">
                             {{ validation.get_statut_display }}
                         </span>
                         {% endif %}
@@ -285,8 +285,8 @@ input:focus, select:focus {
                     <!-- Ligue -->
                     <td class="px-6 py-4">
                         <div>
-                            <div class="text-sm font-semibold text-slate-900">{{ validation_ligue.ligue.nom_officiel }}</div>
-                            <div class="text-xs text-slate-500 font-bold">{{ validation_ligue.ligue.sigle }}</div>
+                            <div class="text-sm text-slate-900 capitalize">{{ validation_ligue.ligue.nom_officiel }}</div>
+                            <div class="text-xs text-slate-500">{{ validation_ligue.ligue.sigle }}</div>
                         </div>
                     </td>
                     
@@ -309,22 +309,22 @@ input:focus, select:focus {
                     <!-- Statut -->
                     <td class="px-6 py-4 text-center">
                         {% if validation_ligue.statut == 'EN_INSPECTION' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fef9c3;color:#ca8a04;">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             En inspection
                         </span>
                         {% elif validation_ligue.statut == 'INSPECTION_VALIDEE' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dcfce7;color:#16a34a;">
                             <i class="fa-solid fa-check-circle"></i>
                             Validée
                         </span>
                         {% elif validation_ligue.statut == 'INSPECTION_REJETEE' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#fee2e2;color:#dc2626;">
                             <i class="fa-solid fa-ban"></i>
                             Rejetée
                         </span>
                         {% else %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">
                             {{ validation_ligue.get_statut_display }}
                         </span>
                         {% endif %}

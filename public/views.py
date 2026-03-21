@@ -15,9 +15,9 @@ def home(request):
     """
     Page d'accueil publique du portail SI-SEP Sport RDC.
     """
-    # Récupérer les prochaines rencontres avec billetterie configurée
-    rencontres_a_venir = Rencontre.objects.filter(
-        date_heure__gte=timezone.now(),
+    # Récupérer les rencontres avec billetterie configurée.
+    # Priorité aux matchs futurs ; si aucun, on affiche les plus récents (passés).
+    qs_base = Rencontre.objects.filter(
         evenement__isnull=False
     ).select_related(
         'journee__competition',
@@ -27,8 +27,15 @@ def home(request):
         'evenement'
     ).prefetch_related(
         'evenement__zones_tarifs'
-    ).order_by('date_heure')[:6]
-    
+    )
+
+    rencontres_futures = qs_base.filter(date_heure__gte=timezone.now()).order_by('date_heure')[:6]
+    if rencontres_futures.exists():
+        rencontres_a_venir = rencontres_futures
+    else:
+        # Aucun match à venir : afficher les 6 derniers matchs récents
+        rencontres_a_venir = qs_base.order_by('-date_heure')[:6]
+
     # Ajouter le prix minimum pour chaque rencontre
     for rencontre in rencontres_a_venir:
         prix_min = rencontre.evenement.zones_tarifs.aggregate(

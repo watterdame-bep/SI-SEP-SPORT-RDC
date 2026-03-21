@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -74,7 +74,7 @@
                 <!-- Informations de la ligue -->
                 <div class="border-t border-slate-200 pt-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4">Ligue provinciale homologuée</h3>
-                    <div class="space-y-3">
+                    <div class="px-4 lg:px-8 space-y-3">
                         <div>
                             <p class="text-sm text-slate-500 uppercase tracking-wide mb-1">Nom officiel</p>
                             <p class="text-base font-semibold text-slate-900">{{ ligue.nom_officiel }}</p>
@@ -110,7 +110,7 @@
                 {% if ligue.institution_tutelle %}
                 <div class="border-t border-slate-200 pt-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4">Fédération de tutelle</h3>
-                    <div class="space-y-2">
+                    <div class="px-4 lg:px-8 space-y-2">
                         <p class="text-base font-semibold text-slate-900">{{ ligue.institution_tutelle.nom_officiel }}</p>
                         <p class="text-sm text-slate-600">{{ ligue.institution_tutelle.sigle }}</p>
                     </div>
@@ -144,7 +144,7 @@
                 <!-- Contact -->
                 <div class="border-t border-slate-200 pt-6">
                     <h3 class="text-lg font-bold text-slate-800 mb-4">Contact</h3>
-                    <div class="space-y-2">
+                    <div class="px-4 lg:px-8 space-y-2">
                         {% if ligue.email_officiel %}
                         <p class="text-sm text-slate-600">
                             <i class="fa-solid fa-envelope mr-2"></i>{{ ligue.email_officiel }}

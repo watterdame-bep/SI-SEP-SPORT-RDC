@@ -1,0 +1,139 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Médecins des Ligues | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, select:focus { outline: none !important; }
+</style>
+{% endblock %}
+
+{% block page_header %}
+<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
+    <div class="px-4 lg:px-8 py-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-user-doctor text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Médecins des Ligues</h1>
+                <p class="text-sm text-white/80 mt-1">Médecins inspecteurs enregistrés dans les ligues provinciales</p>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-stethoscope text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Médecins</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Avec compte SI-SEP</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.avec_compte }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-user-clock text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Sans compte</p>
+                        <p class="text-2xl font-bold text-white">{{ stats.sans_compte }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Barre d'outils -->
+<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
+    <form method="get" class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher par nom, prénom, numéro ordre…"
+               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+
+        <select name="province" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+            <option value="">Toutes les provinces</option>
+            {% for p in provinces %}
+                <option value="{{ p.uid }}" {% if province_id == p.uid|stringformat:"s" %}selected{% endif %}>{{ p.designation }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="px-4 py-2.5 bg-rdc-blue hover:bg-rdc-blue-hover text-white text-sm font-semibold rounded-lg whitespace-nowrap flex items-center justify-center gap-2">
+            <i class="fa-solid fa-search"></i>
+            <span>Filtrer</span>
+        </button>
+        {% if q or province_id %}
+        <a href="{% url 'gouvernance:ministre_medecins_list' %}"
+           class="px-4 py-2.5 border border-slate-300 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 whitespace-nowrap flex items-center justify-center gap-2">
+            <i class="fa-solid fa-times"></i>
+            <span>Réinitialiser</span>
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tableau -->
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Médecin</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">N° Ordre des Médecins</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Ligue</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:160px;">Compte SI-SEP</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for medecin in medecins %}
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-2.5">
+                    <span class="text-sm text-slate-900 capitalize">{{ medecin.agent.personne.prenom }} {{ medecin.agent.personne.nom }}</span>
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm font-mono text-slate-700">{{ medecin.numero_ordre_medecins|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm text-slate-700 capitalize">{{ medecin.ligue.nom_officiel }}</span>
+                </td>
+                <td class="px-6 py-2.5">
+                    <span class="text-sm text-slate-600">{{ medecin.ligue.province_admin.designation|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-2.5 text-center">
+                    {% if medecin.profil_utilisateur %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#dcfce7;color:#16a34a;">Actif</span>
+                    {% else %}
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-full" style="background:#f1f5f9;color:#64748b;">Sans compte</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-user-doctor text-4xl text-slate-300 mb-4 block"></i>
+                    <p class="text-base font-bold text-slate-900">Aucun médecin trouvé</p>
+                    <p class="text-sm text-slate-500 mt-1">Modifiez vos critères de recherche</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+
+{% endblock %}

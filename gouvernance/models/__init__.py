@@ -27,6 +27,7 @@ from .capture_empreintes import CaptureEmpreintes
 from .type_examen import TypeExamen
 from .resultat_examen_visite import ResultatExamenVisite
 from .competition import TypeCompetition, Competition, Journee, Rencontre, CalendrierCompetition
+from .arbitre import Arbitre
 
 __all__ = [
     'TerritoireVille',
@@ -60,4 +61,5 @@ __all__ = [
     'Journee',
     'Rencontre',
     'CalendrierCompetition',
+    'Arbitre',
 ]

@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -161,6 +161,7 @@ input:focus, select:focus {
                                title="Voir">
                                 <i class="fa-solid fa-eye text-base text-white"></i>
                             </a>
+                            {% if not is_ministre %}
                             <button onclick="{% if division.statut == 'ACTIVE' %}openEditModal('{{ division.uid }}'){% endif %}" 
                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors{% if division.statut != 'ACTIVE' %} cursor-not-allowed{% endif %}" 
                                     style="background:{% if division.statut != 'ACTIVE' %}#e2e8f0{% elif division.chef %}#ea580c{% else %}#0036ca{% endif %}"
@@ -181,6 +182,7 @@ input:focus, select:focus {
                                     title="{% if division.statut == 'ACTIVE' %}Désactiver{% else %}Activer{% endif %}">
                                 <i class="fa-solid {% if division.statut == 'ACTIVE' %}fa-toggle-on text-lg text-white{% else %}fa-toggle-off text-lg text-slate-400{% endif %}"></i>
                             </button>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

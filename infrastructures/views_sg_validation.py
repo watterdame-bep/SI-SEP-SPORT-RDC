@@ -16,7 +16,7 @@ from .models import Infrastructure
 
 
 @login_required
-@require_role('INSTITUTION_ADMIN')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE')
 def infrastructure_validation_list(request):
     """
     Liste des infrastructures en attente de validation pour la SG.
@@ -59,10 +59,19 @@ def infrastructure_validation_list(request):
     from .models import TypeInfrastructure
     types = TypeInfrastructure.objects.filter(uid__in=types).order_by('designation')
     
+    # Stats globales (indépendantes des filtres)
+    stats = {
+        'en_attente': Infrastructure.objects.filter(statut='EN_ATTENTE').count(),
+        'validees': Infrastructure.objects.filter(statut='VALIDEE').count(),
+        'rejetees': Infrastructure.objects.filter(statut='REJETEE').count(),
+        'total': Infrastructure.objects.filter(actif=True).count(),
+    }
+
     context = {
         'infrastructures': infrastructures,
         'provinces': provinces,
         'types': types,
+        'stats': stats,
         'title': 'Infrastructures en attente de validation',
         'user_role': 'sg',
     }
@@ -71,7 +80,7 @@ def infrastructure_validation_list(request):
 
 
 @login_required
-@require_role('INSTITUTION_ADMIN')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE')
 def infrastructure_validation_detail(request, infrastructure_id):
     """
     Détail d'une infrastructure pour validation par la SG.

@@ -3,64 +3,48 @@
 
 {% block title %}Clubs en Attente de Validation | SI-SEP Sport RDC{% endblock %}
 
-{% block extra_css %}
-<style>
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-input:focus, select:focus {
-    outline: none !important;
-}
-</style>
-{% endblock %}
-
 {% block page_header %}
 <div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4 mb-6">
-            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
-                <i class="fa-solid fa-building text-2xl text-white"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Clubs en Attente de Validation</h1>
-                <p class="text-sm text-white/80 mt-1">Validez l'existence physique des clubs affiliés à votre province</p>
-            </div>
+        <div class="mb-4">
+            <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Clubs en Attente de Validation</h1>
+            <p class="text-sm text-white/80 mt-1">Validez l'existence physique des clubs affiliés à votre province</p>
         </div>
-        
+
         <!-- Statistiques -->
         <div class="flex gap-4">
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-building text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total Clubs</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Total Clubs</p>
                         <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-hourglass-end text-2xl text-orange-300"></i>
+                    <i class="fa-solid fa-hourglass-half text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">En Attente</p>
+                        <p class="text-xs text-white uppercase tracking-wider">En Attente</p>
                         <p class="text-2xl font-bold text-white">{{ stats.en_attente }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-check-circle text-2xl text-green-300"></i>
+                    <i class="fa-solid fa-check-circle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Acceptés</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Acceptés</p>
                         <p class="text-2xl font-bold text-white">{{ stats.acceptees }}</p>
                     </div>
                 </div>
             </div>
             <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-times-circle text-2xl text-red-300"></i>
+                    <i class="fa-solid fa-times-circle text-2xl text-rdc-yellow"></i>
                     <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Rejetés</p>
+                        <p class="text-xs text-white uppercase tracking-wider">Rejetés</p>
                         <p class="text-2xl font-bold text-white">{{ stats.rejetees }}</p>
                     </div>
                 </div>
@@ -71,124 +55,120 @@ input:focus, select:focus {
 {% endblock %}
 
 {% block content %}
-<!-- Barre d'outils -->
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
-    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-        <!-- Recherche -->
-        <input type="text" id="search-input" placeholder="Rechercher un club..." 
-               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
-        
-        <!-- Filtre Statut -->
-        <select id="filter-statut" class="md:w-48 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
-            <option value="">Tous les statuts</option>
-            <option value="EN_ATTENTE">En attente</option>
-            <option value="ACCEPTEE">Accepté</option>
-            <option value="REJETEE">Rejeté</option>
-        </select>
+<div class="py-4 space-y-4">
+
+{% if messages %}
+<div class="px-4 lg:px-8 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-start gap-2 px-3 py-2 rounded text-sm border-l-4
+        {% if message.tags == 'success' %}bg-green-50 text-green-800 border-green-400
+        {% elif message.tags == 'error' %}bg-red-50 text-red-800 border-red-400
+        {% elif message.tags == 'warning' %}bg-amber-50 text-amber-800 border-amber-400
+        {% else %}bg-blue-50 text-blue-800 border-blue-400{% endif %}">
+        <i class="fa-solid {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mt-0.5"></i>
+        <span>{{ message }}</span>
     </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Barre de filtres -->
+<div class="bg-white border border-slate-200 px-3 py-2 flex flex-wrap items-center gap-2">
+    <div class="flex-1 min-w-48 relative">
+        <i class="fa-solid fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" id="search-input" placeholder="Rechercher un club..."
+            class="w-full pl-7 pr-3 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+    <select id="filter-statut" class="text-sm border border-slate-200 rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-40">
+        <option value="">Tous les statuts</option>
+        <option value="EN_ATTENTE">En attente</option>
+        <option value="ACCEPTEE">Accepté</option>
+        <option value="REJETEE">Rejeté</option>
+    </select>
 </div>
 
-<!-- Tableau des clubs -->
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+<!-- Tableau -->
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden">
     {% if validations %}
-    <table class="min-w-full divide-y divide-slate-200">
-        <thead class="bg-slate-50">
-            <tr>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Sigle</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Ligue</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Date Demande</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Statut</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100" id="table-body">
-            {% for validation in validations %}
-            <tr class="hover:bg-slate-50 transition-colors" 
-                data-nom="{{ validation.club.nom_officiel|lower }}" 
-                data-sigle="{{ validation.club.sigle|lower }}"
-                data-statut="{{ validation.statut }}">
-                
-                <!-- Club -->
-                <td class="px-6 py-4">
-                    <div>
-                        <div class="text-sm font-semibold text-slate-900">{{ validation.club.nom_officiel }}</div>
-                        <div class="text-xs text-slate-500 font-bold">{{ validation.club.code }}</div>
-                    </div>
-                </td>
-                
-                <!-- Sigle -->
-                <td class="px-6 py-4">
-                    <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-rdc-blue text-xs font-bold rounded-full">
-                        {{ validation.club.sigle }}
-                    </span>
-                </td>
-                
-                <!-- Ligue -->
-                <td class="px-6 py-4">
-                    <div class="text-sm text-slate-700">{{ validation.club.institution_tutelle.nom_officiel }}</div>
-                </td>
-                
-                <!-- Date Demande -->
-                <td class="px-6 py-4">
-                    <div class="text-sm text-slate-700">{{ validation.date_demande|date:"d/m/Y" }}</div>
-                </td>
-                
-                <!-- Statut -->
-                <td class="px-6 py-4 text-center">
-                    {% if validation.statut == 'EN_ATTENTE' %}
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
-                        <i class="fa-solid fa-hourglass-end"></i>
-                        En attente
-                    </span>
-                    {% elif validation.statut == 'ACCEPTEE' %}
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                        <i class="fa-solid fa-check-circle"></i>
-                        Accepté
-                    </span>
-                    {% elif validation.statut == 'REJETEE' %}
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
-                        <i class="fa-solid fa-times-circle"></i>
-                        Rejeté
-                    </span>
-                    {% endif %}
-                </td>
-                
-                <!-- Actions -->
-                <td class="px-6 py-4">
-                    <div class="flex items-center justify-center gap-1.5">
-                        <!-- Voir -->
-                        <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}" 
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
-                           title="Voir">
-                            <i class="fa-solid fa-eye text-base text-white"></i>
-                        </a>
-                        
-                        <!-- Valider (si en attente) -->
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Club</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Sigle</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Ligue</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Date demande</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Statut</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100" id="table-body">
+                {% for validation in validations %}
+                <tr class="hover:bg-slate-50 transition-colors"
+                    data-nom="{{ validation.club.nom_officiel|lower }}"
+                    data-sigle="{{ validation.club.sigle|lower }}"
+                    data-statut="{{ validation.statut }}">
+                    <td class="px-4 py-2">
+                        <div class="text-sm text-slate-800">{{ validation.club.nom_officiel|lower|capfirst }}</div>
+                        <div class="text-xs text-slate-400">{{ validation.club.code }}</div>
+                    </td>
+                    <td class="px-4 py-2">
+                        <span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded">
+                            {{ validation.club.sigle }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2 text-sm text-slate-600">
+                        {{ validation.club.institution_tutelle.nom_officiel|lower|capfirst|default:"—" }}
+                    </td>
+                    <td class="px-4 py-2 text-sm text-slate-600">{{ validation.date_demande|date:"d/m/Y" }}</td>
+                    <td class="px-4 py-2">
                         {% if validation.statut == 'EN_ATTENTE' %}
-                        <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}" 
-                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors" style="background:#0036ca"
-                           title="Valider">
-                            <i class="fa-solid fa-check text-base text-white"></i>
-                        </a>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-hourglass-half"></i> En attente
+                        </span>
+                        {% elif validation.statut == 'ACCEPTEE' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-check-circle"></i> Accepté
+                        </span>
+                        {% elif validation.statut == 'REJETEE' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                            <i class="fa-solid fa-times-circle"></i> Rejeté
+                        </span>
                         {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                    <td class="px-4 py-2">
+                        <div class="flex items-center gap-1.5">
+                            <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}"
+                               class="inline-flex items-center justify-center w-7 h-7 rounded" style="background:#0036ca;" title="Voir détails">
+                                <i class="fa-solid fa-eye text-white text-xs"></i>
+                            </a>
+                            {% if validation.statut == 'EN_ATTENTE' %}
+                            <a href="{% url 'gouvernance:club_validation_detail' validation.uid %}"
+                               class="inline-flex items-center justify-center w-7 h-7 rounded" style="background:#16a34a;" title="Valider">
+                                <i class="fa-solid fa-check text-white text-xs"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <div class="px-6 py-16 text-center">
-        <i class="fa-solid fa-building text-4xl text-slate-300 mb-4"></i>
-        <p class="text-base font-bold text-slate-900">Aucun club en attente de validation</p>
-        <p class="text-sm text-slate-600 mt-2">Les clubs créés par les secrétaires de ligue apparaîtront ici</p>
+    <div class="px-4 py-12 text-center">
+        <i class="fa-solid fa-building text-3xl text-slate-300 mb-3 block"></i>
+        <p class="text-sm font-semibold text-slate-700">Aucun club en attente de validation</p>
+        <p class="text-xs text-slate-500 mt-1">Les clubs créés par les secrétaires de ligue apparaîtront ici</p>
     </div>
     {% endif %}
 </div>
+</div>
+
+</div>
 
 <script>
-// Recherche et filtrage
 const searchInput = document.getElementById('search-input');
 const filterStatut = document.getElementById('filter-statut');
 
@@ -196,17 +176,11 @@ if (searchInput) searchInput.addEventListener('input', filterTable);
 if (filterStatut) filterStatut.addEventListener('change', filterTable);
 
 function filterTable() {
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const statutFilter = filterStatut ? filterStatut.value : '';
-    
+    const term = searchInput ? searchInput.value.toLowerCase() : '';
+    const statut = filterStatut ? filterStatut.value : '';
     document.querySelectorAll('#table-body tr').forEach(row => {
-        const nom = row.dataset.nom || '';
-        const sigle = row.dataset.sigle || '';
-        const statut = row.dataset.statut || '';
-        
-        const matchSearch = nom.includes(searchTerm) || sigle.includes(searchTerm);
-        const matchStatut = !statutFilter || statut === statutFilter;
-        
+        const matchSearch = (row.dataset.nom || '').includes(term) || (row.dataset.sigle || '').includes(term);
+        const matchStatut = !statut || row.dataset.statut === statut;
         row.style.display = (matchSearch && matchStatut) ? '' : 'none';
     });
 }

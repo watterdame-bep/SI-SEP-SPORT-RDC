@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Mon Profil — {{ federation.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
@@ -142,7 +142,7 @@ input[type="file"] { display: none !important; }
             </div>
         </div>
         {% endif %}
-        <form method="POST" enctype="multipart/form-data" class="space-y-3">
+        <form method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="logo">
             <div class="upload-box">
@@ -180,7 +180,7 @@ input[type="file"] { display: none !important; }
                 </div>
             </div>
             {% endif %}
-            <form id="signatureForm" method="POST" enctype="multipart/form-data" class="space-y-3">
+            <form id="signatureForm" method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="signature">
                 <div class="upload-box">
@@ -216,7 +216,7 @@ input[type="file"] { display: none !important; }
                 </div>
             </div>
             {% endif %}
-            <form id="sceauForm" method="POST" enctype="multipart/form-data" class="space-y-3">
+            <form id="sceauForm" method="POST" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-3">
                 {% csrf_token %}
                 <input type="hidden" name="form_type" value="sceau">
                 <div class="upload-box">

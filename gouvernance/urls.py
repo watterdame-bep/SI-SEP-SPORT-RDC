@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views_federations, views_disciplines, views_personnel, views_dashboards, views_arretes, views_courriers, views_divisions, views_validation_federation, views_verify, views_federation_secretary, views_sg_ligues, views_division_ligues, views_ligue_secretary, views_club_secretary, views_medecin_division, views_medecin_ligue, views_competitions
+from . import views_federations, views_disciplines, views_personnel, views_dashboards, views_arretes, views_courriers, views_divisions, views_validation_federation, views_verify, views_federation_secretary, views_sg_ligues, views_division_ligues, views_ligue_secretary, views_club_secretary, views_medecin_division, views_medecin_ligue, views_competitions, views_sg_clubs, views_ministre, views_arbitres
 from .views_club_validation import clubs_en_attente_validation, club_validation_detail
 
 app_name = 'gouvernance'
@@ -104,6 +104,23 @@ urlpatterns = [
     path('sg/ligues/<uuid:ligue_id>/transferer/', views_sg_ligues.sg_transferer_ligue_division, name='sg_transferer_ligue_division'),
     path('sg/ligues/<uuid:ligue_id>/approuver/', views_sg_ligues.sg_approuver_ligue, name='sg_approuver_ligue'),
     path('sg/ligues/<uuid:ligue_id>/rejeter/', views_sg_ligues.sg_rejeter_ligue, name='sg_rejeter_ligue'),
+
+    # Secrétaire Général - Liste nationale des clubs
+    path('sg/clubs/', views_sg_clubs.sg_clubs_list, name='sg_clubs_list'),
+
+    # Ministre — Listes lecture seule (Athlètes, Médecins, Entraîneurs, Arbitres)
+    path('ministre/athletes/', views_ministre.ministre_athletes_list, name='ministre_athletes_list'),
+    path('ministre/medecins/', views_ministre.ministre_medecins_list, name='ministre_medecins_list'),
+    path('ministre/entraineurs/', views_ministre.ministre_entraineurs_list, name='ministre_entraineurs_list'),
+    path('ministre/arbitres/', views_ministre.ministre_arbitres_list, name='ministre_arbitres_list'),
+
+    # Arbitres — workflow CPA
+    path('arbitres/', views_arbitres.arbitres_list, name='arbitres_list'),
+    path('arbitres/enregistrer/', views_arbitres.arbitre_register, name='arbitre_register'),
+    path('arbitres/<uuid:uid>/', views_arbitres.arbitre_detail, name='arbitre_detail'),
+    path('arbitres/<uuid:uid>/biometrie/', views_arbitres.arbitre_biometrie, name='arbitre_biometrie'),
+    path('arbitres/<uuid:uid>/verdict-medical/', views_arbitres.arbitre_verdict_medical, name='arbitre_verdict_medical'),
+    path('arbitres/<uuid:uid>/valider/', views_arbitres.arbitre_valider, name='arbitre_valider'),
     
     # Division Provinciale - Gestion des Ligues Provinciales
     path('division/ligues/<uuid:validation_id>/', views_division_ligues.division_ligue_detail, name='division_ligue_detail'),

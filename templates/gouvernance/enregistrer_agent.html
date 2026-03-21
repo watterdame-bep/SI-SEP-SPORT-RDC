@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -99,7 +99,7 @@ textarea:focus {
 {% block content %}
 <div id="message-container" class="mb-6 space-y-3"></div>
 
-<form method="post" enctype="multipart/form-data" class="space-y-6">
+<form method="post" enctype="multipart/form-data" class="px-4 lg:px-8 space-y-6">
     {% csrf_token %}
     
     <!-- Informations Personnelles -->

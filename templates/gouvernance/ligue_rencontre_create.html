@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Nouvelle rencontre — {{ journee.libelle }} | SI-SEP Sport RDC{% endblock %}
@@ -31,7 +31,7 @@
 <div class="max-w-2xl">
     <div class="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
         <p class="text-sm text-slate-600 mb-4">Le stade ne peut pas recevoir deux rencontres à la même heure. Un événement billetterie sera créé automatiquement pour le gestionnaire du stade.</p>
-        <form method="post" class="space-y-4">
+        <form method="post" class="px-4 lg:px-8 space-y-4">
             {% csrf_token %}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Configuration Billetterie | {{ rencontre.equipe_a.nom_officiel }} vs {{ rencontre.equipe_b.nom_officiel }} | SI-SEP Sport RDC{% endblock %}
@@ -73,7 +73,7 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="configurer_tarifs">
             
-            <div class="space-y-4">
+            <div class="px-4 lg:px-8 space-y-4">
                 {% for zone in zones_stade %}
                 <div class="border border-slate-200 rounded-lg p-4 hover:border-rdc-blue transition-colors">
                     <div class="flex items-center justify-between mb-3">

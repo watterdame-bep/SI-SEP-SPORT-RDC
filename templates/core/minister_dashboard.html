@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Tableau de bord Ministre | SI-SEP Sport RDC{% endblock %}
@@ -126,7 +126,7 @@
     </div>
     
     {% if en_attente %}
-    <div class="space-y-3">
+    <div class="px-4 lg:px-8 space-y-3">
         {% for institution in en_attente %}
         <div class="border border-slate-200 rounded-lg p-4 hover:shadow-sm transition-shadow bg-slate-50/50">
             <div class="flex items-start justify-between gap-4">
@@ -224,7 +224,7 @@
     </h2>
     
     {% if historique %}
-    <div class="space-y-2">
+    <div class="px-4 lg:px-8 space-y-2">
         {% for item in historique %}
         <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
             <div class="flex-shrink-0">

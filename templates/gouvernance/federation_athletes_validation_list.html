@@ -1,25 +1,46 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Validation Nationale des Athlètes | {{ federation.nom_officiel }}{% endblock %}
+{% block title %}Certification Nationale des Athlètes | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, select:focus { outline: none !important; }
+</style>
+{% endblock %}
 
 {% block page_header %}
 <div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
     <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
-                    <i class="fa-solid fa-certificate text-2xl text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Certification Nationale</h1>
-                    <p class="text-sm text-white/80 mt-1">Homologation des athlètes au niveau national</p>
+        <div class="flex items-center gap-4 mb-6">
+            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
+                <i class="fa-solid fa-certificate text-2xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Certification Nationale</h1>
+                <p class="text-sm text-white/80 mt-1">Homologation des athlètes au niveau national — {{ federation.nom_officiel }}</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex gap-4">
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">En attente</p>
+                        <p class="text-2xl font-bold text-white">{{ total_en_attente }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                    <div class="text-xs text-white/80">En attente</div>
-                    <div class="text-2xl font-bold text-white">{{ total_en_attente }}</div>
+            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-2xl text-rdc-yellow"></i>
+                    <div>
+                        <p class="text-xs text-white uppercase tracking-wider">Certifiés provincial</p>
+                        <p class="text-2xl font-bold text-white">{{ total_en_attente }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -28,83 +49,141 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6">
-    
-    <!-- Liste des athlètes -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
-        <div class="px-6 py-4 border-b border-slate-200">
-            <h3 class="text-lg font-semibold text-slate-900">Athlètes certifiés provincialement</h3>
-            <p class="text-sm text-slate-600 mt-1">Vérifiez qu'il n'y a pas de doublons au niveau national</p>
+
+<!-- Barre de recherche -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <div class="relative flex-1">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="search-input" placeholder="Rechercher par nom, prénom, numéro sportif…"
+                   class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
         </div>
-        
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Athlète</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Club</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Province</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Discipline</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Validation Ligue</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    {% for athlete in athletes %}
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                {% if athlete.personne.photo %}
-                                <img src="{{ athlete.personne.photo.url }}" alt="{{ athlete.personne.nom_complet }}" class="w-12 h-12 rounded-full object-cover">
-                                {% else %}
-                                <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-user text-slate-400"></i>
-                                </div>
-                                {% endif %}
-                                <div>
-                                    <div class="font-medium text-slate-900">{{ athlete.personne.nom_complet }}</div>
-                                    <div class="text-xs text-slate-500">{{ athlete.numero_sportif }}</div>
-                                    <div class="text-xs text-slate-500">Né(e) le {{ athlete.personne.date_naissance|date:"d/m/Y" }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-slate-900">{{ athlete.club.nom_officiel }}</div>
-                            <div class="text-xs text-slate-500">{{ athlete.club.sigle }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-slate-900">{{ athlete.club.institution_tutelle.nom_officiel }}</div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-600">{{ athlete.discipline.designation }}</td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-slate-600">{{ athlete.date_validation_ligue|date:"d/m/Y" }}</div>
-                            <div class="text-xs text-slate-500">Par {{ athlete.validateur_ligue.user.get_full_name }}</div>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="{% url 'gouvernance:federation_athlete_validate' athlete.uid %}" class="inline-flex items-center px-3 py-1.5 bg-rdc-blue text-white text-sm rounded-lg hover:bg-rdc-blue-dark transition-colors">
-                                <i class="fa-solid fa-eye mr-2"></i>
-                                Examiner
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center gap-3">
-                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
-                                    <i class="fa-solid fa-check-circle text-3xl text-slate-400"></i>
-                                </div>
-                                <div>
-                                    <p class="text-slate-600 font-medium">Aucun athlète en attente</p>
-                                    <p class="text-sm text-slate-500 mt-1">Tous les athlètes ont été traités</p>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <select id="filter-province" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <option value="">Toutes les provinces</option>
+            {% for p in provinces %}
+                <option value="{{ p.designation|lower }}">{{ p.designation }}</option>
+            {% endfor %}
+        </select>
+        <select id="filter-discipline" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <option value="">Toutes les disciplines</option>
+            {% for d in disciplines %}
+                <option value="{{ d.designation|lower }}">{{ d.designation }}</option>
+            {% endfor %}
+        </select>
     </div>
 </div>
+
+<!-- Tableau -->
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Catégorie</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Province</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Validation ligue</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:120px;">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="athletes-tbody">
+            {% for athlete in athletes %}
+            <tr class="hover:bg-slate-50 transition-colors athlete-row"
+                data-search="{{ athlete.personne.nom|lower }} {{ athlete.personne.postnom|lower }} {{ athlete.personne.prenom|lower }} {{ athlete.numero_sportif|lower|default:'' }}"
+                data-province="{{ athlete.club.province_admin.designation|lower|default:'' }}"
+                data-discipline="{{ athlete.discipline.designation|lower|default:'' }}">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        {% if athlete.personne.photo %}
+                            <img src="{{ athlete.personne.photo.url }}" class="w-9 h-9 rounded-full object-cover flex-shrink-0">
+                        {% else %}
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#0036ca;">
+                                {{ athlete.personne.nom|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <div class="text-sm text-slate-900 capitalize">{{ athlete.personne.prenom }} {{ athlete.personne.nom }}</div>
+                            <div class="text-xs text-slate-400 font-mono">{{ athlete.numero_sportif }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-700">{{ athlete.discipline.designation|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-600">{{ athlete.get_categorie_display|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-slate-700 capitalize">{{ athlete.club.nom_officiel|lower|default:"—" }}</div>
+                    {% if athlete.club.sigle %}<div class="text-xs text-slate-400">{{ athlete.club.sigle }}</div>{% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-slate-600">{{ athlete.club.institution_tutelle.nom_officiel|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-slate-600">{{ athlete.date_validation_ligue|date:"d/m/Y"|default:"—" }}</div>
+                    {% if athlete.validateur_ligue %}
+                        <div class="text-xs text-slate-400">{{ athlete.validateur_ligue.user.get_full_name }}</div>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <a href="{% url 'gouvernance:federation_athlete_validate' athlete.uid %}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-colors"
+                       style="background:#0036ca;">
+                        <i class="fa-solid fa-eye"></i>
+                        Examiner
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-16 text-center">
+                    <i class="fa-solid fa-circle-check text-4xl text-slate-300 mb-4 block"></i>
+                    <p class="text-base font-bold text-slate-900">Aucun athlète en attente</p>
+                    <p class="text-sm text-slate-500 mt-1">Tous les dossiers ont été traités</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id="no-results" class="hidden px-6 py-16 text-center">
+        <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-4 block"></i>
+        <p class="text-base font-bold text-slate-900">Aucun résultat</p>
+        <p class="text-sm text-slate-500 mt-1">Modifiez vos critères de recherche</p>
+    </div>
+</div>
+</div>
+
+<script>
+(function() {
+    const searchInput = document.getElementById('search-input');
+    const filterProvince = document.getElementById('filter-province');
+    const filterDiscipline = document.getElementById('filter-discipline');
+    const rows = document.querySelectorAll('.athlete-row');
+    const noResults = document.getElementById('no-results');
+
+    function filterTable() {
+        const q = searchInput.value.toLowerCase().trim();
+        const prov = filterProvince.value.toLowerCase();
+        const disc = filterDiscipline.value.toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            const matchQ = !q || row.dataset.search.includes(q);
+            const matchP = !prov || row.dataset.province.includes(prov);
+            const matchD = !disc || row.dataset.discipline.includes(disc);
+            const show = matchQ && matchP && matchD;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        noResults.classList.toggle('hidden', visible > 0 || rows.length === 0);
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    filterProvince.addEventListener('change', filterTable);
+    filterDiscipline.addEventListener('change', filterTable);
+})();
+</script>
+
 {% endblock %}
