@@ -4,15 +4,31 @@
 {% block title %}Enregistrer un arbitre | SI-SEP Sport RDC{% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'gouvernance:arbitres_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">
-                <i class="fa-solid fa-arrow-left text-white"></i>
-            </a>
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Enregistrer un arbitre</h1>
-                <p class="text-sm text-white/80 mt-1">{{ institution.nom_officiel }}</p>
+<div class="bg-slate-50 px-4 lg:px-8 pt-5">
+    <div style="background:#1e3a5f; border-radius:0.875rem; overflow:hidden;">
+        <div class="px-8" style="padding-top:2.5rem; padding-bottom:2.5rem;">
+            <div class="flex items-start justify-between gap-6">
+                <div>
+                    <div style="margin-bottom:1.25rem;">
+                        <a href="{% url 'gouvernance:arbitres_list' %}"
+                           style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.75rem;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                    </div>
+                    <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.5rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">ENREGISTRER UN </span><span style="color:#FDE015;">ARBITRE</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.875rem;margin:0;">
+                        {{ institution.nom_officiel }}
+                    </p>
+                </div>
+                <div style="flex-shrink:0;border:1px solid rgba(255,255,255,0.15);border-radius:0.6rem;padding:1rem 1.25rem;background:rgba(255,255,255,0.06);min-width:160px;text-align:center;">
+                    <div style="width:40px;height:40px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.6rem;">
+                        <i class="fa-solid fa-scale-balanced" style="color:#FDE015;font-size:1rem;"></i>
+                    </div>
+                    <p style="color:rgba(255,255,255,0.5);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 0.2rem;">Corps Arbitral</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.6rem;margin:0;">SI-SEP Sport RDC</p>
+                </div>
             </div>
         </div>
     </div>
@@ -33,192 +49,200 @@
 </div>
 {% endif %}
 
-<form method="post">
+<form method="post" style="font-family:'Inter',-apple-system,sans-serif;">
     {% csrf_token %}
 
-    <!-- Grid : sections formulaire + card -->
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; align-items:stretch;">
+    <div style="display:grid; grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start;">
 
-        <!-- Colonne gauche : les deux sections -->
-        <div class="space-y-6">
+        <!-- Colonne gauche -->
+        <div class="space-y-5">
 
             <!-- Identité -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-base font-semibold text-slate-700">Identité de l'arbitre</h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Nom <span class="text-red-500">*</span></label>
-                            <input type="text" name="nom" required maxlength="100" placeholder="Nom de famille"
-                                   class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Post-nom</label>
-                            <input type="text" name="postnom" maxlength="100" placeholder="Post-nom"
-                                   class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Prénom</label>
-                            <input type="text" name="prenom" maxlength="100" placeholder="Prénom"
-                                   class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Sexe</label>
-                            <select name="sexe" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                                <option value="">— Sélectionner —</option>
-                                <option value="M">Masculin</option>
-                                <option value="F">Féminin</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
-                            <input type="text" name="telephone" placeholder="+243…"
-                                   class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">E-mail</label>
-                            <input type="email" name="email" placeholder="arbitre@exemple.cd"
-                                   class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                        </div>
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eef2ff;">
+                        <i class="fa-solid fa-user text-sm" style="color:#0036ca;"></i>
                     </div>
+                    <h2 style="font-size:0.75rem;font-weight:700;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Identité de l'arbitre</h2>
+                </div>
+                <div class="p-6" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Nom <span style="color:#ED1C24;">*</span></p>
+                        <input type="text" name="nom" required maxlength="100" 
+                               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;text-transform:uppercase;box-sizing:border-box;"
+                               onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                               onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Post-nom</p>
+                        <input type="text" name="postnom" maxlength="100" 
+                               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;text-transform:uppercase;box-sizing:border-box;"
+                               onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                               onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Prénom</p>
+                        <input type="text" name="prenom" maxlength="100" 
+                               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;text-transform:uppercase;box-sizing:border-box;"
+                               onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                               onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Genre</p>
+                        <select name="sexe"
+                                style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;box-sizing:border-box;appearance:auto;"
+                                onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                                onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="">— Sélectionner —</option>
+                            <option value="M">Masculin</option>
+                            <option value="F">Féminin</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Téléphone</p>
+                        <input type="text" name="telephone"
+                               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;box-sizing:border-box;"
+                               onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                               onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">E-mail</p>
+                        <input type="email" name="email" 
+                               style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;box-sizing:border-box;"
+                               onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                               onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+
                 </div>
             </div>
 
             <!-- Qualification -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200">
-                    <h2 class="text-base font-semibold text-slate-700">Qualification sportive</h2>
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#eef2ff;">
+                        <i class="fa-solid fa-trophy text-sm" style="color:#0036ca;"></i>
+                    </div>
+                    <h2 style="font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Qualification sportive</h2>
                 </div>
-                <div class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Discipline <span class="text-red-500">*</span></label>
+                <div class="p-6" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;">
+
+                    <div {% if not discipline_ligue %}style="grid-column:span 1;"{% endif %}>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Discipline <span style="color:#ED1C24;">*</span></p>
                         {% if discipline_ligue %}
                             <input type="hidden" name="discipline" value="{{ discipline_ligue.uid }}">
-                            <div class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 font-medium flex items-center gap-2">
-                                <i class="fa-solid fa-lock text-slate-400 text-xs"></i>
-                                {{ discipline_ligue.designation }}
+                            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f1f5f9;">
+                                <i class="fa-solid fa-lock" style="color:#94a3b8;font-size:0.7rem;"></i>
+                                <span style="font-size:0.875rem;font-weight:600;color:#475569;text-transform:uppercase;">{{ discipline_ligue.designation }}</span>
                             </div>
-                            <p class="text-xs text-slate-400 mt-1">Discipline de votre ligue — non modifiable.</p>
                         {% else %}
-                            <select name="discipline" required class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                                <option value="">— Sélectionner une discipline —</option>
+                            <select name="discipline" required
+                                    style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;box-sizing:border-box;appearance:auto;"
+                                    onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                                    onblur="this.style.borderColor='#e2e8f0'">
+                                <option value="">— Sélectionner —</option>
                                 {% for d in disciplines %}
                                     <option value="{{ d.uid }}">{{ d.designation }}</option>
                                 {% endfor %}
                             </select>
                         {% endif %}
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Niveau</label>
-                            <input type="hidden" name="niveau" value="PROVINCIAL">
-                            <div class="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-700 font-medium flex items-center gap-2">
-                                <i class="fa-solid fa-lock text-slate-400 text-xs"></i>
-                                Provincial
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Catégorie</label>
-                            <select name="categorie" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                                <option value="STAGIAIRE">Stagiaire</option>
-                                <option value="ELITE">Élite</option>
-                                <option value="PROFESSIONNEL">Professionnel</option>
-                            </select>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Niveau</p>
+                        <input type="hidden" name="niveau" value="PROVINCIAL">
+                        <div style="display:flex;align-items:center;gap:0.5rem;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f1f5f9;">
+                            <i class="fa-solid fa-lock" style="color:#94a3b8;font-size:0.7rem;"></i>
+                            <span style="font-size:0.875rem;font-weight:600;color:#475569;text-transform:uppercase;">Provincial</span>
                         </div>
                     </div>
+
+                    <div>
+                        <p style="font-size:0.68rem;font-weight:700;;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.4rem;">Catégorie</p>
+                        <select name="categorie"
+                                style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.875rem;font-weight:400;color:#0f172a;box-sizing:border-box;appearance:auto;"
+                                onfocus="this.style.borderColor='#0036ca';this.style.outline='none'"
+                                onblur="this.style.borderColor='#e2e8f0'">
+                            <option value="STAGIAIRE">Stagiaire</option>
+                            <option value="ELITE">Élite</option>
+                            <option value="PROFESSIONNEL">Professionnel</option>
+                        </select>
+                    </div>
+
                 </div>
+            </div>
+
+            <!-- Boutons -->
+            <div class="flex items-center gap-3">
+                <a href="{% url 'gouvernance:arbitres_list' %}"
+                   style="flex:1;text-align:center;padding:0.65rem 1.5rem;border:1px solid #e2e8f0;border-radius:0.5rem;font-size:0.875rem;font-weight:600;color:#64748b;text-decoration:none;background:#fff;">
+                    Annuler
+                </a>
+                <button type="submit"
+                        style="flex:2;display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.65rem 1.5rem;background:#2d5a8e;border:none;border-radius:0.5rem;font-size:0.875rem;font-weight:700;color:#fff;cursor:pointer;"
+                        onmouseover="this.style.background='#1e3a5f'"
+                        onmouseout="this.style.background='#2d5a8e'">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    Enregistrer l'arbitre
+                </button>
             </div>
 
         </div><!-- fin colonne gauche -->
 
-        <!-- Card droite -->
-        <div style="background:#0036ca; align-self:stretch; border-radius:0.75rem; overflow:hidden; display:flex; flex-direction:column;">
+        <!-- Card droite : workflow info -->
+        <div style="background:#2d5a8e;border-radius:0.75rem;overflow:hidden;position:sticky;top:1.5rem;">
 
-            <!-- En-tête icône -->
-            <div style="padding:1.25rem 1.25rem 1rem; text-align:center; border-bottom:1px solid rgba(255,255,255,0.12);">
-                <div style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
-                    <i class="fa-solid fa-scale-balanced" style="font-size:1.25rem;color:#FDE015;"></i>
+            <div style="background:#1e3a5f;padding:1.25rem;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">
+                <div style="width:44px;height:44px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.6rem;">
+                    <i class="fa-solid fa-scale-balanced" style="color:#FDE015;font-size:1.1rem;"></i>
                 </div>
-                <p style="color:#fff;font-size:0.9rem;font-weight:700;margin:0 0 0.2rem;">Corps Arbitral</p>
-                <p style="color:rgba(255,255,255,0.65);font-size:0.7rem;margin:0;">SI-SEP Sport RDC</p>
+                <p style="color:#fff;font-size:0.82rem;font-weight:700;margin:0 0 0.15rem;">Corps Arbitral</p>
+                <p style="color:rgba(255,255,255,0.45);font-size:0.65rem;margin:0;">SI-SEP Sport RDC</p>
             </div>
 
-            <!-- Infos pratiques -->
-            <div style="padding:1.25rem;flex:1;display:flex;flex-direction:column;gap:0.85rem;">
+            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
 
-                <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-                    <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-id-card" style="color:#FDE015;font-size:0.75rem;"></i>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Workflow d'enregistrement</p>
+
+                {% for step in "123"|make_list %}
+                <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+                    <div style="width:24px;height:24px;background:{% if forloop.first %}#FDE015{% else %}rgba(255,255,255,0.12){% endif %};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span style="font-size:0.65rem;font-weight:800;color:{% if forloop.first %}#1e3a5f{% else %}rgba(255,255,255,0.6){% endif %};">{{ forloop.counter }}</span>
                     </div>
                     <div>
-                        <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.15rem;">Licence automatique</p>
-                        <p style="color:rgba(255,255,255,0.6);font-size:0.68rem;margin:0;line-height:1.4;">Numéro unique généré à la validation finale.</p>
+                        {% if forloop.counter == 1 %}
+                        <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Enregistrement</p>
+                        <p style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin:0;line-height:1.4;">Saisie des informations et qualification.</p>
+                        {% elif forloop.counter == 2 %}
+                        <p style="color:rgba(255,255,255,0.7);font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Biométrie + Examen médical</p>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;line-height:1.4;">Photo, empreintes et verdict du médecin.</p>
+                        {% else %}
+                        <p style="color:rgba(255,255,255,0.7);font-size:0.75rem;font-weight:600;margin:0 0 0.1rem;">Validation & Licence</p>
+                        <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;line-height:1.4;">Numéro de licence généré automatiquement.</p>
+                        {% endif %}
                     </div>
                 </div>
+                {% endfor %}
 
-                <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-                    <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-layer-group" style="color:#FDE015;font-size:0.75rem;"></i>
+                <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;margin-top:0.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+                        <i class="fa-solid fa-circle-info" style="color:#FDE015;font-size:0.7rem;"></i>
+                        <p style="color:rgba(255,255,255,0.5);font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Champs obligatoires</p>
                     </div>
-                    <div>
-                        <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.15rem;">Niveaux</p>
-                        <p style="color:rgba(255,255,255,0.6);font-size:0.68rem;margin:0;line-height:1.4;">Local · Provincial · National</p>
-                    </div>
-                </div>
-
-                <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-                    <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-trophy" style="color:#FDE015;font-size:0.75rem;"></i>
-                    </div>
-                    <div>
-                        <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.15rem;">Catégories</p>
-                        <p style="color:rgba(255,255,255,0.6);font-size:0.68rem;margin:0;line-height:1.4;">Stagiaire → 2ème → 1ère → Élite</p>
-                    </div>
-                </div>
-
-                <div style="display:flex;align-items:flex-start;gap:0.65rem;">
-                    <div style="width:28px;height:28px;background:rgba(255,255,255,0.12);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-stethoscope" style="color:#FDE015;font-size:0.75rem;"></i>
-                    </div>
-                    <div>
-                        <p style="color:#fff;font-size:0.75rem;font-weight:600;margin:0 0 0.15rem;">Workflow médical</p>
-                        <p style="color:rgba(255,255,255,0.6);font-size:0.68rem;margin:0;line-height:1.4;">Après enregistrement, le médecin valide l'aptitude avant la délivrance de licence.</p>
-                    </div>
+                    <p style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin:0;line-height:1.5;">
+                        Les champs marqués <span style="color:#ED1C24;font-weight:700;">*</span> sont requis pour l'enregistrement.
+                    </p>
                 </div>
 
             </div>
-
-            <!-- Pied de carte -->
-            <div style="padding:0.85rem 1.25rem;border-top:1px solid rgba(255,255,255,0.12);text-align:center;">
-                <p style="color:rgba(255,255,255,0.45);font-size:0.68rem;margin:0;">
-                    <i class="fa-solid fa-circle-info" style="margin-right:0.3rem;"></i>
-                    Champs <span style="color:#ED1C24;font-weight:700;">*</span> obligatoires
-                </p>
-            </div>
-
         </div><!-- fin card droite -->
 
-    </div><!-- fin grid -->
-
-    <!-- Actions (hors grid) -->
-    <div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; margin-top:1.5rem;">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'gouvernance:arbitres_list' %}"
-               class="flex-1 text-center px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
-                Annuler
-            </a>
-            <button type="submit"
-                    class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
-                    style="background:#0036ca;">
-                <i class="fa-solid fa-scale-balanced"></i>
-                Enregistrer l'arbitre
-            </button>
-        </div>
-        <div></div><!-- colonne vide pour aligner avec le grid au-dessus -->
     </div>
 
 </form>
-
 {% endblock %}

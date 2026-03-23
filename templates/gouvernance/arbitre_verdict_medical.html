@@ -1,18 +1,37 @@
 {% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Verdict médical — {{ arbitre.personne.nom_complet }}{% endblock %}
+{% block title %}Examen médical — {{ arbitre.personne.nom_complet }}{% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'gouvernance:arbitres_list' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-                <i class="fa-solid fa-arrow-left text-white"></i>
-            </a>
-            <div>
-                <h1 class="text-2xl font-bold text-white">Examen médical — Arbitre</h1>
-                <p class="text-sm text-white/80 mt-1">{{ arbitre.personne.nom_complet }} · {{ arbitre.discipline }}</p>
+<div class="bg-slate-50 px-4 lg:px-8 pt-5">
+    <div style="background:#1e3a5f;border-radius:0.875rem;overflow:hidden;">
+        <div class="px-8" style="padding-top:2rem;padding-bottom:2rem;">
+            <div class="flex items-center justify-between gap-6">
+                <div>
+                    <div style="margin-bottom:1rem;">
+                        <a href="{% url 'gouvernance:arbitres_list' %}"
+                           style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.75rem;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                        <span style="display:inline-block;width:8px;height:8px;background:#4ade80;border-radius:50%;"></span>
+                        <span style="color:rgba(255,255,255,0.5);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Médecin de la ligue</span>
+                    </div>
+                    <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.3rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">EXAMEN </span><span style="color:#FDE015;">MÉDICAL</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.8rem;margin:0;">
+                        {{ arbitre.personne.nom_complet|upper }}
+                        &nbsp;·&nbsp;
+                        <span style="color:#FDE015;font-weight:700;">{{ arbitre.discipline|default:"—" }}</span>
+                    </p>
+                </div>
+                <div style="flex-shrink:0;border:1px solid rgba(255,255,255,0.15);border-radius:0.6rem;padding:1rem 1.5rem;background:rgba(255,255,255,0.06);text-align:center;">
+                    <p style="color:rgba(255,255,255,0.4);font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 0.3rem;">Statut dossier</p>
+                    <p style="color:#FDE015;font-size:1rem;font-weight:800;margin:0;letter-spacing:0.05em;">EN ATTENTE</p>
+                </div>
             </div>
         </div>
     </div>
@@ -20,168 +39,279 @@
 {% endblock %}
 
 {% block content %}
-
 {% if messages %}
 <div class="mb-4 space-y-2">
     {% for message in messages %}
-    <div class="px-4 py-3 rounded-lg text-sm font-medium
-        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
-        {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+    <div class="px-4 py-3 rounded-lg text-sm font-medium {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
         {{ message }}
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; align-items:start;">
+<div style="display:grid;grid-template-columns:280px 1fr;gap:1.5rem;align-items:start;font-family:'Inter',-apple-system,sans-serif;">
 
-    <form method="post">
-        {% csrf_token %}
+    <!-- ── Colonne gauche ── -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
 
-        <!-- Récapitulatif arbitre -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">Dossier de l'arbitre</h2>
-            </div>
-            <div class="p-6 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Nom complet</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.personne.nom_complet }}</p>
-                </div>
-                <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Discipline</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.discipline|default:"—" }}</p>
-                </div>
-                <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Niveau</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.get_niveau_display }}</p>
-                </div>
-                <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Catégorie</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.get_categorie_display }}</p>
-                </div>
-                {% if arbitre.personne.telephone %}
-                <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Téléphone</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.personne.telephone }}</p>
-                </div>
+        <!-- Card photo + identité -->
+        <div style="background:#fff;border-radius:0.75rem;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+            <div style="height:4px;background:linear-gradient(90deg,#1e3a5f 0%,#2d5a8e 50%,#FDE015 100%);"></div>
+            <div style="padding:1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;">
+                {% if arbitre.photo %}
+                    <img src="{{ arbitre.photo.url }}" alt="Photo"
+                         style="width:90px;height:110px;object-fit:cover;border-radius:0.5rem;border:2px solid #e2e8f0;">
+                {% else %}
+                    <div style="width:90px;height:110px;border-radius:0.5rem;border:2px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <i class="fa-solid fa-user" style="font-size:2rem;color:#cbd5e1;"></i>
+                    </div>
                 {% endif %}
                 <div>
-                    <p class="text-slate-500 font-medium mb-0.5">Enregistré le</p>
-                    <p class="font-semibold text-slate-800">{{ arbitre.date_enregistrement|date:"d/m/Y" }}</p>
+                    <p style="color:#1e293b;font-size:0.85rem;font-weight:800;margin:0 0 0.15rem;">{{ arbitre.personne.nom_complet|upper }}</p>
+                    <p style="color:#2d5a8e;font-size:0.7rem;font-weight:700;margin:0;">{{ arbitre.numero_licence|default:"#EN-ATTENTE" }}</p>
                 </div>
             </div>
-        </div>
-
-        <!-- Verdict médical -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">Verdict médical</h2>
-            </div>
-            <div class="p-6 space-y-5">
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Date de l'examen <span class="text-red-500">*</span></label>
-                    <input type="date" name="date_examen_medical" required
-                           value="{{ today|date:'Y-m-d' }}"
-                           class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Résultat <span class="text-red-500">*</span></label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-green-400 has-[:checked]:border-green-500 has-[:checked]:bg-green-50 transition-colors">
-                            <input type="radio" name="resultat_medical" value="APTE" required class="accent-green-600">
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">Apte</p>
-                                <p class="text-xs text-slate-500">Sans restriction</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-yellow-400 has-[:checked]:border-yellow-500 has-[:checked]:bg-yellow-50 transition-colors">
-                            <input type="radio" name="resultat_medical" value="APTE_AVEC_RESERVE" class="accent-yellow-600">
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">Apte avec réserve</p>
-                                <p class="text-xs text-slate-500">Conditions particulières</p>
-                            </div>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 border-2 border-slate-200 rounded-lg cursor-pointer hover:border-red-400 has-[:checked]:border-red-500 has-[:checked]:bg-red-50 transition-colors">
-                            <input type="radio" name="resultat_medical" value="INAPTE" class="accent-red-600">
-                            <div>
-                                <p class="text-sm font-semibold text-slate-800">Inapte</p>
-                                <p class="text-xs text-slate-500">Dossier bloqué</p>
-                            </div>
-                        </label>
+            <div style="border-top:1px solid #f1f5f9;padding:1rem 1.25rem;">
+                <p style="color:#94a3b8;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 0.75rem;">Données d'identification</p>
+                <div style="display:flex;flex-direction:column;gap:0.45rem;">
+                    {% for label, val in forloop_data %}{% endfor %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Nom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.nom|upper }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Post-nom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.postnom|upper|default:"—" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Prénom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.prenom|upper|default:"—" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Discipline</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.discipline|upper|default:"—" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Niveau</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.get_niveau_display|upper }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Catégorie</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.get_categorie_display|upper }}</span>
+                    </div>
+                    {% if arbitre.personne.telephone %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Téléphone</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.telephone }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Enregistré le</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.date_enregistrement|date:"d/m/Y" }}</span>
                     </div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Observations / Recommandations</label>
-                    <textarea name="notes_medicales" rows="4" placeholder="Observations médicales, recommandations de sécurité…"
-                              class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue resize-none"></textarea>
-                </div>
-
             </div>
         </div>
 
-        <!-- Actions -->
-        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1.5rem; margin-top:1.5rem;">
-            <div class="flex items-center gap-4">
+        <!-- Card biométrie -->
+        <div style="background:#fff;border-radius:0.75rem;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="background:#1e3a5f;padding:0.75rem 1rem;">
+                <p style="color:rgba(255,255,255,0.6);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Biométrie</p>
+            </div>
+            <div style="padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.6rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:0.4rem;background:{% if arbitre.photo %}#f0fdf4{% else %}#fef2f2{% endif %};">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fa-solid fa-camera" style="color:{% if arbitre.photo %}#16a34a{% else %}#dc2626{% endif %};font-size:0.75rem;"></i>
+                        <span style="font-size:0.75rem;font-weight:600;color:#1e293b;">Photo</span>
+                    </div>
+                    <span style="font-size:0.65rem;font-weight:700;color:{% if arbitre.photo %}#16a34a{% else %}#dc2626{% endif %};">{% if arbitre.photo %}✓{% else %}✗{% endif %}</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:0.4rem;background:{% if arbitre.empreintes_capturees %}#f0fdf4{% else %}#fef2f2{% endif %};">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fa-solid fa-fingerprint" style="color:{% if arbitre.empreintes_capturees %}#16a34a{% else %}#dc2626{% endif %};font-size:0.75rem;"></i>
+                        <span style="font-size:0.75rem;font-weight:600;color:#1e293b;">Empreintes</span>
+                    </div>
+                    <span style="font-size:0.65rem;font-weight:700;color:{% if arbitre.empreintes_capturees %}#16a34a{% else %}#dc2626{% endif %};">{% if arbitre.empreintes_capturees %}✓{% else %}✗{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card workflow -->
+        <div style="background:#2d5a8e;border-radius:0.75rem;overflow:hidden;">
+            <div style="background:#1e3a5f;padding:0.75rem 1rem;">
+                <p style="color:rgba(255,255,255,0.6);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Workflow d'enregistrement</p>
+            </div>
+            <div style="padding:1rem;display:flex;flex-direction:column;gap:0.5rem;">
+                {% for step_num, step_label, step_done in steps_workflow %}
+                <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.75rem;border-radius:0.4rem;background:{% if step_done %}rgba(74,222,128,0.15){% elif step_num == 2 %}rgba(253,224,21,0.15){% else %}rgba(255,255,255,0.06){% endif %};">
+                    <div style="width:22px;height:22px;border-radius:50%;background:{% if step_done %}#4ade80{% elif step_num == 2 %}#FDE015{% else %}rgba(255,255,255,0.15){% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span style="font-size:0.6rem;font-weight:800;color:{% if step_done %}#fff{% elif step_num == 2 %}#1e3a5f{% else %}rgba(255,255,255,0.5){% endif %};">{{ step_num }}</span>
+                    </div>
+                    <span style="font-size:0.72rem;font-weight:{% if step_num == 2 %}700{% else %}500{% endif %};color:{% if step_done %}#4ade80{% elif step_num == 2 %}#FDE015{% else %}rgba(255,255,255,0.5){% endif %};">{{ step_label }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Colonne droite : formulaire ── -->
+    <div>
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Photos de l'arbitre -->
+            {% if arbitre.photo or arbitre.photo_gauche or arbitre.photo_droite %}
+            <div style="background:#fff;border-radius:0.75rem;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:1rem;">
+                <div style="background:#1e3a5f;padding:0.65rem 1.25rem;">
+                    <p style="color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin:0;">Photos du dossier</p>
+                </div>
+                <div style="padding:1rem;display:flex;gap:1rem;">
+                    {% if arbitre.photo %}
+                    <div style="text-align:center;">
+                        <img src="{{ arbitre.photo.url }}" style="width:90px;height:110px;object-fit:cover;border-radius:0.4rem;border:1.5px solid #e2e8f0;">
+                        <p style="font-size:0.6rem;color:#94a3b8;margin:0.3rem 0 0;text-transform:uppercase;font-weight:600;">Face</p>
+                    </div>
+                    {% endif %}
+                    {% if arbitre.photo_gauche %}
+                    <div style="text-align:center;">
+                        <img src="{{ arbitre.photo_gauche.url }}" style="width:90px;height:110px;object-fit:cover;border-radius:0.4rem;border:1.5px solid #e2e8f0;">
+                        <p style="font-size:0.6rem;color:#94a3b8;margin:0.3rem 0 0;text-transform:uppercase;font-weight:600;">Profil G</p>
+                    </div>
+                    {% endif %}
+                    {% if arbitre.photo_droite %}
+                    <div style="text-align:center;">
+                        <img src="{{ arbitre.photo_droite.url }}" style="width:90px;height:110px;object-fit:cover;border-radius:0.4rem;border:1.5px solid #e2e8f0;">
+                        <p style="font-size:0.6rem;color:#94a3b8;margin:0.3rem 0 0;text-transform:uppercase;font-weight:600;">Profil D</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Verdict médical -->
+            <div style="background:#fff;border-radius:0.75rem;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:1rem;">
+                <div style="background:#1e3a5f;padding:0.65rem 1.25rem;">
+                    <p style="color:rgba(255,255,255,0.7);font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin:0;">Verdict médical</p>
+                </div>
+                <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;">
+
+                    <!-- Date examen -->
+                    <div>
+                        <label style="display:block;font-size:0.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;">
+                            Date de l'examen <span style="color:#dc2626;">*</span>
+                        </label>
+                        <input type="date" name="date_examen_medical" required
+                               value="{{ today|date:'Y-m-d' }}"
+                               style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.85rem;color:#1e293b;font-weight:400;box-sizing:border-box;">
+                    </div>
+
+                    <!-- Résultat -->
+                    <div>
+                        <label style="display:block;font-size:0.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">
+                            Résultat <span style="color:#dc2626;">*</span>
+                        </label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+
+                            <!-- Apte -->
+                            <label id="card-apte" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem 0.75rem;border:2px solid #e2e8f0;border-radius:0.5rem;cursor:pointer;transition:all 0.15s;text-align:center;"
+                                   onclick="selectVerdict('APTE')">
+                                <input type="radio" name="resultat_medical" value="APTE" required style="display:none;">
+                                <div id="icon-apte" style="width:40px;height:40px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <p style="font-size:0.78rem;font-weight:700;color:#1e293b;margin:0 0 0.15rem;">APTE</p>
+                                    <p style="font-size:0.65rem;color:#94a3b8;margin:0;">Sans restriction</p>
+                                </div>
+                            </label>
+
+                            <!-- Apte avec réserve -->
+                            <label id="card-reserve" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem 0.75rem;border:2px solid #e2e8f0;border-radius:0.5rem;cursor:pointer;transition:all 0.15s;text-align:center;"
+                                   onclick="selectVerdict('APTE_AVEC_RESERVE')">
+                                <input type="radio" name="resultat_medical" value="APTE_AVEC_RESERVE" style="display:none;">
+                                <div id="icon-reserve" style="width:40px;height:40px;border-radius:50%;background:#fefce8;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="color:#d97706;font-size:1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <p style="font-size:0.78rem;font-weight:700;color:#1e293b;margin:0 0 0.15rem;">AVEC RÉSERVE</p>
+                                    <p style="font-size:0.65rem;color:#94a3b8;margin:0;">Conditions particulières</p>
+                                </div>
+                            </label>
+
+                            <!-- Inapte -->
+                            <label id="card-inapte" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem 0.75rem;border:2px solid #e2e8f0;border-radius:0.5rem;cursor:pointer;transition:all 0.15s;text-align:center;"
+                                   onclick="selectVerdict('INAPTE')">
+                                <input type="radio" name="resultat_medical" value="INAPTE" style="display:none;">
+                                <div id="icon-inapte" style="width:40px;height:40px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:1.1rem;"></i>
+                                </div>
+                                <div>
+                                    <p style="font-size:0.78rem;font-weight:700;color:#1e293b;margin:0 0 0.15rem;">INAPTE</p>
+                                    <p style="font-size:0.65rem;color:#94a3b8;margin:0;">Dossier bloqué</p>
+                                </div>
+                            </label>
+
+                        </div>
+                    </div>
+
+                    <!-- Observations -->
+                    <div>
+                        <label style="display:block;font-size:0.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.4rem;">
+                            Observations / Recommandations
+                        </label>
+                        <textarea name="notes_medicales" rows="4"
+                                  style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.85rem;color:#1e293b;font-weight:400;resize:none;box-sizing:border-box;font-family:inherit;"
+                                  placeholder=""></textarea>
+                        <p style="font-size:0.65rem;color:#94a3b8;margin:0.3rem 0 0;">Visible uniquement par la ligue et le médecin.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display:flex;align-items:center;gap:0.75rem;">
                 <a href="{% url 'gouvernance:arbitres_list' %}"
-                   class="flex-1 text-center px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
+                   style="padding:0.65rem 1.5rem;border:1.5px solid #cbd5e1;border-radius:0.5rem;font-size:0.875rem;font-weight:600;color:#64748b;text-decoration:none;background:#fff;">
                     Annuler
                 </a>
                 <button type="submit"
-                        class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
-                        style="background:#0036ca;">
+                        style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 2rem;background:#2d5a8e;border:none;border-radius:0.5rem;font-size:0.875rem;font-weight:700;color:#fff;cursor:pointer;"
+                        onmouseover="this.style.background='#1e3a5f'"
+                        onmouseout="this.style.background='#2d5a8e'">
                     <i class="fa-solid fa-stethoscope"></i>
                     Soumettre le verdict
                 </button>
             </div>
-            <div></div>
-        </div>
 
-    </form>
-
-    <!-- Card droite -->
-    <div style="background:#0036ca; border-radius:0.75rem; overflow:hidden; display:flex; flex-direction:column;">
-        <div style="padding:2rem 1.5rem 1.5rem; text-align:center; border-bottom:1px solid rgba(255,255,255,0.12);">
-            <div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                <i class="fa-solid fa-stethoscope" style="font-size:1.75rem;color:#FDE015;"></i>
-            </div>
-            <p style="color:#fff;font-size:1rem;font-weight:700;margin:0 0 0.25rem;">Examen médical</p>
-            <p style="color:rgba(255,255,255,0.65);font-size:0.75rem;margin:0;">Commission Provinciale des Arbitres</p>
-        </div>
-        <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;">
-            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
-                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-circle-check" style="color:#FDE015;font-size:0.85rem;"></i>
-                </div>
-                <div>
-                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Apte / Apte avec réserve</p>
-                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Le dossier passe au statut <span style="color:#FDE015;font-weight:600;">INSTRUIT</span> et devient validable par la ligue.</p>
-                </div>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
-                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-circle-xmark" style="color:#ED1C24;font-size:0.85rem;"></i>
-                </div>
-                <div>
-                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Inapte</p>
-                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Le dossier est bloqué. Aucune licence ne peut être générée.</p>
-                </div>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
-                <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-lock" style="color:#FDE015;font-size:0.85rem;"></i>
-                </div>
-                <div>
-                    <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 0.2rem;">Confidentialité</p>
-                    <p style="color:rgba(255,255,255,0.6);font-size:0.72rem;margin:0;line-height:1.4;">Les observations médicales sont visibles uniquement par la ligue et le médecin.</p>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
 
 </div>
+
+<script>
+var verdictConfig = {
+    'APTE':            { card: 'card-apte',    border: '#16a34a', bg: '#f0fdf4' },
+    'APTE_AVEC_RESERVE':{ card: 'card-reserve', border: '#d97706', bg: '#fefce8' },
+    'INAPTE':          { card: 'card-inapte',  border: '#dc2626', bg: '#fef2f2' },
+};
+
+function selectVerdict(val) {
+    // Réinitialiser toutes les cartes
+    Object.values(verdictConfig).forEach(function(cfg) {
+        var card = document.getElementById(cfg.card);
+        if (card) { card.style.borderColor = '#e2e8f0'; card.style.background = '#fff'; }
+    });
+    // Activer la carte sélectionnée
+    var active = verdictConfig[val];
+    if (active) {
+        var card = document.getElementById(active.card);
+        if (card) { card.style.borderColor = active.border; card.style.background = active.bg; }
+    }
+    // Cocher le radio
+    var radio = document.querySelector('input[name="resultat_medical"][value="' + val + '"]');
+    if (radio) radio.checked = true;
+}
+</script>
 
 {% endblock %}

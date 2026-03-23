@@ -11,56 +11,79 @@ input:focus, select:focus { outline: none !important; }
 {% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4 mb-6">
-            <div class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl">
-                <i class="fa-solid fa-scale-balanced text-2xl text-white"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Arbitres</h1>
-                <p class="text-sm text-white/80 mt-1">Registre national des arbitres sportifs de la RDC</p>
-            </div>
-        </div>
+<div class="bg-slate-50 px-4 lg:px-8 pt-5 pb-4">
+    <div style="background:#1e3a5f; border-radius:0.875rem; overflow:hidden;">
+        <div class="px-8" style="padding-top:2.5rem; padding-bottom:2rem;">
 
-        <!-- Stats -->
-        <div class="flex gap-4">
-            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
-                    <div>
-                        <p class="text-xs text-white uppercase tracking-wider">Total</p>
-                        <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+            <!-- Titre + bouton -->
+            <div class="flex items-start justify-between gap-6 mb-6">
+                <div>
+                    <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.4rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">REGISTRE DES </span><span style="color:#FDE015;">ARBITRES</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.875rem;margin:0;">
+                        Corps arbitral sportif — SI-SEP Sport RDC
+                    </p>
+                </div>
+                {% if not is_ministre %}
+                <a href="{% url 'gouvernance:arbitre_register' %}"
+                   style="flex-shrink:0;display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.25rem;background:#2d5a8e;border:1px solid rgba(255,255,255,0.2);border-radius:0.5rem;color:#fff;font-size:0.8rem;font-weight:700;text-decoration:none;"
+                   onmouseover="this.style.background='#3a6fa8'"
+                   onmouseout="this.style.background='#2d5a8e'">
+                    <i class="fa-solid fa-plus" style="color:#FDE015;"></i>
+                    Ajouter un arbitre
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+                <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-users" style="color:#FDE015;font-size:0.9rem;"></i>
+                        </div>
+                        <div>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.15rem;">Total</p>
+                            <p style="color:#fff;font-size:1.6rem;font-weight:800;margin:0;line-height:1;">{{ stats.total }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-clock" style="color:#FDE015;font-size:0.9rem;"></i>
+                        </div>
+                        <div>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.15rem;">Att. médicale</p>
+                            <p style="color:#fff;font-size:1.6rem;font-weight:800;margin:0;line-height:1;">{{ stats.en_attente }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-file-circle-check" style="color:#FDE015;font-size:0.9rem;"></i>
+                        </div>
+                        <div>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.15rem;">Instruits</p>
+                            <p style="color:#fff;font-size:1.6rem;font-weight:800;margin:0;line-height:1;">{{ stats.instruits }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-circle-check" style="color:#FDE015;font-size:0.9rem;"></i>
+                        </div>
+                        <div>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.62rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.15rem;">Actifs</p>
+                            <p style="color:#fff;font-size:1.6rem;font-weight:800;margin:0;line-height:1;">{{ stats.actifs }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-clock text-2xl text-rdc-yellow"></i>
-                    <div>
-                        <p class="text-xs text-white uppercase tracking-wider">En attente médicale</p>
-                        <p class="text-2xl font-bold text-white">{{ stats.en_attente }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-file-circle-check text-2xl text-rdc-yellow"></i>
-                    <div>
-                        <p class="text-xs text-white uppercase tracking-wider">Instruits</p>
-                        <p class="text-2xl font-bold text-white">{{ stats.instruits }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="flex-1 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-circle-check text-2xl text-rdc-yellow"></i>
-                    <div>
-                        <p class="text-xs text-white uppercase tracking-wider">Actifs</p>
-                        <p class="text-2xl font-bold text-white">{{ stats.actifs }}</p>
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
@@ -68,32 +91,34 @@ input:focus, select:focus { outline: none !important; }
 
 {% block content %}
 
-<!-- Barre de recherche + bouton -->
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+<!-- Barre de recherche -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4" style="font-family:'Inter',-apple-system,sans-serif;">
     <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
         <div class="relative flex-1">
             <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" id="search-input" placeholder="Rechercher par nom, prénom, numéro…"
-                   class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+            <input type="text" id="search-input"
+                   style="width:100%;padding:0.55rem 0.75rem 0.55rem 2.25rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#2d5a8e';this.style.outline='none'"
+                   onblur="this.style.borderColor='#e2e8f0'">
         </div>
-        <select id="filter-discipline" class="md:w-52 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+        <select id="filter-discipline"
+                style="min-width:200px;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;"
+                onfocus="this.style.borderColor='#2d5a8e';this.style.outline='none'"
+                onblur="this.style.borderColor='#e2e8f0'">
             <option value="">Toutes les disciplines</option>
             {% for d in disciplines %}
                 <option value="{{ d.designation|lower }}">{{ d.designation }}</option>
             {% endfor %}
         </select>
-        <select id="filter-niveau" class="md:w-44 px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue">
+        <select id="filter-niveau"
+                style="min-width:170px;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;"
+                onfocus="this.style.borderColor='#2d5a8e';this.style.outline='none'"
+                onblur="this.style.borderColor='#e2e8f0'">
             <option value="">Tous les niveaux</option>
             <option value="national">National</option>
             <option value="provincial">Provincial</option>
             <option value="local">Local</option>
         </select>
-        {% if not is_ministre %}
-        <a href="{% url 'gouvernance:arbitre_register' %}" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors whitespace-nowrap" style="background:#0036ca;">
-            <i class="fa-solid fa-plus"></i>
-            Ajouter un arbitre
-        </a>
-        {% endif %}
     </div>
 </div>
 

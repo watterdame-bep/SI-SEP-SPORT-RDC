@@ -59,20 +59,44 @@ class Arbitre(models.Model):
     categorie = models.CharField(max_length=20, choices=CATEGORIE_CHOICES, default='DEUXIEME')
     statut = models.CharField(max_length=30, choices=STATUT_CHOICES, default='EN_ATTENTE_MEDICALE')
 
-    # Photo
+    # Photos (face + profils)
     photo = models.ImageField(
         upload_to='arbitres/photos/',
-        null=True,
-        blank=True,
-        help_text='Photo d\'identité de l\'arbitre'
+        null=True, blank=True,
+        help_text='Photo de face'
+    )
+    photo_gauche = models.ImageField(
+        upload_to='arbitres/photos/',
+        null=True, blank=True,
+        help_text='Profil gauche'
+    )
+    photo_droite = models.ImageField(
+        upload_to='arbitres/photos/',
+        null=True, blank=True,
+        help_text='Profil droit'
     )
 
-    # Empreintes digitales (template JSON stocké)
+    # Empreintes digitales — standard 4-4-2 (images + templates minuties)
+    empreintes_capturees = models.BooleanField(default=False)
     empreintes_template = models.TextField(
         blank=True,
-        help_text='Template d\'empreintes digitales (base64 JSON)'
+        help_text='Template d\'empreintes digitales (base64 JSON — legacy)'
     )
-    empreintes_capturees = models.BooleanField(default=False)
+    # Images des 3 prises
+    main_droite_4 = models.ImageField(upload_to='arbitres/empreintes/%Y/%m/', null=True, blank=True, help_text='4 doigts main droite')
+    main_gauche_4 = models.ImageField(upload_to='arbitres/empreintes/%Y/%m/', null=True, blank=True, help_text='4 doigts main gauche')
+    pouces_2     = models.ImageField(upload_to='arbitres/empreintes/%Y/%m/', null=True, blank=True, help_text='2 pouces')
+    # Templates minuties (BinaryField) pour comparaison 1:N
+    main_droite_4_template = models.BinaryField(null=True, blank=True)
+    main_gauche_4_template = models.BinaryField(null=True, blank=True)
+    pouces_2_template      = models.BinaryField(null=True, blank=True)
+
+    # Certificat médical généré après verdict (PDF)
+    certificat_medical = models.FileField(
+        upload_to='arbitres/certificats/%Y/%m/',
+        null=True, blank=True,
+        help_text='Certificat médical PDF généré par le médecin'
+    )
 
     # Résultat médical (rempli par le médecin de la ligue)
     resultat_medical = models.CharField(

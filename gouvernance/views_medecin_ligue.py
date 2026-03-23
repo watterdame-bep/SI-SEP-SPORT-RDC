@@ -20,6 +20,18 @@ from gouvernance.models import Institution, Athlete, VisiteMedicale, TypeExamen,
 from gouvernance.models import CaptureEmpreintes
 
 
+def _get_medecin_ligue_context(request):
+    """Retourne (profil, ligue) ou (None, None) si accès invalide."""
+    try:
+        profil = request.user.profil_sisep
+    except Exception:
+        return None, None
+    ligue = profil.institution
+    if not ligue or ligue.niveau_territorial not in ('LIGUE', 'LIGUE_PROVINCIALE'):
+        return None, None
+    return profil, ligue
+
+
 @login_required
 @require_role('MEDECIN_INSPECTEUR')
 def medecin_dashboard(request):
@@ -54,13 +66,42 @@ def medecin_dashboard(request):
     athletes_count = athletes.count()
     dernieres_visites = VisiteMedicale.objects.filter(
         athlete__club__in=clubs
-    ).select_related('athlete', 'athlete__personne', 'athlete__club').order_by('-date_visite')[:15]
+    ).select_related('athlete', 'athlete__personne', 'athlete__club').order_by('-date_visite')[:4]
+
+    from gouvernance.models.arbitre import Arbitre
+    arbitres_en_attente = Arbitre.objects.filter(
+        institution=ligue,
+        statut='EN_ATTENTE_MEDICALE',
+        empreintes_capturees=True,
+    ).exclude(photo='').count()
+    arbitres_count = Arbitre.objects.filter(institution=ligue).count()
+    athletes_en_attente = Athlete.objects.filter(
+        club__in=clubs, actif=True, statut_certification='EN_ATTENTE_EXAMEN_MEDICAL'
+    ).count()
+
+    # Nom du médecin connecté
+    medecin_nom = ''
+    try:
+        if getattr(profil, 'agent', None) and profil.agent.personne_id:
+            medecin_nom = profil.agent.personne.prenom or profil.agent.personne.nom_complet
+        elif getattr(profil, 'personne', None) and profil.personne_id:
+            medecin_nom = profil.personne.prenom or profil.personne.nom_complet
+    except Exception:
+        pass
+    if not medecin_nom:
+        medecin_nom = request.user.get_full_name() or request.user.username
+
     context = {
         'ligue': ligue,
         'athletes_count': athletes_count,
         'athletes_avec_visite_count': athletes_avec_visite.count(),
         'athletes_sans_visite_count': athletes_sans_visite.count(),
         'dernieres_visites': dernieres_visites,
+        'arbitres_en_attente': arbitres_en_attente,
+        'arbitres_count': arbitres_count,
+        'athletes_en_attente': athletes_en_attente,
+        'total_en_attente': athletes_en_attente + arbitres_en_attente,
+        'medecin_nom': medecin_nom,
         'user_role': 'medecin_inspecteur',
     }
     return render(request, 'gouvernance/medecin_dashboard.html', context)
@@ -69,7 +110,7 @@ def medecin_dashboard(request):
 @login_required
 @require_role('MEDECIN_INSPECTEUR')
 def medecin_athletes_list(request):
-    """Liste des athlètes de la ligue avec accès au dossier médical."""
+    """Liste des athlètes ET arbitres de la ligue avec accès aux dossiers médicaux."""
     try:
         profil = request.user.profil_sisep
     except Exception:
@@ -84,14 +125,32 @@ def medecin_athletes_list(request):
     ).select_related('personne', 'club', 'discipline').annotate(
         nb_visites=Count('visites_medicales')
     ).order_by('personne__nom', 'personne__prenom')
+
+    from gouvernance.models.arbitre import Arbitre
+    arbitres = Arbitre.objects.filter(
+        institution=ligue,
+    ).exclude(statut='EN_ATTENTE_MEDICALE').select_related('personne', 'discipline').order_by('personne__nom', 'personne__prenom')
+
     total_athletes = athletes.count()
     total_avec_visite = Athlete.objects.filter(club__in=clubs, actif=True).filter(visites_medicales__isnull=False).distinct().count()
+    total_arbitres = arbitres.count()
+    total_arbitres_instruits = arbitres.filter(statut='INSTRUIT').count()
+    total_arbitres_actifs = arbitres.filter(statut='ACTIF').count()
+    total_aptes = (
+        Athlete.objects.filter(club__in=clubs, actif=True, resultat_test_medical='APTE').count()
+        + arbitres.filter(resultat_medical='APTE').count()
+    )
+
     context = {
         'ligue': ligue,
         'athletes': athletes,
+        'arbitres': arbitres,
         'total_athletes': total_athletes,
         'total_avec_visite': total_avec_visite,
-        'user_role': 'medecin_inspecteur',
+        'total_arbitres': total_arbitres,
+        'total_arbitres_instruits': total_arbitres_instruits,
+        'total_arbitres_actifs': total_arbitres_actifs,
+        'total_aptes': total_aptes,
     }
     return render(request, 'gouvernance/medecin_athletes_list.html', context)
 
@@ -128,8 +187,41 @@ def medecin_athlete_dossier(request, athlete_uid):
     return render(request, 'gouvernance/medecin_athlete_dossier.html', context)
 
 
-def _get_medecin_ligue_context(request):
-    """Retourne (profil, ligue) ou (None, None) si accès invalide."""
+@login_required
+@require_role('MEDECIN_INSPECTEUR')
+def medecin_athlete_supprimer(request, athlete_uid):
+    """Supprime un athlète du dossier médical (POST uniquement)."""
+    profil, ligue = _get_medecin_ligue_context(request)
+    if not ligue:
+        return redirect('core:home')
+    athlete = get_object_or_404(Athlete, uid=athlete_uid, actif=True)
+    if athlete.club.institution_tutelle != ligue:
+        return redirect('gouvernance:medecin_athletes_list')
+    if request.method == 'POST':
+        nom = athlete.personne.nom_complet
+        athlete.actif = False
+        athlete.save()
+        messages.success(request, f"Le dossier de {nom} a été supprimé.")
+    return redirect('gouvernance:medecin_athletes_list')
+
+
+@login_required
+@require_role('MEDECIN_INSPECTEUR')
+def medecin_arbitre_dossier(request, arbitre_uid):
+    """Dossier médical d'un arbitre — accessible depuis la liste des dossiers médicaux."""
+    from gouvernance.models.arbitre import Arbitre
+    profil, ligue = _get_medecin_ligue_context(request)
+    if not ligue:
+        return redirect('core:home')
+    arbitre = get_object_or_404(Arbitre, uid=arbitre_uid, institution=ligue)
+    context = {
+        'ligue': ligue,
+        'arbitre': arbitre,
+    }
+    return render(request, 'gouvernance/medecin_arbitre_dossier.html', context)
+
+
+
     try:
         profil = request.user.profil_sisep
     except Exception:
@@ -143,24 +235,41 @@ def _get_medecin_ligue_context(request):
 @login_required
 @require_role('MEDECIN_INSPECTEUR')
 def medecin_athletes_en_attente_examen(request):
-    """Liste des athlètes transférés par le secrétaire, en attente de l'examen médical (F67)."""
+    """Liste des athlètes ET arbitres en attente d'examen médical."""
     profil, ligue = _get_medecin_ligue_context(request)
     if not ligue:
         return redirect('core:home')
-    clubs = Institution.objects.filter(
-        niveau_territorial='CLUB',
-        institution_tutelle=ligue
-    )
+
+    # Athlètes en attente
+    clubs = Institution.objects.filter(niveau_territorial='CLUB', institution_tutelle=ligue)
     athletes = Athlete.objects.filter(
         club__in=clubs,
         actif=True,
         statut_certification='EN_ATTENTE_EXAMEN_MEDICAL'
-    ).select_related('personne', 'club', 'discipline').order_by('date_enrolement', 'personne__nom', 'personne__prenom')
-    total_en_attente = athletes.count()
+    ).select_related('personne', 'club', 'discipline').order_by('date_enrolement', 'personne__nom')
+
+    # Arbitres en attente médicale — biométrie obligatoirement complète
+    from gouvernance.models.arbitre import Arbitre
+    arbitres = Arbitre.objects.filter(
+        institution=ligue,
+        statut='EN_ATTENTE_MEDICALE',
+        empreintes_capturees=True,
+        photo__isnull=False,
+    ).exclude(photo='').select_related('personne', 'discipline', 'institution').order_by('date_enregistrement', 'personne__nom')
+
+    # Disciplines distinctes pour le filtre
+    disciplines_athletes = list(athletes.exclude(discipline__isnull=True).values_list('discipline__designation', flat=True).distinct())
+    disciplines_arbitres = list(arbitres.exclude(discipline__isnull=True).values_list('discipline__designation', flat=True).distinct())
+    disciplines = sorted(set(disciplines_athletes + disciplines_arbitres))
+
     context = {
         'ligue': ligue,
         'athletes': athletes,
-        'total_en_attente': total_en_attente,
+        'arbitres': arbitres,
+        'total_athletes': athletes.count(),
+        'total_arbitres': arbitres.count(),
+        'total_en_attente': athletes.count() + arbitres.count(),
+        'disciplines': disciplines,
         'user_role': 'medecin_inspecteur',
     }
     return render(request, 'gouvernance/medecin_athletes_en_attente_examen.html', context)
@@ -488,13 +597,23 @@ def _get_medecin_ligue_context_for_types(request):
 @require_role('MEDECIN_INSPECTEUR')
 def medecin_types_examen_list(request):
     """Liste des types d'examens médicaux. Le Médecin Inspecteur peut en ajouter."""
+    from django.core.paginator import Paginator
     profil, ligue = _get_medecin_ligue_context_for_types(request)
     if not ligue:
         return redirect('core:home')
-    types_examen = TypeExamen.objects.all().order_by('ordre', 'libelle')
+    q = (request.GET.get('q') or '').strip()
+    qs = TypeExamen.objects.all().order_by('ordre', 'libelle')
+    if q:
+        qs = qs.filter(libelle__icontains=q) | qs.filter(code__icontains=q)
+        qs = qs.order_by('ordre', 'libelle')
+    paginator = Paginator(qs, 15)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
     context = {
         'ligue': ligue,
-        'types_examen': types_examen,
+        'types_examen': page_obj,
+        'page_obj': page_obj,
+        'q': q,
         'user_role': 'medecin_inspecteur',
     }
     return render(request, 'gouvernance/medecin_types_examen_list.html', context)
@@ -540,6 +659,21 @@ def medecin_type_examen_create(request):
         'user_role': 'medecin_inspecteur',
     }
     return render(request, 'gouvernance/medecin_type_examen_form.html', context)
+
+
+@login_required
+@require_role('MEDECIN_INSPECTEUR')
+def medecin_type_examen_supprimer(request, type_examen_id):
+    """Suppression d'un type d'examen (POST uniquement)."""
+    profil, ligue = _get_medecin_ligue_context_for_types(request)
+    if not ligue:
+        return redirect('core:home')
+    type_examen = get_object_or_404(TypeExamen, pk=type_examen_id)
+    if request.method == 'POST':
+        libelle = type_examen.libelle
+        type_examen.delete()
+        messages.success(request, f"Type d'examen « {libelle} » supprimé.")
+    return redirect('gouvernance:medecin_types_examen_list')
 
 
 @login_required

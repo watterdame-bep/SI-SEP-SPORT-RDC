@@ -100,6 +100,23 @@ var MorphoSISEP = (function() {
 
     return {
         captureStep: captureStep,
-        checkDevice: checkDevice
+        checkDevice: checkDevice,
+        /**
+         * Met à jour fingerPosition pour indiquer les doigts absents/manquants.
+         * @param {Object} overrides — ex: { LEFT_LITTLE: true, RIGHT_LITTLE: false }
+         * Seules les clés fournies sont modifiées.
+         */
+        setFingerPosition: function(overrides) {
+            if (!overrides) return;
+            Object.keys(overrides).forEach(function(k) {
+                if (k in fingerPosition) fingerPosition[k] = !!overrides[k];
+            });
+        },
+        /**
+         * Retourne une copie de l'état actuel de fingerPosition.
+         */
+        getFingerPosition: function() {
+            return JSON.parse(JSON.stringify(fingerPosition));
+        }
     };
 })();

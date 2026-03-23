@@ -1,103 +1,206 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Dossiers médicaux | Médecin Inspecteur | SI-SEP Sport RDC{% endblock %}
+{% block title %}Tableau de bord — Médecin Inspecteur | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:0.75rem; }
+.visites-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin-bottom:2rem; }
+@media (max-width:1024px) { .hero-stats-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:640px) {
+    .hero-stats-grid { grid-template-columns:repeat(2,1fr); }
+    .visites-grid { grid-template-columns:1fr; }
+    .hero-title { font-size:1.9rem !important; }
+}
+</style>
+{% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Dossiers médicaux</h1>
-                <p class="text-sm text-white/80 mt-1">{{ ligue.nom_officiel }} — Médecin Inspecteur / Validateur</p>
+<div class="bg-slate-50 px-4 lg:px-8" style="padding-top:1.25rem;">
+    <div style="background:linear-gradient(135deg,#0d2240 0%,#1a3358 50%,#16304f 100%);border-radius:0.875rem;overflow:hidden;position:relative;min-height:380px;">
+        <!-- Ligne dégradée en haut -->
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,#b8860b 20%,#FDE015 50%,#fff176 70%,#FDE015 85%,transparent 100%);z-index:2;"></div>
+        <!-- Motif dot-grid subtil -->
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
+             background-image:radial-gradient(circle,rgba(255,255,255,0.25) 1px,transparent 1px);
+             background-size:18px 18px;
+             -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.3) 60%,transparent 85%);
+             mask-image:linear-gradient(to bottom,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.3) 60%,transparent 85%);"></div>
+        <!-- Contenu -->
+        <div class="px-8" style="padding-top:5rem;padding-bottom:3.5rem;position:relative;z-index:1;">
+            <div style="display:flex;flex-direction:column;gap:1.5rem;">
+                <div>
+                    <!-- Ligne dorée + label -->
+                    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.9rem;">
+                        <div style="width:32px;height:2px;background:#FDE015;border-radius:2px;flex-shrink:0;"></div>
+                        <p style="color:#FDE015;font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;margin:0;">
+                            Médecin Inspecteur &nbsp;·&nbsp; {{ ligue.nom_officiel }}
+                        </p>
+                    </div>
+                    <!-- Grand titre -->
+                    <h1 class="hero-title" style="font-size:2.6rem;font-weight:800;margin:0 0 0.5rem;line-height:1.05;letter-spacing:-0.02em;">
+                        <span style="background:linear-gradient(90deg,#b8860b 0%,#FDE015 40%,#fff176 70%,#FDE015 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">DR. {{ medecin_nom|upper }}</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.5);font-size:0.82rem;margin:0;">
+                        Espace médical — Suivi &amp; homologation des acteurs sportifs
+                    </p>
+                </div>
+                <div class="hero-stats-grid">
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1.75rem 1.5rem;min-height:110px;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-users" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Athlètes</p>
+                                <p style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ athletes_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1.75rem 1.5rem;min-height:110px;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-whistle" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Arbitres</p>
+                                <p style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ arbitres_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1.75rem 1.5rem;min-height:110px;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-circle-check" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Examinés</p>
+                                <p style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ athletes_avec_visite_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1.75rem 1.5rem;min-height:110px;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-clock" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">En attente</p>
+                                <p style="color:#FDE015;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ total_en_attente }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:1.75rem 1.5rem;min-height:110px;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-triangle-exclamation" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Non examinés</p>
+                                <p style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ athletes_sans_visite_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <a href="{% url 'gouvernance:medecin_athletes_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 text-sm font-bold rounded-lg transition-colors shadow hover:shadow-md">
-                <i class="fa-solid fa-list"></i>
-                <span>Liste des athlètes</span>
-            </a>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase">Athlètes (ligue)</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ athletes_count }}</h3>
-            </div>
-            <div class="bg-rdc-blue/10 p-2.5 rounded-lg">
-                <i class="fa-solid fa-users text-xl text-rdc-blue"></i>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase">Avec visite médicale</p>
-                <h3 class="text-2xl font-bold text-green-600 mt-1">{{ athletes_avec_visite_count }}</h3>
-            </div>
-            <div class="bg-green-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-file-medical text-xl text-green-600"></i>
-            </div>
-        </div>
-    </div>
-    <div class="bg-white rounded-lg shadow border border-slate-200 p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-slate-600 uppercase">Sans visite enregistrée</p>
-                <h3 class="text-2xl font-bold text-amber-600 mt-1">{{ athletes_sans_visite_count }}</h3>
-            </div>
-            <div class="bg-amber-100 p-2.5 rounded-lg">
-                <i class="fa-solid fa-user-clock text-xl text-amber-600"></i>
-            </div>
-        </div>
+
+<!-- ═══════════════════════════════════════════════
+     VISITES RÉCENTES
+═══════════════════════════════════════════════ -->
+<div class="mt-8 mb-5">
+    <div class="flex items-center justify-between pb-3" style="border-bottom:1.5px solid #e2e8f0;">
+        <h2 style="margin:0;font-size:1.1rem;font-weight:700;color:#1e293b;letter-spacing:0.02em;line-height:1;">
+            VISITES <span style="color:#0036ca;">RÉCENTES</span>
+        </h2>
+        {% if dernieres_visites %}
+        <span style="font-size:0.7rem;font-weight:700;padding:0.25rem 0.6rem;border-radius:4px;background:#1e3a5f;color:#fff;">
+            4 ENTRÉES
+        </span>
+        {% endif %}
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-        <h2 class="text-lg font-semibold text-slate-900">Dernières visites médicales (F67)</h2>
-        <a href="{% url 'gouvernance:medecin_athletes_list' %}" class="text-sm font-medium text-rdc-blue hover:underline">Voir tous les athlètes</a>
+{% if dernieres_visites %}
+<div class="visites-grid">
+    {% for v in dernieres_visites %}
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;display:flex;
+                box-shadow:0 1px 6px rgba(0,0,0,0.05);
+                transition:transform 0.18s ease,box-shadow 0.18s ease;"
+         onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.10)'"
+         onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 1px 6px rgba(0,0,0,0.05)'">
+
+        <!-- Barre latérale dégradée -->
+        <div style="width:5px;flex-shrink:0;
+            {% if v.resultat_global == 'APTE' %}background:linear-gradient(180deg,#059669 0%,#34d399 50%,#059669 100%);
+            {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}background:linear-gradient(180deg,#d97706 0%,#fbbf24 50%,#d97706 100%);
+            {% else %}background:linear-gradient(180deg,#dc2626 0%,#f87171 50%,#dc2626 100%);
+            {% endif %}"></div>
+
+        <div style="flex:1;padding:1.1rem 1.25rem;">
+            <!-- Ligne 1: icône + nom + badge -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;margin-bottom:0.35rem;">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <i class="fa-solid {% if v.resultat_global == 'APTE' %}fa-circle-check{% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}fa-circle-exclamation{% else %}fa-circle-xmark{% endif %}"
+                       style="font-size:0.85rem;
+                           {% if v.resultat_global == 'APTE' %}color:#059669;
+                           {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}color:#d97706;
+                           {% else %}color:#dc2626;{% endif %}"></i>
+                    <span style="font-size:0.9rem;font-weight:700;color:#0f172a;">{{ v.athlete.nom_complet }}</span>
+                </div>
+                <span style="font-size:0.65rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:4px;white-space:nowrap;flex-shrink:0;
+                    {% if v.resultat_global == 'APTE' %}background:#dcfce7;color:#15803d;
+                    {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}background:#fef9c3;color:#b45309;
+                    {% else %}background:#fee2e2;color:#b91c1c;{% endif %}">
+                    {{ v.get_resultat_global_display|upper }}
+                </span>
+            </div>
+
+            <!-- Ligne 2: club • discipline -->
+            <p style="font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 0.75rem;">
+                {{ v.athlete.club.nom_officiel }}{% if v.athlete.discipline %} &bull; {{ v.athlete.discipline.designation }}{% endif %}
+            </p>
+
+            <!-- Barres décoratives -->
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:0.85rem;">
+                <div style="height:2px;width:24px;border-radius:2px;
+                    {% if v.resultat_global == 'APTE' %}background:#059669;
+                    {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}background:#d97706;
+                    {% else %}background:#dc2626;{% endif %}"></div>
+                <div style="height:2px;width:14px;border-radius:2px;
+                    {% if v.resultat_global == 'APTE' %}background:#86efac;
+                    {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}background:#fde68a;
+                    {% else %}background:#fca5a5;{% endif %}"></div>
+                <div style="height:2px;width:8px;border-radius:2px;background:#e2e8f0;"></div>
+            </div>
+
+            <!-- Ligne 3: date + bouton -->
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.72rem;color:#94a3b8;">Màj : {{ v.date_visite|date:"d/m/Y" }}</span>
+                <a href="{% url 'gouvernance:medecin_athlete_dossier' v.athlete.uid %}"
+                   style="font-size:0.72rem;font-weight:700;padding:0.35rem 0.85rem;border:1.5px solid #1e3a5f;border-radius:5px;color:#1e3a5f;text-decoration:none;transition:background 0.15s;"
+                   onmouseenter="this.style.background='#f1f5f9'" onmouseleave="this.style.background='transparent'">
+                    GÉRER LE DOSSIER
+                </a>
+            </div>
+        </div>
     </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Athlète</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Club</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Résultat</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Dossier</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-                {% for v in dernieres_visites %}
-                <tr class="hover:bg-slate-50">
-                    <td class="px-6 py-4 text-slate-700">{{ v.date_visite|date:"d/m/Y" }}</td>
-                    <td class="px-6 py-4 font-medium text-slate-900">{{ v.athlete.nom_complet }}</td>
-                    <td class="px-6 py-4 text-slate-700">{{ v.athlete.club.nom_officiel }}</td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {% if v.resultat_global == 'APTE' %}bg-green-100 text-green-800
-                            {% elif v.resultat_global == 'APTE_AVEC_RESERVE' %}bg-amber-100 text-amber-800
-                            {% else %}bg-red-100 text-red-800{% endif %}">
-                            {{ v.get_resultat_global_display }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="{% url 'gouvernance:medecin_athlete_dossier' v.athlete.uid %}" class="text-sm font-medium text-rdc-blue hover:underline">Ouvrir</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-slate-500">Aucune visite médicale enregistrée pour l’instant.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% endfor %}
 </div>
+
+{% else %}
+<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:3rem;text-align:center;margin-bottom:2rem;">
+    <i class="fa-solid fa-file-medical" style="font-size:2rem;color:#cbd5e1;display:block;margin-bottom:0.75rem;"></i>
+    <p style="font-size:0.875rem;font-weight:600;color:#64748b;margin:0 0 0.25rem;">Aucune visite médicale enregistrée</p>
+    <p style="font-size:0.75rem;color:#94a3b8;margin:0;">Les visites F67 apparaîtront ici après les examens.</p>
+</div>
+{% endif %}
+
+
 {% endblock %}

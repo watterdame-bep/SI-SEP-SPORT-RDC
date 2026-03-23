@@ -205,3 +205,177 @@ def generer_certificat_aptitude_pdf(visite, base_url=None):
     c.save()
     buffer.seek(0)
     return buffer
+
+
+def generer_certificat_medical_arbitre_pdf(arbitre, base_url=None):
+    """
+    Génère le PDF du Certificat Médical pour un arbitre.
+    Similaire au F72 athlète mais adapté au profil arbitre.
+
+    Args:
+        arbitre: Instance Arbitre (avec personne, discipline, institution, etc.)
+        base_url: URL de base du site
+
+    Returns:
+        io.BytesIO: Flux PDF
+    """
+    from django.conf import settings
+    if base_url is None:
+        base_url = getattr(settings, 'SITE_URL', getattr(settings, 'SISEP_PUBLIC_URL', 'http://127.0.0.1:8000'))
+    base_url = base_url.rstrip('/')
+
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    w, h = A4
+
+    # ----- En-tête -----
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColor(BLEU_RDC)
+    c.drawCentredString(w/2, h - 1.2*cm, "RÉPUBLIQUE DÉMOCRATIQUE DU CONGO")
+    c.setFont("Helvetica-Bold", 10)
+    c.drawCentredString(w/2, h - 1.6*cm, "MINISTÈRE DES SPORTS ET LOISIRS")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(NOIR)
+    c.drawCentredString(w/2, h - 1.95*cm, "SI-SEP Sport — Système d'Information Sport pour l'Excellence et la Performance")
+
+    c.setFont("Helvetica-Bold", 14)
+    c.setFillColor(BLEU_RDC)
+    c.drawCentredString(w/2, h - 2.6*cm, "CERTIFICAT MÉDICAL D'APTITUDE — CORPS ARBITRAL")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(GRIS)
+    c.drawCentredString(w/2, h - 2.9*cm, "Document généré électroniquement — SI-SEP Sport RDC")
+
+    y = h - 3.5*cm
+
+    # ----- Identité de l'arbitre -----
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(NOIR)
+    c.drawString(1.5*cm, y, "Identité de l'arbitre")
+    y -= 0.4*cm
+
+    photo_x, photo_y = 1.5*cm, y - 4*cm
+    photo_w, photo_h = 3*cm, 4*cm
+
+    if arbitre.photo:
+        try:
+            c.drawImage(arbitre.photo.path, photo_x, photo_y, width=photo_w, height=photo_h, preserveAspectRatio=True)
+        except Exception:
+            c.setStrokeColor(GRIS)
+            c.rect(photo_x, photo_y, photo_w, photo_h)
+    else:
+        c.setStrokeColor(GRIS)
+        c.rect(photo_x, photo_y, photo_w, photo_h)
+        c.setFont("Helvetica", 8)
+        c.setFillColor(GRIS)
+        c.drawCentredString(photo_x + photo_w/2, photo_y + photo_h/2 - 0.2*cm, "Photo")
+
+    info_x = photo_x + photo_w + 1*cm
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColor(GRIS)
+    c.drawString(info_x, y - 0.3*cm, "NOM COMPLET")
+    c.setFont("Helvetica", 11)
+    c.setFillColor(NOIR)
+    c.drawString(info_x, y - 0.7*cm, (arbitre.personne.nom_complet or "").upper())
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColor(GRIS)
+    c.drawString(info_x, y - 1.2*cm, "N° LICENCE")
+    c.setFont("Helvetica-Bold", 12)
+    c.setFillColor(BLEU_RDC)
+    c.drawString(info_x, y - 1.6*cm, arbitre.numero_licence or "#EN-ATTENTE")
+    c.setFont("Helvetica", 9)
+    c.setFillColor(NOIR)
+    c.drawString(info_x, y - 2.1*cm, f"Ligue : {(arbitre.institution.nom_officiel if arbitre.institution else '—')[:40]}")
+    c.drawString(info_x, y - 2.5*cm, f"Discipline : {(str(arbitre.discipline) if arbitre.discipline else '—')[:35]}")
+    c.drawString(info_x, y - 2.9*cm, f"Niveau : {arbitre.get_niveau_display()} — Catégorie : {arbitre.get_categorie_display()}")
+
+    y = photo_y - 0.8*cm
+
+    # ----- Mention d'aptitude -----
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(NOIR)
+    c.drawString(1.5*cm, y, "Certification médicale")
+    y -= 0.5*cm
+
+    if arbitre.resultat_medical == 'APTE':
+        phrase = (
+            "Le médecin soussigné certifie avoir examiné ce jour l'arbitre susnommé "
+            "et n'avoir constaté aucune contre-indication à l'exercice des fonctions d'arbitrage en compétition."
+        )
+    elif arbitre.resultat_medical == 'APTE_AVEC_RESERVE':
+        phrase = (
+            "Le médecin soussigné certifie avoir examiné ce jour l'arbitre susnommé. "
+            "Aptitude à l'exercice des fonctions d'arbitrage avec réserve médicale."
+        )
+    else:
+        phrase = (
+            "Le médecin soussigné certifie avoir examiné ce jour l'arbitre susnommé. "
+            "Contre-indication constatée à l'exercice des fonctions d'arbitrage en compétition."
+        )
+
+    c.setFont("Helvetica", 10)
+    for line in textwrap.wrap(phrase, width=85):
+        c.drawString(1.5*cm, y, line)
+        y -= 0.4*cm
+    y -= 0.3*cm
+
+    c.setFont("Helvetica", 9)
+    c.setFillColor(GRIS)
+    date_str = arbitre.date_examen_medical.strftime('%d/%m/%Y') if arbitre.date_examen_medical else "—"
+    c.drawString(1.5*cm, y, f"Date de l'examen : {date_str}")
+    y -= 0.8*cm
+
+    # ----- Observations -----
+    if arbitre.notes_medicales:
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(NOIR)
+        c.drawString(1.5*cm, y, "Observations du médecin")
+        y -= 0.4*cm
+        c.setFont("Helvetica-Oblique", 9)
+        c.setFillColor(GRIS)
+        for line in textwrap.wrap(arbitre.notes_medicales, width=90):
+            c.drawString(1.5*cm, y, line)
+            y -= 0.35*cm
+        y -= 0.4*cm
+
+    # ----- Signature médecin -----
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(NOIR)
+    c.drawString(1.5*cm, y, "Médecin inspecteur")
+    y -= 0.4*cm
+    c.setFont("Helvetica", 8)
+    c.setFillColor(GRIS)
+    c.drawString(1.5*cm, y, "Document généré électroniquement par SI-SEP Sport RDC")
+    c.drawString(1.5*cm, y - 0.35*cm, f"Le {datetime.now().strftime('%d/%m/%Y à %H:%M')} — Cachet électronique")
+
+    # ----- QR code -----
+    qr_size = 3*cm
+    qr_x = w - 1.5*cm - qr_size
+    qr_y = 1.5*cm
+    qr_url = f"{base_url}/gouvernance/arbitre/{arbitre.uid}/"
+    try:
+        qr_buf = _generer_qr_image(qr_url)
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+            qr_buf.seek(0)
+            tmp.write(qr_buf.read())
+            tmp_path = tmp.name
+        try:
+            c.drawImage(tmp_path, qr_x, qr_y, width=qr_size, height=qr_size)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("Certificat arbitre: QR code non inséré: %s", e)
+
+    c.setFont("Helvetica", 7)
+    c.setFillColor(GRIS)
+    c.drawCentredString(qr_x + qr_size/2, qr_y - 0.3*cm, "Scanner pour vérifier")
+    c.drawCentredString(qr_x + qr_size/2, qr_y - 0.55*cm, "l'authenticité du certificat")
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer

@@ -20,21 +20,86 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* Dégradé jaune RDC pour les labels de section sidebar */
+        #app-sidebar .text-rdc-yellow {
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: #0036ca !important;
+            background-clip: unset !important;
+            color: #0036ca !important;
+            opacity: 0.75;
+        }
+        /* Sidebar blanc — liens nav */
+        #app-sidebar nav a {
+            color: #475569 !important;
+        }
+        #app-sidebar nav a:hover {
+            color: #1e293b !important;
+            background: #f1f5f9 !important;
+        }
+        #app-sidebar nav a i {
+            color: #64748b;
+            transition: color 0.15s;
+        }
+        #app-sidebar nav a:hover i {
+            color: #0036ca !important;
+        }
+        /* Lien actif */
+        #app-sidebar nav a.bg-white\/15 {
+            background: #eff6ff !important;
+            color: #0036ca !important;
+            box-shadow: none !important;
+            position: relative;
+            overflow: hidden;
+        }
+        #app-sidebar nav a.bg-white\/15::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: linear-gradient(180deg, #b8860b 0%, #FDE015 50%, #fff176 100%);
+        }
+        #app-sidebar nav a.bg-white\/15 i {
+            color: #0036ca !important;
+        }
+        /* Séparateur de section */
+        #app-sidebar nav .bg-white\/10 {
+            background-color: #e2e8f0 !important;
+        }
+        #app-sidebar nav [class*="bg-white"] .flex-1 {
+            background-color: #e2e8f0 !important;
+        }
+        #app-sidebar nav .h-px {
+            background-color: #e2e8f0 !important;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-slate-50 font-sans antialiased overflow-x-hidden">
     
     <!-- Sidebar -->
-    <aside id="app-sidebar" class="fixed left-0 top-0 z-50 h-screen w-72 bg-rdc-blue shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col">
+    <aside id="app-sidebar" class="fixed left-0 top-0 z-50 h-screen w-72 bg-white shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col" style="border-right:1px solid #e2e8f0;">
         
         <!-- Logo Header -->
-        <div class="h-16 flex items-center justify-center px-6 border-b border-white/10">
-            <a href="{% if user_role == 'ministre' %}{% url 'gouvernance:minister_dashboard' %}{% elif user_role == 'sg' %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'core:setup_sisep' %}{% endif %}" class="block group">
-                <img src="{% static 'assets/images/logo-ministere-sports.png' %}" 
+        <div class="h-16 flex items-center justify-between px-4 border-b border-slate-200">
+            <!-- Bouton fermer — mobile uniquement, à gauche -->
+            <button type="button" id="sidebar-close-btn"
+                    class="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <!-- Logo à droite sur mobile, centré sur desktop -->
+            <a href="{% if user_role == 'ministre' %}{% url 'gouvernance:minister_dashboard' %}{% elif user_role == 'sg' %}{% url 'gouvernance:sg_dashboard' %}{% else %}{% url 'core:setup_sisep' %}{% endif %}" class="block group lg:mx-auto">
+                <img src="{% static 'assets/images/logo-ministere-sports-black.webp' %}" 
                      alt="Ministère des Sports" 
-                     class="h-14 w-auto object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-300">
+                     class="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300">
             </a>
+            <!-- Spacer desktop pour centrer le logo -->
+            <div class="hidden lg:block w-8"></div>
         </div>
 
         <!-- Navigation -->
@@ -374,9 +439,9 @@
             </div>
             
             <a href="{% url 'gouvernance:medecin_athletes_en_attente_examen' %}" 
-               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_athletes_en_attente_examen' or request.resolver_match.url_name == 'medecin_athlete_examen_medical' %}bg-white/15 text-white shadow-lg{% endif %}">
+               class="group flex items-center gap-3.5 px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 {% if request.resolver_match.url_name == 'medecin_athletes_en_attente_examen' or request.resolver_match.url_name == 'medecin_athlete_examen_medical' or request.resolver_match.url_name == 'arbitre_verdict_medical' %}bg-white/15 text-white shadow-lg{% endif %}">
                 <i class="fa-solid fa-clipboard-user text-lg w-6 text-center group-hover:scale-110 transition-transform duration-200"></i>
-                <span class="font-medium text-sm">En attente d'examen (F67)</span>
+                <span class="font-medium text-sm">En attente d'examen</span>
             </a>
             
             <a href="{% url 'gouvernance:medecin_athletes_list' %}" 
@@ -771,9 +836,18 @@
         </nav>
 
         <!-- Bottom branding -->
-        <div class="p-4 border-t border-white/10 bg-black/5 flex flex-col items-center gap-2">
-            <img src="{% static 'assets/images/logo-rdc.png' %}" alt="RDC" class="h-10 w-auto object-contain opacity-80">
-            <p class="text-xs text-white/50 text-center leading-tight">SI-SEP Sport RDC</p>
+        <div style="flex-shrink:0;">
+            <!-- Barre dégradée jaune RDC -->
+            <div style="height:4px;background:linear-gradient(90deg, #b8860b 0%, #FDE015 40%, #fff176 70%, #FDE015 100%);"></div>
+            <!-- Section principale -->
+            <div style="background:#1e3a5f;padding:1.1rem 1rem 1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.6rem;">
+                <img src="{% static 'assets/images/logo-rdc.png' %}" alt="RDC"
+                     style="height:42px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));">
+                <div>
+                    <p style="color:#fff;font-size:0.72rem;font-weight:800;margin:0 0 0.2rem;letter-spacing:0.04em;text-transform:uppercase;">SI-SEP SPORT RDC</p>
+                    <p style="color:rgba(255,255,255,0.4);font-size:0.58rem;margin:0;line-height:1.4;font-style:italic;">Système Intégré de Suivi-Évaluation<br>et Pilotage du Sport</p>
+                </div>
+            </div>
         </div>
     </aside>
 
@@ -801,119 +875,71 @@
                 
                 <!-- User Menu -->
                 <div class="relative">
-                    <details id="user-menu" class="group">
-                        <summary class="flex items-center gap-3 cursor-pointer list-none rounded-xl transition-all duration-200 [&::-webkit-details-marker]:hidden overflow-hidden" style="background:#0036ca;">
-                            <!-- Avatar -->
-                            <div class="flex items-center gap-3 px-3 py-2">
-                                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                    {% if request.user.profil_sisep.agent %}
-                                        {{ request.user.profil_sisep.agent.personne.nom_complet|slice:":2"|upper }}
-                                    {% else %}
-                                        {{ user.get_full_name|default:user.username|slice:":2"|upper }}
-                                    {% endif %}
-                                </div>
-                                <div class="hidden md:block text-left">
-                                    <p class="text-xs font-bold text-white leading-tight">
-                                        {% if request.user.profil_sisep.agent %}
-                                            {{ request.user.profil_sisep.agent.personne.nom_complet }}
-                                        {% else %}
-                                            {{ user.get_full_name|default:user.username }}
-                                        {% endif %}
-                                    </p>
-                                    <p class="text-xs font-semibold leading-tight" style="color:#fde68a;">
-                                        {% if request.user.profil_sisep %}
-                                            {% with r=request.user.profil_sisep.role %}
-                                                {% if r == 'MINISTRE' %}Ministre
-                                                {% elif r == 'INSTITUTION_ADMIN' %}Secrétaire Général
-                                                {% elif r == 'DIRECTEUR_PROVINCIAL' %}Directeur Provincial
-                                                {% elif r == 'FEDERATION_SECRETARY' %}Secrétaire
-                                                {% elif r == 'CLUB_SECRETARY' %}Secrétaire Club
-                                                {% elif r == 'MEDECIN_INSPECTEUR' %}Médecin
-                                                {% elif r == 'INFRA_MANAGER' %}Gest. Infrastructure
-                                                {% elif r == 'INSTITUTION_AGENT' %}Agent
-                                                {% else %}{{ request.user.profil_sisep.get_role_display }}
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endif %}
-                                    </p>
-                                </div>
-                                <i class="fa-solid fa-chevron-down text-xs text-white/70 group-open:rotate-180 transition-transform duration-200 ml-1"></i>
-                            </div>
-                        </summary>
-                        
-                        <!-- Dropdown -->
-                        <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50">
-                            <!-- Header du dropdown -->
-                            <div class="px-4 py-4" style="background: linear-gradient(135deg, #1e3a5f 0%, #7c1d2e 100%);">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                                        {% if request.user.profil_sisep.agent %}
-                                            {{ request.user.profil_sisep.agent.personne.nom_complet|slice:":2"|upper }}
-                                        {% else %}
-                                            {{ user.get_full_name|default:user.username|slice:":2"|upper }}
-                                        {% endif %}
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-bold text-white truncate">
-                                            {% if request.user.profil_sisep.agent %}
-                                                {{ request.user.profil_sisep.agent.personne.nom_complet }}
-                                            {% else %}
-                                                {{ user.get_full_name|default:user.username }}
-                                            {% endif %}
-                                        </p>
-                                        <p class="text-xs font-semibold truncate mt-0.5" style="color:#fde68a;">
-                                            {% if request.user.profil_sisep %}
-                                                {% with r=request.user.profil_sisep.role %}
-                                                    {% if r == 'MINISTRE' %}Ministre
-                                                    {% elif r == 'INSTITUTION_ADMIN' %}Secrétaire Général
-                                                    {% elif r == 'DIRECTEUR_PROVINCIAL' %}Directeur Provincial
-                                                    {% elif r == 'FEDERATION_SECRETARY' %}Secrétaire
-                                                    {% elif r == 'CLUB_SECRETARY' %}Secrétaire Club
-                                                    {% elif r == 'MEDECIN_INSPECTEUR' %}Médecin
-                                                    {% elif r == 'INFRA_MANAGER' %}Gest. Infrastructure
-                                                    {% elif r == 'INSTITUTION_AGENT' %}Agent
-                                                    {% else %}{{ request.user.profil_sisep.get_role_display }}
-                                                    {% endif %}
-                                                {% endwith %}
-                                            {% endif %}
-                                        </p>
-                                        <p class="text-xs text-white/50 truncate mt-0.5">{{ user.email|default:"" }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Actions -->
-                            <div class="p-2">
-                                {% if user_role == 'ministre' %}
-                                <a href="{% url 'gouvernance:profil_ministre' %}" 
-                                   class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-200">
-                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#eff6ff;">
-                                        <i class="fa-solid fa-user-pen text-xs" style="color:#0036ca;"></i>
-                                    </div>
-                                    <span class="font-medium">Mon Profil</span>
-                                </a>
-                                {% elif user_role == 'sg' %}
-                                <a href="{% url 'gouvernance:profil_sg' %}" 
-                                   class="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-200">
-                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#eff6ff;">
-                                        <i class="fa-solid fa-user-pen text-xs" style="color:#0036ca;"></i>
-                                    </div>
-                                    <span class="font-medium">Mon Profil</span>
-                                </a>
-                                {% endif %}
-                                <div class="my-1 border-t border-slate-100"></div>
-                                <form method="post" action="{% url 'core:logout' %}">
-                                    {% csrf_token %}
-                                    <button type="submit" 
-                                            class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200">
-                                        <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-right-from-bracket text-xs text-red-500"></i>
-                                        </div>
-                                        <span class="font-medium">Se déconnecter</span>
-                                    </button>
-                                </form>
-                            </div>
+                    <button type="button" id="navbar-user-btn"
+                            style="display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0.75rem 0.45rem 0.5rem;border-radius:0.6rem;border:1px solid #e2e8f0;background:#fff;cursor:pointer;transition:background 0.15s;"
+                            onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                        <div style="width:32px;height:32px;border-radius:8px;background:#0036ca;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <span style="color:#fff;font-size:0.7rem;font-weight:800;">
+                                {% if request.user.profil_sisep.agent %}{{ request.user.profil_sisep.agent.personne.nom_complet|slice:":2"|upper }}{% else %}{{ user.get_full_name|default:user.username|slice:":2"|upper }}{% endif %}
+                            </span>
                         </div>
-                    </details>
+                        <div class="hidden md:block text-left" style="min-width:0;">
+                            <p style="font-size:0.75rem;font-weight:700;color:#1e293b;margin:0;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;">
+                                {% if request.user.profil_sisep.agent %}{{ request.user.profil_sisep.agent.personne.nom_complet }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}
+                            </p>
+                            <p style="font-size:0.62rem;color:#64748b;margin:0;white-space:nowrap;">
+                                {% if request.user.profil_sisep %}{% with r=request.user.profil_sisep.role %}{% if r == 'MINISTRE' %}Ministre{% elif r == 'INSTITUTION_ADMIN' %}Secrétaire Général{% elif r == 'DIRECTEUR_PROVINCIAL' %}Directeur Provincial{% elif r == 'FEDERATION_SECRETARY' %}Secrétaire{% elif r == 'CLUB_SECRETARY' %}Secrétaire Club{% elif r == 'MEDECIN_INSPECTEUR' %}Médecin Inspecteur{% elif r == 'INFRA_MANAGER' %}Gest. Infrastructure{% elif r == 'INSTITUTION_AGENT' %}Agent{% else %}{{ request.user.profil_sisep.get_role_display }}{% endif %}{% endwith %}{% endif %}
+                            </p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" style="font-size:0.65rem;color:#94a3b8;flex-shrink:0;"></i>
+                    </button>
+
+                    <!-- Dropdown popup -->
+                    <div id="navbar-user-popup"
+                         style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:280px;background:#fff;border-radius:0.75rem;box-shadow:0 8px 32px rgba(0,0,0,0.14);border:1px solid #e2e8f0;overflow:hidden;z-index:100;">
+                        <!-- Header bleu foncé -->
+                        <div style="background:#1e3a5f;padding:1rem 1.1rem;">
+                            <p style="color:#fff;font-size:0.85rem;font-weight:800;margin:0 0 0.15rem;text-transform:uppercase;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                {% if request.user.profil_sisep.agent %}{{ request.user.profil_sisep.agent.personne.nom_complet }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}
+                            </p>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.7rem;margin:0;">{{ user.email|default:"" }}</p>
+                        </div>
+                        <!-- Actions -->
+                        <div style="padding:0.4rem;">
+                            {% if user_role == 'ministre' %}
+                            <a href="{% url 'gouvernance:profil_ministre' %}"
+                               style="display:flex;align-items:center;gap:0.65rem;padding:0.65rem 0.75rem;border-radius:0.5rem;text-decoration:none;color:#1e293b;font-size:0.82rem;font-weight:500;"
+                               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                <i class="fa-solid fa-user" style="color:#0036ca;width:14px;text-align:center;font-size:0.8rem;"></i>
+                                <span>Mon Profil</span>
+                            </a>
+                            {% elif user_role == 'sg' %}
+                            <a href="{% url 'gouvernance:profil_sg' %}"
+                               style="display:flex;align-items:center;gap:0.65rem;padding:0.65rem 0.75rem;border-radius:0.5rem;text-decoration:none;color:#1e293b;font-size:0.82rem;font-weight:500;"
+                               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                <i class="fa-solid fa-user" style="color:#0036ca;width:14px;text-align:center;font-size:0.8rem;"></i>
+                                <span>Mon Profil</span>
+                            </a>
+                            {% else %}
+                            <a href="{% url 'core:profil_compte' request.user.pk %}"
+                               style="display:flex;align-items:center;gap:0.65rem;padding:0.65rem 0.75rem;border-radius:0.5rem;text-decoration:none;color:#1e293b;font-size:0.82rem;font-weight:500;"
+                               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                <i class="fa-solid fa-user" style="color:#0036ca;width:14px;text-align:center;font-size:0.8rem;"></i>
+                                <span>Mon Profil</span>
+                            </a>
+                            {% endif %}
+                            <div style="height:1px;background:#f1f5f9;margin:0.3rem 0;"></div>
+                            <form method="post" action="{% url 'core:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        style="width:100%;display:flex;align-items:center;gap:0.65rem;padding:0.65rem 0.75rem;border-radius:0.5rem;border:none;background:transparent;cursor:pointer;color:#b91c1c;font-size:0.82rem;font-weight:600;"
+                                        onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">
+                                    <i class="fa-solid fa-right-from-bracket" style="color:#b91c1c;width:14px;text-align:center;font-size:0.8rem;"></i>
+                                    <span>Déconnexion</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -944,7 +970,8 @@
         const sidebar = document.getElementById('app-sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         const mobileBtn = document.getElementById('mobile-menu-btn');
-        
+        const closeBtn = document.getElementById('sidebar-close-btn');
+
         function openSidebar() {
             sidebar?.classList.remove('-translate-x-full');
             overlay?.classList.remove('opacity-0', 'pointer-events-none');
@@ -954,18 +981,30 @@
             sidebar?.classList.add('-translate-x-full');
             overlay?.classList.add('opacity-0', 'pointer-events-none');
         }
-        
-        mobileBtn?.addEventListener('click', openSidebar);
+
+        mobileBtn?.addEventListener('click', () => {
+            const isOpen = !sidebar?.classList.contains('-translate-x-full');
+            isOpen ? closeSidebar() : openSidebar();
+        });
+        closeBtn?.addEventListener('click', closeSidebar);
         overlay?.addEventListener('click', closeSidebar);
         document.addEventListener('keydown', (e) => e.key === 'Escape' && closeSidebar());
         
-        // User menu
-        const userMenu = document.getElementById('user-menu');
-        document.addEventListener('click', (e) => {
-            if (userMenu && !userMenu.contains(e.target)) {
-                userMenu.removeAttribute('open');
-            }
-        });
+        // Navbar user popup
+        const navbarUserBtn = document.getElementById('navbar-user-btn');
+        const navbarUserPopup = document.getElementById('navbar-user-popup');
+        if (navbarUserBtn && navbarUserPopup) {
+            navbarUserBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = navbarUserPopup.style.display !== 'none';
+                navbarUserPopup.style.display = isOpen ? 'none' : 'block';
+            });
+            document.addEventListener('click', (e) => {
+                if (!navbarUserBtn.contains(e.target) && !navbarUserPopup.contains(e.target)) {
+                    navbarUserPopup.style.display = 'none';
+                }
+            });
+        }
         
         // Submenu toggle
         function toggleSubmenu(id) {

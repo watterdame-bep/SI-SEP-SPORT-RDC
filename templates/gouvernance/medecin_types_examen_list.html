@@ -1,95 +1,234 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}Types d'examens | Médecin Inspecteur | SI-SEP Sport RDC{% endblock %}
 
+{% block extra_css %}
+<style>
+@media (max-width: 640px) {
+    .types-header-inner { flex-direction: column !important; gap: 1rem !important; }
+    .types-header-inner h1 { font-size: 1.7rem !important; }
+    .types-stat-box { align-self: flex-start; min-width: 0 !important; }
+    .search-add-bar { flex-direction: column !important; }
+    .search-add-bar a { width: 100% !important; justify-content: center; }
+    .col-ordre, .col-code, .col-fichier { display: none; }
+}
+.table-scroll-hidden { overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.table-scroll-hidden::-webkit-scrollbar { display: none; }
+</style>
+{% endblock %}
+
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="{% url 'gouvernance:medecin_dashboard' %}" class="flex h-10 w-10 items-center justify-center bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-arrow-left text-white"></i>
-                </a>
+<div class="bg-slate-50 px-4 lg:px-8" style="padding-top:1.25rem;">
+    <div style="background:linear-gradient(120deg, #0d2240 0%, #1e3a5f 60%, #16304f 100%);border-radius:0.875rem;overflow:hidden;position:relative;">
+        <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(253,224,21,0.7) 60%, transparent 100%);pointer-events:none;border-radius:0.875rem 0 0 0.875rem;"></div>
+        <div class="px-8" style="padding-top:2rem;padding-bottom:2rem;position:relative;z-index:1;">
+            <div class="types-header-inner" style="display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;">
                 <div>
-                    <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Types d'examens médicaux</h1>
-                    <p class="text-sm text-white/80 mt-1">Référentiel : les médecins en consultation piochent dans cette liste pour renseigner les résultats</p>
+                    <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.4rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">TYPES </span><span style="background:linear-gradient(90deg,#b8860b 0%,#FDE015 40%,#fff176 70%,#FDE015 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">D'EXAMENS</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.875rem;margin:0;">
+                        Référentiel des examens proposés lors de la visite médicale (F67)
+                    </p>
+                </div>
+                <div class="types-stat-box" style="flex-shrink:0;display:flex;align-items:center;">
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:0.9rem 1rem;text-align:center;min-width:130px;">
+                        <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 0.2rem;">Total types</p>
+                        <p style="color:#FDE015;font-size:1.8rem;font-weight:800;margin:0;line-height:1;">{{ page_obj.paginator.count }}</p>
+                    </div>
                 </div>
             </div>
-            <a href="{% url 'gouvernance:medecin_type_examen_create' %}" class="px-4 py-2.5 bg-rdc-yellow hover:bg-rdc-yellow/90 text-slate-900 font-semibold rounded-lg transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i>
-                <span>Ajouter un type d'examen</span>
-            </a>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-        <p class="text-sm text-slate-600">Les examens listés ci-dessous sont proposés lors de la saisie de la visite médicale (F67). Vous pouvez en ajouter ou modifier l'ordre et les options.</p>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ordre</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Code</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Libellé</th>
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Obligatoire</th>
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Fichier</th>
-                    <th class="px-6 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Statut</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-                {% for t in types_examen %}
-                <tr class="hover:bg-slate-50">
-                    <td class="px-6 py-4 text-slate-700">{{ t.ordre }}</td>
-                    <td class="px-6 py-4">
-                        {% if t.code %}
-                        <span class="inline-flex px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-xs font-mono">{{ t.code }}</span>
-                        {% else %}
-                        <span class="text-slate-400">—</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="font-medium text-slate-900">{{ t.libelle }}</span>
-                        {% if t.description %}<p class="text-xs text-slate-500 mt-0.5">{{ t.description|truncatewords:12 }}</p>{% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        {% if t.obligatoire %}
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Oui</span>
-                        {% else %}
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Optionnel</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        {% if t.accepte_fichier %}
-                        <i class="fa-solid fa-file-arrow-up text-green-600" title="Accepte un document"></i>
-                        {% else %}
-                        <span class="text-slate-300">—</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        {% if t.actif %}
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Actif</span>
-                        {% else %}
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">Inactif</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="{% url 'gouvernance:medecin_type_examen_edit' t.id %}" class="text-sm font-medium text-rdc-blue hover:underline">Modifier</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">Aucun type d'examen. <a href="{% url 'gouvernance:medecin_type_examen_create' %}" class="text-rdc-blue hover:underline">Ajouter le premier</a>.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<!-- Barre de recherche + bouton ajouter -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+    <form method="get" action="" class="search-add-bar" style="display:flex;gap:0.75rem;align-items:center;">
+        <div class="relative flex-1">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" name="q" value="{{ q }}"
+                   placeholder="Rechercher par libellé ou code…"
+                   style="width:100%;padding:0.55rem 0.75rem 0.55rem 2.25rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+        <a href="{% url 'gouvernance:medecin_type_examen_create' %}"
+           style="display:inline-flex;align-items:center;gap:0.45rem;padding:0.55rem 1.1rem;background:#2d5a8e;border-radius:0.4rem;color:#fff;font-size:0.82rem;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;"
+           onmouseover="this.style.background='#1e3a5f'" onmouseout="this.style.background='#2d5a8e'">
+            <i class="fa-solid fa-plus text-xs"></i> Ajouter un type
+        </a>
+    </form>
+</div>
+
+<div class="-mx-4 lg:-mx-8">
+<div class="bg-white border-y border-slate-200 table-scroll-hidden">
+    <table class="min-w-full divide-y divide-slate-200" style="min-width:560px;">
+        <thead class="bg-slate-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase col-ordre" style="width:60px;">Ordre</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase col-code" style="width:100px;">Code</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Libellé</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:110px;">Obligatoire</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase col-fichier" style="width:90px;">Fichier</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:90px;">Statut</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:80px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for t in types_examen %}
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-6 py-3 col-ordre">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#eef2ff;border-radius:6px;font-size:0.72rem;font-weight:800;color:#0036ca;">{{ t.ordre }}</span>
+                </td>
+                <td class="px-6 py-3 col-code">
+                    {% if t.code %}
+                    <span style="display:inline-block;padding:0.2rem 0.55rem;background:#f1f5f9;border-radius:0.3rem;font-size:0.72rem;font-weight:700;color:#475569;font-family:monospace;">{{ t.code }}</span>
+                    {% else %}
+                    <span style="color:#cbd5e1;">—</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-3">
+                    <p style="font-size:0.875rem;font-weight:400;color:#1e293b;margin:0 0 0.1rem;">{{ t.libelle }}</p>
+                    {% if t.description %}<p style="font-size:0.72rem;color:#94a3b8;margin:0;">{{ t.description|truncatewords:10 }}</p>{% endif %}
+                </td>
+                <td class="px-6 py-3 text-center">
+                    {% if t.obligatoire %}
+                    <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:1rem;"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:1rem;"></i>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-3 text-center col-fichier">
+                    {% if t.accepte_fichier %}
+                    <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:1rem;"></i>
+                    {% else %}
+                    <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:1rem;"></i>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-3 text-center">
+                    {% if t.actif %}
+                    <span style="display:inline-block;padding:0.2rem 0.65rem;background:#dcfce7;color:#16a34a;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Actif</span>
+                    {% else %}
+                    <span style="display:inline-block;padding:0.2rem 0.65rem;background:#f1f5f9;color:#94a3b8;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Inactif</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-3 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <a href="{% url 'gouvernance:medecin_type_examen_edit' t.id %}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white"
+                           style="background:#2d5a8e;" title="Modifier">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </a>
+                        <button onclick="confirmerSuppressionType({{ t.id }}, '{{ t.libelle|escapejs }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white"
+                                style="background:#b91c1c;" title="Supprimer">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="padding:4rem 2rem;text-align:center;">
+                    <i class="fa-solid fa-flask" style="font-size:2.5rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+                    {% if q %}
+                    <p style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0 0 0.4rem;">Aucun résultat pour « {{ q }} »</p>
+                    <p style="font-size:0.8rem;color:#94a3b8;margin:0;">Modifiez votre recherche.</p>
+                    {% else %}
+                    <p style="font-size:0.95rem;font-weight:700;color:#1e293b;margin:0 0 0.4rem;">Aucun type d'examen</p>
+                    <p style="font-size:0.8rem;color:#94a3b8;margin:0 0 1rem;">Ajoutez les examens proposés lors de la visite médicale F67.</p>
+                    <a href="{% url 'gouvernance:medecin_type_examen_create' %}"
+                       style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1.1rem;background:#0036ca;border-radius:0.4rem;color:#fff;font-size:0.8rem;font-weight:600;text-decoration:none;">
+                        <i class="fa-solid fa-plus"></i> Ajouter le premier
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem;padding:0 0.25rem;">
+    <p style="font-size:0.78rem;color:#64748b;margin:0;">
+        {{ page_obj.start_index }}–{{ page_obj.end_index }} sur {{ page_obj.paginator.count }} type{% if page_obj.paginator.count > 1 %}s{% endif %}
+    </p>
+    <div style="display:flex;gap:0.35rem;">
+        {% if page_obj.has_previous %}
+        <a href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #e2e8f0;border-radius:0.4rem;background:#fff;color:#475569;text-decoration:none;font-size:0.75rem;"
+           onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0.4rem;background:#0036ca;color:#fff;font-size:0.78rem;font-weight:700;">{{ num }}</span>
+            {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+            <a href="?{% if q %}q={{ q }}&{% endif %}page={{ num }}"
+               style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #e2e8f0;border-radius:0.4rem;background:#fff;color:#475569;text-decoration:none;font-size:0.78rem;"
+               onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}"
+           style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #e2e8f0;border-radius:0.4rem;background:#fff;color:#475569;text-decoration:none;font-size:0.75rem;"
+           onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+        {% endif %}
     </div>
 </div>
+{% endif %}
+
+<!-- Modale suppression -->
+<div id="modal-suppr-type" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(15,23,42,0.35);">
+    <div style="background:#fff;border-radius:0.75rem;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:1.25rem 1.5rem;width:100%;max-width:340px;margin:0 1rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
+            <div style="width:30px;height:30px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-trash" style="font-size:0.7rem;color:#b91c1c;"></i>
+            </div>
+            <div>
+                <p style="font-size:0.82rem;font-weight:700;color:#1e293b;margin:0;">Supprimer le type d'examen</p>
+                <p style="font-size:0.68rem;color:#94a3b8;margin:0;">Cette action est irréversible</p>
+            </div>
+        </div>
+        <p style="font-size:0.78rem;color:#475569;margin:0 0 1rem;line-height:1.5;">Voulez-vous vraiment supprimer <strong id="modal-type-libelle" style="color:#1e293b;"></strong> ?</p>
+        <div style="display:flex;gap:0.6rem;">
+            <button onclick="fermerModalType()"
+                    style="flex:1;padding:0.45rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;font-size:0.78rem;font-weight:600;color:#64748b;background:#f8fafc;cursor:pointer;"
+                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">Annuler</button>
+            <form id="form-suppr-type" method="post" action="" style="flex:1;">
+                {% csrf_token %}
+                <button type="submit"
+                        style="width:100%;padding:0.45rem 0.75rem;border:none;border-radius:0.4rem;font-size:0.78rem;font-weight:700;color:#fff;background:#b91c1c;cursor:pointer;"
+                        onmouseover="this.style.background='#991b1b'" onmouseout="this.style.background='#b91c1c'">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmerSuppressionType(id, libelle) {
+    document.getElementById('modal-type-libelle').textContent = libelle;
+    document.getElementById('form-suppr-type').action = '/gouvernance/medecin/types-examen/' + id + '/supprimer/';
+    var m = document.getElementById('modal-suppr-type');
+    m.classList.remove('hidden'); m.classList.add('flex');
+}
+function fermerModalType() {
+    var m = document.getElementById('modal-suppr-type');
+    m.classList.add('hidden'); m.classList.remove('flex');
+}
+document.getElementById('modal-suppr-type').addEventListener('click', function(e) {
+    if (e.target === this) fermerModalType();
+});
+</script>
+
 {% endblock %}

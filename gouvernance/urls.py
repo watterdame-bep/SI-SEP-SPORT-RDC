@@ -191,10 +191,13 @@ urlpatterns = [
     path('medecin/athletes/<uuid:athlete_uid>/examen-medical/empreinte-template/', views_medecin_ligue.medecin_athlete_empreinte_template, name='medecin_athlete_empreinte_template'),
     path('medecin/athletes/', views_medecin_ligue.medecin_athletes_list, name='medecin_athletes_list'),
     path('medecin/athletes/<uuid:athlete_uid>/dossier/', views_medecin_ligue.medecin_athlete_dossier, name='medecin_athlete_dossier'),
+    path('medecin/athletes/<uuid:athlete_uid>/supprimer/', views_medecin_ligue.medecin_athlete_supprimer, name='medecin_athlete_supprimer'),
+    path('medecin/arbitres/<uuid:arbitre_uid>/dossier/', views_medecin_ligue.medecin_arbitre_dossier, name='medecin_arbitre_dossier'),
     # Médecin Inspecteur — Types d'examens (référentiel)
     path('medecin/types-examen/', views_medecin_ligue.medecin_types_examen_list, name='medecin_types_examen_list'),
     path('medecin/types-examen/create/', views_medecin_ligue.medecin_type_examen_create, name='medecin_type_examen_create'),
     path('medecin/types-examen/<int:type_examen_id>/edit/', views_medecin_ligue.medecin_type_examen_edit, name='medecin_type_examen_edit'),
+    path('medecin/types-examen/<int:type_examen_id>/supprimer/', views_medecin_ligue.medecin_type_examen_supprimer, name='medecin_type_examen_supprimer'),
     
     # Secrétaire du Club
     path('club/dashboard/', views_club_secretary.club_secretary_dashboard, name='club_secretary_dashboard'),

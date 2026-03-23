@@ -4,15 +4,33 @@
 {% block title %}Biométrie — {{ arbitre.personne.nom_complet }}{% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}" class="flex h-10 w-10 items-center justify-center bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-                <i class="fa-solid fa-arrow-left text-white"></i>
-            </a>
-            <div>
-                <h1 class="text-2xl font-bold text-white">Biométrie — {{ arbitre.personne.nom_complet }}</h1>
-                <p class="text-sm text-white/80 mt-1">Photo d'identité et empreintes digitales</p>
+<div class="bg-slate-50 px-4 lg:px-8 pt-5">
+    <div style="background:#1e3a5f;border-radius:0.875rem;overflow:hidden;">
+        <div class="px-8" style="padding-top:2rem;padding-bottom:2rem;">
+            <div class="flex items-center justify-between gap-6">
+                <div>
+                    <div style="margin-bottom:1rem;">
+                        <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}"
+                           style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.75rem;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                        <span style="display:inline-block;width:8px;height:8px;background:#4ade80;border-radius:50%;"></span>
+                        <span style="color:rgba(255,255,255,0.5);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Station de capture active</span>
+                    </div>
+                    <h1 style="font-size:2.2rem;font-weight:800;margin:0 0 0.3rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">CAPTURE </span><span style="color:#FDE015;">BIOMÉTRIQUE</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.8rem;margin:0;">
+                        Dossier Référence : <span style="color:#FDE015;font-weight:700;">{{ arbitre.numero_licence|default:"EN ATTENTE" }}</span>
+                        &nbsp;&nbsp;{{ arbitre.personne.nom_complet|upper }}
+                    </p>
+                </div>
+                <div style="flex-shrink:0;border:1px solid rgba(255,255,255,0.15);border-radius:0.6rem;padding:1rem 1.5rem;background:rgba(255,255,255,0.06);text-align:center;">
+                    <p style="color:rgba(255,255,255,0.4);font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 0.3rem;">Sécurité niveau 4</p>
+                    <p style="color:#FDE015;font-size:1rem;font-weight:800;margin:0;letter-spacing:0.05em;">EN COURS…</p>
+                </div>
             </div>
         </div>
     </div>
@@ -20,168 +38,789 @@
 {% endblock %}
 
 {% block content %}
-
 {% if messages %}
 <div class="mb-4 space-y-2">
     {% for message in messages %}
-    <div class="px-4 py-3 rounded-lg text-sm font-medium
-        {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
-        {% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+    <div class="px-4 py-3 rounded-lg text-sm font-medium {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
         {{ message }}
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="hidden" name="empreintes_template" id="empreintes-template-input">
+<form method="post" enctype="multipart/form-data" style="font-family:'Inter',-apple-system,sans-serif;">
+{% csrf_token %}
+<input type="hidden" name="empreintes_template" id="empreintes-template-input">
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start;">
+<div style="display:grid;grid-template-columns:260px 1fr;gap:1.5rem;align-items:start;">
 
-        <!-- Photo d'identité -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">
-                    <i class="fa-solid fa-camera text-rdc-blue mr-2"></i>Photo d'identité
-                </h2>
-            </div>
-            <div class="p-6 space-y-4">
+    <!-- ── Colonne gauche : profil + données + progression ── -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
 
-                <!-- Aperçu photo actuelle -->
-                <div class="flex justify-center">
-                    {% if arbitre.photo %}
-                        <img id="photo-preview" src="{{ arbitre.photo.url }}" alt="Photo actuelle"
-                             class="w-32 h-40 object-cover rounded-lg border border-slate-200">
-                    {% else %}
-                        <div id="photo-preview-placeholder" class="w-32 h-40 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-slate-50">
-                            <i class="fa-solid fa-user text-3xl text-slate-300 mb-2"></i>
-                            <p class="text-xs text-slate-400">Aucune photo</p>
-                        </div>
-                        <img id="photo-preview" src="" alt="" class="w-32 h-40 object-cover rounded-lg border border-slate-200 hidden">
-                    {% endif %}
-                </div>
+        <!-- Card profil -->
+        <div style="background:#fff;border-radius:0.75rem;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+            <!-- Barre colorée -->
+            <div style="height:4px;background:linear-gradient(90deg,#1e3a5f 0%,#2d5a8e 50%,#FDE015 100%);"></div>
 
+            <div style="padding:1.25rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;">
+                {% if arbitre.photo %}
+                    <img src="{{ arbitre.photo.url }}" alt="Photo"
+                         style="width:90px;height:110px;object-fit:cover;border-radius:0.5rem;border:2px solid #e2e8f0;">
+                {% else %}
+                    <div style="width:90px;height:110px;border-radius:0.5rem;border:2px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3rem;">
+                        <i class="fa-solid fa-user" style="font-size:2rem;color:#cbd5e1;"></i>
+                    </div>
+                {% endif %}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Sélectionner une photo</label>
-                    <input type="file" name="photo" id="photo-input" accept="image/*"
-                           class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-rdc-blue">
-                    <p class="text-xs text-slate-400 mt-1">Format JPG ou PNG, fond blanc recommandé.</p>
+                    <p style="color:#1e293b;font-size:0.85rem;font-weight:800;margin:0 0 0.15rem;">{{ arbitre.personne.nom_complet|upper }}</p>
+                    <p style="color:#2d5a8e;font-size:0.7rem;font-weight:700;margin:0;">{{ arbitre.numero_licence|default:"#EN-ATTENTE" }}</p>
                 </div>
+            </div>
 
+            <!-- Données d'identification -->
+            <div style="border-top:1px solid #f1f5f9;padding:1rem 1.25rem;">
+                <p style="color:#94a3b8;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 0.75rem;">Données d'identification</p>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Nom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.nom|upper }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Post-nom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.postnom|upper|default:"—" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Prénom</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.personne.prenom|upper|default:"—" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:#94a3b8;font-size:0.72rem;">Discipline</span>
+                        <span style="color:#1e293b;font-size:0.72rem;font-weight:700;">{{ arbitre.discipline|upper|default:"—" }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Empreintes digitales -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200">
-                <h2 class="text-base font-semibold text-slate-700">
-                    <i class="fa-solid fa-fingerprint text-rdc-blue mr-2"></i>Empreintes digitales
-                </h2>
+        <!-- Progression -->
+        <div style="background:#fff;border-radius:0.75rem;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="background:#1e3a5f;padding:0.75rem 1rem;">
+                <p style="color:rgba(255,255,255,0.6);font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0;">Progression</p>
             </div>
-            <div class="p-6 space-y-4">
-
-                <!-- Statut actuel -->
-                {% if arbitre.empreintes_capturees %}
-                <div class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-700">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Empreintes déjà capturées. Vous pouvez les recapturer ci-dessous.
+            <div style="padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.6rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:0.4rem;background:{% if arbitre.photo %}#f0fdf4{% else %}#f8fafc{% endif %};">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fa-solid fa-camera" style="color:{% if arbitre.photo %}#16a34a{% else %}#94a3b8{% endif %};font-size:0.75rem;"></i>
+                        <span style="font-size:0.75rem;font-weight:600;color:#1e293b;">Photo de face</span>
+                    </div>
+                    <span style="font-size:0.65rem;font-weight:700;color:{% if arbitre.photo %}#16a34a{% else %}#94a3b8{% endif %};">{% if arbitre.photo %}1/1{% else %}0/1{% endif %}</span>
                 </div>
-                {% endif %}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;border-radius:0.4rem;background:{% if arbitre.empreintes_capturees %}#f0fdf4{% else %}#f8fafc{% endif %};">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <i class="fa-solid fa-fingerprint" style="color:{% if arbitre.empreintes_capturees %}#16a34a{% else %}#94a3b8{% endif %};font-size:0.75rem;"></i>
+                        <span style="font-size:0.75rem;font-weight:600;color:#1e293b;">Empreintes digitales</span>
+                    </div>
+                    <span style="font-size:0.65rem;font-weight:700;color:{% if arbitre.empreintes_capturees %}#16a34a{% else %}#94a3b8{% endif %};">{% if arbitre.empreintes_capturees %}✓{% else %}0/10{% endif %}</span>
+                </div>
+            </div>
+        </div>
 
-                <!-- Zone de capture -->
-                <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50" id="fingerprint-zone">
-                    <i class="fa-solid fa-fingerprint text-4xl text-slate-300 mb-3 block"></i>
-                    <p class="text-sm font-semibold text-slate-600 mb-1">Capteur d'empreintes</p>
-                    <p class="text-xs text-slate-400 mb-4">Connectez le capteur biométrique puis cliquez sur "Capturer"</p>
-                    <button type="button" id="btn-capture"
-                            onclick="lancerCapture()"
-                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
-                            style="background:#0036ca;">
-                        <i class="fa-solid fa-fingerprint"></i>
-                        Capturer les empreintes
+    </div><!-- fin colonne gauche -->
+
+    <!-- ── Colonne droite : onglets + zones de capture ── -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Onglets -->
+        <div style="background:#fff;border-radius:0.75rem;border:1px solid #e2e8f0;overflow:hidden;">
+            <div style="display:flex;border-bottom:2px solid #e2e8f0;">
+                <button type="button" onclick="switchTab('photo')" id="tab-photo"
+                        style="flex:1;padding:0.85rem 1rem;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#1e3a5f;color:#fff;border-bottom:2px solid #FDE015;margin-bottom:-2px;">
+                    <i class="fa-solid fa-camera"></i> PHOTOS
+                    <span style="background:rgba(255,255,255,0.2);border-radius:999px;padding:0.1rem 0.45rem;font-size:0.65rem;">{% if arbitre.photo %}1{% else %}0{% endif %}/1</span>
+                </button>
+                <button type="button" onclick="switchTab('empreintes')" id="tab-empreintes"
+                        style="flex:1;padding:0.85rem 1rem;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#f8fafc;color:#64748b;border-bottom:2px solid transparent;margin-bottom:-2px;">
+                    <i class="fa-solid fa-fingerprint"></i> EMPREINTES
+                    <span style="background:#e2e8f0;border-radius:999px;padding:0.1rem 0.45rem;font-size:0.65rem;">{% if arbitre.empreintes_capturees %}✓{% else %}0/10{% endif %}</span>
+                </button>
+            </div>
+
+            <!-- Panneau Photo -->
+            <div id="panel-photo" style="padding:1.5rem;">
+
+                <!-- Sous-onglets face / gauche / droite -->
+                <div style="display:flex;gap:0;border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;margin-bottom:1.25rem;">
+                    <button type="button" onclick="switchFace('face')" id="face-tab-face"
+                            style="flex:1;padding:0.6rem 0.5rem;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;background:#1e3a5f;color:#fff;border-right:1px solid rgba(255,255,255,0.15);">
+                        PHOTO DE FACE
+                    </button>
+                    <button type="button" onclick="switchFace('gauche')" id="face-tab-gauche"
+                            style="flex:1;padding:0.6rem 0.5rem;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;background:#f8fafc;color:#64748b;border-right:1px solid #e2e8f0;">
+                        PROFIL GAUCHE
+                    </button>
+                    <button type="button" onclick="switchFace('droite')" id="face-tab-droite"
+                            style="flex:1;padding:0.6rem 0.5rem;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;background:#f8fafc;color:#64748b;">
+                        PROFIL DROIT
                     </button>
                 </div>
 
-                <!-- Résultat capture -->
-                <div id="capture-result" class="hidden p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span id="capture-result-text">Empreintes capturées avec succès.</span>
+                <div style="display:grid;grid-template-columns:1fr 200px;gap:1.5rem;align-items:start;">
+
+                    <!-- Zone capture caméra -->
+                    <div>
+                        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+                            <select id="camera-select"
+                                    style="flex:1;padding:0.5rem 0.75rem;border:1.5px solid #cbd5e1;border-radius:0.4rem;background:#fff;font-size:0.78rem;color:#1e293b;">
+                                <option value="">Caméra</option>
+                            </select>
+                            <button type="button" onclick="rafraichirCameras()"
+                                    style="padding:0.5rem 0.85rem;background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:0.4rem;font-size:0.68rem;font-weight:700;color:#475569;cursor:pointer;white-space:nowrap;">
+                                RAFRAÎCHIR LA LISTE
+                            </button>
+                        </div>
+
+                        <!-- Viewfinder -->
+                        <div style="position:relative;width:100%;background:#0f172a;border-radius:0.5rem;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;">
+                            <video id="camera-stream" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:none;"></video>
+                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+                                <div style="width:110px;height:140px;border:2px solid rgba(253,224,21,0.6);border-radius:4px;position:relative;">
+                                    <span style="position:absolute;top:-1px;left:-1px;width:12px;height:12px;border-top:3px solid #FDE015;border-left:3px solid #FDE015;"></span>
+                                    <span style="position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-top:3px solid #FDE015;border-right:3px solid #FDE015;"></span>
+                                    <span style="position:absolute;bottom:-1px;left:-1px;width:12px;height:12px;border-bottom:3px solid #FDE015;border-left:3px solid #FDE015;"></span>
+                                    <span style="position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-bottom:3px solid #FDE015;border-right:3px solid #FDE015;"></span>
+                                </div>
+                            </div>
+                            <div id="camera-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;">
+                                <i class="fa-solid fa-camera" style="font-size:2.5rem;color:rgba(255,255,255,0.15);"></i>
+                                <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Aucune caméra sélectionnée</span>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div style="display:flex;gap:0.75rem;margin-top:0.75rem;">
+                            <button type="button" onclick="demarrerCamera()"
+                                    style="flex:1;padding:0.5rem;background:#1e3a5f;border:none;border-radius:0.4rem;font-size:0.72rem;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;"
+                                    onmouseover="this.style.background='#2d5a8e'" onmouseout="this.style.background='#1e3a5f'">
+                                <i class="fa-solid fa-video"></i> Démarrer
+                            </button>
+                            <button type="button" onclick="capturerPhoto()"
+                                    style="flex:1;padding:0.5rem;background:#2d5a8e;border:none;border-radius:0.4rem;font-size:0.72rem;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;"
+                                    onmouseover="this.style.background='#1e3a5f'" onmouseout="this.style.background='#2d5a8e'">
+                                <i class="fa-solid fa-camera" style="color:#FDE015;"></i> Capturer
+                            </button>
+                        </div>
+
+                        <!-- Inputs fichiers cachés pour les 3 faces -->
+                        <input type="file" name="photo"        id="input-face"   accept="image/*" style="display:none;">
+                        <input type="file" name="photo_gauche" id="input-gauche" accept="image/*" style="display:none;">
+                        <input type="file" name="photo_droite" id="input-droite" accept="image/*" style="display:none;">
+                        <canvas id="photo-canvas" style="display:none;"></canvas>
+
+                        <p style="font-size:0.62rem;color:#94a3b8;margin:0.5rem 0 0;text-align:center;">
+                            Ou <a href="#" onclick="importerFichier();return false;" style="color:#2d5a8e;font-weight:600;">importer depuis un fichier</a>
+                        </p>
+                    </div>
+
+                    <!-- Aperçus dossier (3 vignettes) -->
+                    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                        <p style="font-size:0.65rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 0.25rem;">Aperçus du dossier</p>
+
+                        <!-- Face -->
+                        <div id="apercu-face" style="border:2px solid #1e3a5f;border-radius:0.5rem;overflow:hidden;background:#f8fafc;">
+                            {% if arbitre.photo %}
+                                <img id="preview-face" src="{{ arbitre.photo.url }}" style="width:100%;height:80px;object-fit:cover;">
+                            {% else %}
+                                <div id="placeholder-face" style="width:100%;height:80px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-user" style="font-size:1.5rem;color:#cbd5e1;"></i>
+                                </div>
+                                <img id="preview-face" src="" style="width:100%;height:80px;object-fit:cover;display:none;">
+                            {% endif %}
+                            <div style="padding:0.35rem 0.5rem;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:0.65rem;font-weight:600;color:#1e293b;">Photo de face</span>
+                                <span id="status-face" style="font-size:0.58rem;font-weight:700;color:{% if arbitre.photo %}#16a34a{% else %}#f59e0b{% endif %};">{% if arbitre.photo %}✓{% else %}—{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <!-- Gauche -->
+                        <div id="apercu-gauche" style="border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;background:#f8fafc;">
+                            {% if arbitre.photo_gauche %}
+                                <img id="preview-gauche" src="{{ arbitre.photo_gauche.url }}" style="width:100%;height:80px;object-fit:cover;">
+                            {% else %}
+                                <div id="placeholder-gauche" style="width:100%;height:80px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-user" style="font-size:1.5rem;color:#cbd5e1;transform:scaleX(-1);"></i>
+                                </div>
+                                <img id="preview-gauche" src="" style="width:100%;height:80px;object-fit:cover;display:none;">
+                            {% endif %}
+                            <div style="padding:0.35rem 0.5rem;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:0.65rem;font-weight:600;color:#1e293b;">Profil gauche</span>
+                                <span id="status-gauche" style="font-size:0.58rem;font-weight:700;color:{% if arbitre.photo_gauche %}#16a34a{% else %}#f59e0b{% endif %};">{% if arbitre.photo_gauche %}✓{% else %}—{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <!-- Droite -->
+                        <div id="apercu-droite" style="border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;background:#f8fafc;">
+                            {% if arbitre.photo_droite %}
+                                <img id="preview-droite" src="{{ arbitre.photo_droite.url }}" style="width:100%;height:80px;object-fit:cover;">
+                            {% else %}
+                                <div id="placeholder-droite" style="width:100%;height:80px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fa-solid fa-user" style="font-size:1.5rem;color:#cbd5e1;"></i>
+                                </div>
+                                <img id="preview-droite" src="" style="width:100%;height:80px;object-fit:cover;display:none;">
+                            {% endif %}
+                            <div style="padding:0.35rem 0.5rem;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:0.65rem;font-weight:600;color:#1e293b;">Profil droit</span>
+                                <span id="status-droite" style="font-size:0.58rem;font-weight:700;color:{% if arbitre.photo_droite %}#16a34a{% else %}#f59e0b{% endif %};">{% if arbitre.photo_droite %}✓{% else %}—{% endif %}</span>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <div id="capture-error" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                    <span id="capture-error-text">Erreur lors de la capture.</span>
+            </div>
+
+            <!-- Panneau Empreintes -->
+            <div id="panel-empreintes" style="padding:1.5rem;display:none;">
+
+                {% if arbitre.empreintes_capturees %}
+                <div style="display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.85rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:0.5rem;margin-bottom:1rem;">
+                    <i class="fa-solid fa-circle-check" style="color:#16a34a;"></i>
+                    <span style="font-size:0.8rem;color:#15803d;">Empreintes déjà capturées — vous pouvez les recapturer.</span>
                 </div>
+                {% endif %}
+
+                <!-- Alerte scanner -->
+                <div id="scanner-alert" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.75rem 1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:0.5rem;margin-bottom:1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.6rem;">
+                        <span style="display:inline-block;width:10px;height:10px;background:#dc2626;border-radius:2px;flex-shrink:0;"></span>
+                        <span id="scanner-alert-text" style="font-size:0.8rem;font-weight:700;color:#b91c1c;">SCANNER BIOMÉTRIQUE : NON DÉTECTÉ</span>
+                    </div>
+                    <button type="button" id="btn-init-reader" onclick="verifierLecteur()"
+                            style="padding:0.45rem 1rem;background:#1e3a5f;border:none;border-radius:0.4rem;font-size:0.72rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;">
+                        INITIALISER LE LECTEUR
+                    </button>
+                </div>
+
+                <!-- Instruction étape -->
+                <div style="padding:0.75rem 1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:0.5rem;margin-bottom:1rem;">
+                    <p id="step-instruction" style="font-size:0.8rem;color:#475569;margin:0;">
+                        Placez les <strong>4 doigts de la main droite</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.
+                    </p>
+                </div>
+
+                <!-- Boutons capture + sélection doigts -->
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+                    <button type="button" id="btn-capture-auto"
+                            style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.5rem;background:#1e3a5f;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;color:#fff;cursor:pointer;"
+                            onmouseover="this.style.background='#2d5a8e'" onmouseout="this.style.background='#1e3a5f'">
+                        <i class="fa-solid fa-fingerprint" style="color:#FDE015;"></i>
+                        <span id="btn-capture-label">Capturer — Étape 1/3 : Main droite (4 doigts)</span>
+                    </button>
+                    <button type="button" id="btn-select-fingers" onclick="ouvrirSelectionDoigts()"
+                            style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.75rem 1.25rem;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:0.5rem;font-size:0.78rem;font-weight:700;color:#475569;cursor:pointer;"
+                            onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                        <i class="fa-solid fa-hand-pointer"></i>
+                        Sélectionner <span id="selected-count">0</span> doigt(s)
+                    </button>
+                    <span id="capture-status-msg" style="font-size:0.78rem;color:#d97706;"></span>
+                </div>
+
+                <!-- Panneau sélection doigts manquants -->
+                <div id="panel-select-fingers" style="display:none;padding:1rem;background:#fffbeb;border:1.5px solid #fde68a;border-radius:0.5rem;margin-bottom:1.25rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                        <span style="font-size:0.75rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.06em;">Doigts à capturer (décochez les doigts manquants)</span>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button type="button" onclick="selectionnerTous(true)" style="padding:0.3rem 0.65rem;background:#1e3a5f;border:none;border-radius:0.3rem;font-size:0.65rem;font-weight:700;color:#fff;cursor:pointer;">Tout sélectionner</button>
+                            <button type="button" onclick="selectionnerTous(false)" style="padding:0.3rem 0.65rem;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:0.3rem;font-size:0.65rem;font-weight:700;color:#475569;cursor:pointer;">Tout désélectionner</button>
+                            <button type="button" onclick="fermerSelectionDoigts()" style="padding:0.3rem 0.65rem;background:#2d5a8e;border:none;border-radius:0.3rem;font-size:0.65rem;font-weight:700;color:#fff;cursor:pointer;">Fermer</button>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                        <label id="lbl-L5" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-L5" checked onchange="majSelectionDoigts()"> Auriculaire G
+                        </label>
+                        <label id="lbl-L4" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-L4" checked onchange="majSelectionDoigts()"> Annulaire G
+                        </label>
+                        <label id="lbl-L3" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-L3" checked onchange="majSelectionDoigts()"> Majeur G
+                        </label>
+                        <label id="lbl-L2" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-L2" checked onchange="majSelectionDoigts()"> Index G
+                        </label>
+                        <label id="lbl-L1" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-L1" checked onchange="majSelectionDoigts()"> Pouce G
+                        </label>
+                        <label id="lbl-R1" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-R1" checked onchange="majSelectionDoigts()"> Pouce D
+                        </label>
+                        <label id="lbl-R2" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-R2" checked onchange="majSelectionDoigts()"> Index D
+                        </label>
+                        <label id="lbl-R3" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-R3" checked onchange="majSelectionDoigts()"> Majeur D
+                        </label>
+                        <label id="lbl-R4" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-R4" checked onchange="majSelectionDoigts()"> Annulaire D
+                        </label>
+                        <label id="lbl-R5" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#fff;font-size:0.68rem;font-weight:600;color:#475569;cursor:pointer;">
+                            <input type="checkbox" data-cell="cell-R5" checked onchange="majSelectionDoigts()"> Auriculaire D
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Mains + Pouces au milieu -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+                    <!-- Main gauche -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;">
+                        <div style="background:#1e3a5f;padding:0.5rem 0.85rem;">
+                            <p style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin:0;">■ Main gauche</p>
+                        </div>
+                        <div style="padding:0.75rem;display:flex;gap:0.4rem;justify-content:center;">
+                            {% for d in "5432" %}
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+                                <div id="cell-L{{ d }}" style="width:34px;height:50px;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#f8fafc;display:flex;align-items:center;justify-content:center;"></div>
+                                <span style="font-size:0.48rem;color:#94a3b8;text-align:center;line-height:1.2;text-transform:uppercase;">
+                                    {% if d == "5" %}Auriculaire{% elif d == "4" %}Annulaire{% elif d == "3" %}Majeur{% else %}Index{% endif %}<br>G
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Pouces au milieu -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;">
+                        <div style="background:#1e3a5f;padding:0.5rem 0.85rem;">
+                            <p style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin:0;">■ 2 pouces (ensemble)</p>
+                        </div>
+                        <div style="padding:0.75rem;display:flex;gap:0.75rem;justify-content:center;align-items:flex-start;">
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+                                <div id="cell-L1" style="width:34px;height:50px;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#f8fafc;display:flex;align-items:center;justify-content:center;"></div>
+                                <span style="font-size:0.48rem;color:#94a3b8;text-align:center;line-height:1.2;text-transform:uppercase;">Pouce<br>G</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+                                <div id="cell-R1" style="width:34px;height:50px;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#f8fafc;display:flex;align-items:center;justify-content:center;"></div>
+                                <span style="font-size:0.48rem;color:#94a3b8;text-align:center;line-height:1.2;text-transform:uppercase;">Pouce<br>D</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main droite -->
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:0.5rem;overflow:hidden;">
+                        <div style="background:#1e3a5f;padding:0.5rem 0.85rem;">
+                            <p style="font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin:0;">■ Main droite</p>
+                        </div>
+                        <div style="padding:0.75rem;display:flex;gap:0.4rem;justify-content:center;">
+                            {% for d in "2345" %}
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+                                <div id="cell-R{{ d }}" style="width:34px;height:50px;border:1.5px solid #cbd5e1;border-radius:0.3rem;background:#f8fafc;display:flex;align-items:center;justify-content:center;"></div>
+                                <span style="font-size:0.48rem;color:#94a3b8;text-align:center;line-height:1.2;text-transform:uppercase;">
+                                    {% if d == "2" %}Index{% elif d == "3" %}Majeur{% elif d == "4" %}Annulaire{% else %}Auriculaire{% endif %}<br>D
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intégrité -->
+                <div style="padding:0.85rem 1rem;background:#fff;border:1px solid #e2e8f0;border-radius:0.5rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+                        <span style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;">Intégrité de la capture</span>
+                        <span id="integrite-count" style="font-size:0.7rem;font-weight:700;color:#1e293b;">0/10 DOIGTS</span>
+                    </div>
+                    <div style="height:6px;background:#e2e8f0;border-radius:999px;overflow:hidden;">
+                        <div id="integrite-bar" style="height:100%;width:0%;background:#1e3a5f;border-radius:999px;transition:width 0.4s;"></div>
+                    </div>
+                    <p id="integrite-label" style="font-size:0.7rem;color:#94a3b8;margin:0.4rem 0 0;text-align:center;">Prêt à capturer</p>
+                </div>
+
+                <!-- Inputs cachés -->
+                <input type="file" id="input_main_droite_4" name="main_droite_4" accept="image/*" style="display:none;">
+                <input type="file" id="input_main_gauche_4" name="main_gauche_4" accept="image/*" style="display:none;">
+                <input type="file" id="input_pouces_2"      name="pouces_2"      accept="image/*" style="display:none;">
+                <input type="hidden" name="main_droite_4_b64"          id="main_droite_4_b64">
+                <input type="hidden" name="main_gauche_4_b64"          id="main_gauche_4_b64">
+                <input type="hidden" name="pouces_2_b64"               id="pouces_2_b64">
+                <input type="hidden" name="main_droite_4_template_b64" id="main_droite_4_template_b64">
+                <input type="hidden" name="main_gauche_4_template_b64" id="main_gauche_4_template_b64">
+                <input type="hidden" name="pouces_2_template_b64"      id="pouces_2_template_b64">
 
             </div>
         </div>
 
-    </div>
+        <!-- Boutons action -->
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+            <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}"
+               style="padding:0.65rem 1.5rem;border:1.5px solid #cbd5e1;border-radius:0.5rem;font-size:0.875rem;font-weight:600;color:#64748b;text-decoration:none;background:#fff;">
+                Annuler
+            </a>
+            <button type="submit"
+                    style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 2rem;background:#2d5a8e;border:none;border-radius:0.5rem;font-size:0.875rem;font-weight:700;color:#fff;cursor:pointer;"
+                    onmouseover="this.style.background='#1e3a5f'"
+                    onmouseout="this.style.background='#2d5a8e'">
+                <i class="fa-solid fa-floppy-disk"></i>
+                Enregistrer la biométrie
+            </button>
+        </div>
 
-    <!-- Actions -->
-    <div class="flex items-center gap-4 mt-6">
-        <a href="{% url 'gouvernance:arbitre_detail' arbitre.uid %}"
-           class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm hover:bg-slate-50 transition-colors">
-            Annuler
-        </a>
-        <button type="submit"
-                class="inline-flex items-center gap-2 px-8 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors"
-                style="background:#0036ca;">
-            <i class="fa-solid fa-floppy-disk"></i>
-            Enregistrer la biométrie
-        </button>
-    </div>
-
+    </div><!-- fin colonne droite -->
+</div>
 </form>
 
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" crossorigin="anonymous"></script>
+<script>window.MORPHO_SERVICE_URI = "http://localhost:8032/morfinenroll/";</script>
+<script src="{% static 'capteur/morfinenroll.js' %}"></script>
+<script src="{% static 'capteur/morpho_sisep.js' %}"></script>
+
 <script>
-// Aperçu photo en temps réel
-document.getElementById('photo-input').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        const preview = document.getElementById('photo-preview');
-        const placeholder = document.getElementById('photo-preview-placeholder');
-        preview.src = ev.target.result;
-        preview.classList.remove('hidden');
-        if (placeholder) placeholder.classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
+// ── Onglets principaux ──
+function switchTab(tab) {
+    const isPhoto = tab === 'photo';
+    document.getElementById('panel-photo').style.display = isPhoto ? 'block' : 'none';
+    document.getElementById('panel-empreintes').style.display = isPhoto ? 'none' : 'block';
+    const tP = document.getElementById('tab-photo'), tE = document.getElementById('tab-empreintes');
+    tP.style.background = isPhoto ? '#1e3a5f' : '#f8fafc'; tP.style.color = isPhoto ? '#fff' : '#64748b'; tP.style.borderBottomColor = isPhoto ? '#FDE015' : 'transparent';
+    tE.style.background = isPhoto ? '#f8fafc' : '#1e3a5f'; tE.style.color = isPhoto ? '#64748b' : '#fff'; tE.style.borderBottomColor = isPhoto ? 'transparent' : '#FDE015';
+}
+
+// ── Sous-onglets photo face/gauche/droite ──
+let currentFace = 'face';
+const faceConfig = {
+    face:   { tab: 'face-tab-face',   input: 'input-face',   preview: 'preview-face',   placeholder: 'placeholder-face',   apercu: 'apercu-face',   status: 'status-face'   },
+    gauche: { tab: 'face-tab-gauche', input: 'input-gauche', preview: 'preview-gauche', placeholder: 'placeholder-gauche', apercu: 'apercu-gauche', status: 'status-gauche' },
+    droite: { tab: 'face-tab-droite', input: 'input-droite', preview: 'preview-droite', placeholder: 'placeholder-droite', apercu: 'apercu-droite', status: 'status-droite' },
+};
+
+function switchFace(face) {
+    currentFace = face;
+    Object.entries(faceConfig).forEach(([key, cfg]) => {
+        const btn = document.getElementById(cfg.tab);
+        const isActive = key === face;
+        btn.style.background = isActive ? '#1e3a5f' : '#f8fafc';
+        btn.style.color = isActive ? '#fff' : '#64748b';
+        // Bordure aperçu active
+        document.getElementById(cfg.apercu).style.border = isActive ? '2px solid #1e3a5f' : '1px solid #e2e8f0';
+    });
+}
+
+// ── Caméra ──
+let currentStream = null;
+
+async function rafraichirCameras() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        const sel = document.getElementById('camera-select');
+        sel.innerHTML = '<option value="">Caméra</option>';
+        cameras.forEach((cam, i) => {
+            const opt = document.createElement('option');
+            opt.value = cam.deviceId;
+            opt.textContent = cam.label || 'Caméra ' + (i + 1);
+            sel.appendChild(opt);
+        });
+        if (cameras.length === 1) { sel.value = cameras[0].deviceId; demarrerCamera(); }
+    } catch(e) { console.warn('Caméras non accessibles', e); }
+}
+
+async function demarrerCamera() {
+    if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+    const deviceId = document.getElementById('camera-select').value;
+    const constraints = { video: deviceId ? { deviceId: { exact: deviceId } } : true };
+    try {
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('camera-stream');
+        video.srcObject = currentStream;
+        video.style.display = 'block';
+        document.getElementById('camera-placeholder').style.display = 'none';
+    } catch(e) { alert('Impossible d\'accéder à la caméra : ' + e.message); }
+}
+
+function capturerPhoto() {
+    const video = document.getElementById('camera-stream');
+    const canvas = document.getElementById('photo-canvas');
+    if (!currentStream || video.style.display === 'none') { importerFichier(); return; }
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+        const cfg = faceConfig[currentFace];
+        const file = new File([blob], 'photo_' + currentFace + '.jpg', { type: 'image/jpeg' });
+        const dt = new DataTransfer(); dt.items.add(file);
+        document.getElementById(cfg.input).files = dt.files;
+        afficherApercu(currentFace, URL.createObjectURL(blob));
+    }, 'image/jpeg', 0.92);
+}
+
+function importerFichier() {
+    document.getElementById(faceConfig[currentFace].input).click();
+}
+
+function afficherApercu(face, src) {
+    const cfg = faceConfig[face];
+    const preview = document.getElementById(cfg.preview);
+    const placeholder = document.getElementById(cfg.placeholder);
+    preview.src = src; preview.style.display = 'block';
+    if (placeholder) placeholder.style.display = 'none';
+    document.getElementById(cfg.status).textContent = '✓';
+    document.getElementById(cfg.status).style.color = '#16a34a';
+    // Passer automatiquement à la face suivante
+    const order = ['face', 'gauche', 'droite'];
+    const next = order[order.indexOf(face) + 1];
+    if (next) setTimeout(() => switchFace(next), 400);
+}
+
+// Fallback upload pour chaque input
+['face', 'gauche', 'droite'].forEach(face => {
+    document.getElementById(faceConfig[face].input).addEventListener('change', function(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => afficherApercu(face, ev.target.result);
+        reader.readAsDataURL(file);
+    });
 });
 
-// Capture empreintes via le capteur MorFin (même interface que pour les athlètes)
-function lancerCapture() {
-    const btn = document.getElementById('btn-capture');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Capture en cours…';
+window.addEventListener('DOMContentLoaded', () => { rafraichirCameras(); switchFace('face'); majSelectionDoigts(); });
 
-    // Tentative de connexion au service capteur local (port 9734 — MorFinEnroll)
-    const url = 'http://localhost:9734/capture';
-    fetch(url, { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            if (data && data.template) {
-                document.getElementById('empreintes-template-input').value = JSON.stringify(data);
-                document.getElementById('capture-result').classList.remove('hidden');
-                document.getElementById('capture-error').classList.add('hidden');
-                document.getElementById('capture-result-text').textContent =
-                    'Empreintes capturées avec succès (' + (data.fingers || 1) + ' doigt(s)).';
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Capturées';
-                btn.style.background = '#16a34a';
-            } else {
-                throw new Error('Template vide');
-            }
-        })
-        .catch(() => {
-            // Pas de capteur connecté — permettre de continuer sans empreintes
-            document.getElementById('capture-error').classList.remove('hidden');
-            document.getElementById('capture-result').classList.add('hidden');
-            document.getElementById('capture-error-text').textContent =
-                'Capteur non détecté. Vous pouvez enregistrer sans empreintes et les ajouter plus tard.';
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> Réessayer';
+// ── Empreintes : MorphoSISEP 3 étapes ──
+(function() {
+    var steps = [
+        { key: 'main_droite_4', inputId: 'input_main_droite_4', label: 'Capturer — Étape 1/3 : Main droite (4 doigts)', instruction: 'Placez les <strong>4 doigts de la main droite</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.', cellIds: ['cell-R2','cell-R3','cell-R4','cell-R5'] },
+        { key: 'main_gauche_4', inputId: 'input_main_gauche_4', label: 'Capturer — Étape 2/3 : Main gauche (4 doigts)', instruction: 'Placez les <strong>4 doigts de la main gauche</strong> (index, majeur, annulaire, auriculaire) <strong>simultanément à plat</strong> sur le lecteur.', cellIds: ['cell-L5','cell-L4','cell-L3','cell-L2'] },
+        { key: 'pouces_2', inputId: 'input_pouces_2', label: 'Capturer — Étape 3/3 : Les 2 pouces', instruction: 'Placez les <strong>2 pouces</strong> (droit et gauche) <strong>simultanément</strong> sur le lecteur.', cellIds: ['cell-L1','cell-R1'] }
+    ];
+    var currentStep = 0, countDone = 0;
+    var btnCapture = document.getElementById('btn-capture-auto');
+    var btnLabel = document.getElementById('btn-capture-label');
+    var stepInstruction = document.getElementById('step-instruction');
+    var captureStatusMsg = document.getElementById('capture-status-msg');
+    var integriteCount = document.getElementById('integrite-count');
+    var integriteBar = document.getElementById('integrite-bar');
+    var integriteLabel = document.getElementById('integrite-label');
+
+    function updateProgress() {
+        var n = countDone >= 3 ? 10 : Math.round(countDone * 10 / 3);
+        var pct = (n / 10) * 100;
+        if (integriteBar) integriteBar.style.width = pct + '%';
+        if (integriteCount) { integriteCount.textContent = n + '/10 DOIGTS'; integriteCount.style.color = countDone >= 3 ? '#16a34a' : '#1e293b'; }
+        if (integriteLabel) integriteLabel.textContent = countDone >= 3 ? 'Capture terminée' : (countDone > 0 ? 'Capture en cours…' : 'Prêt à capturer');
+    }
+
+    function setStatusMsg(text, isError) {
+        if (!captureStatusMsg) return;
+        captureStatusMsg.textContent = text || '';
+        captureStatusMsg.style.color = isError ? '#dc2626' : '#d97706';
+    }
+
+    function setCellsGreen(cellIds) {
+        (cellIds || []).forEach(function(id) {
+            var cell = document.getElementById(id);
+            if (!cell) return;
+            // Ne pas écraser une cellule marquée absente (icône ×)
+            if (cell.dataset.absent === '1') return;
+            cell.style.background = '#4ade80';
+            cell.style.borderColor = '#16a34a';
+            cell.innerHTML = '<i class="fa-solid fa-check" style="color:#fff;font-size:0.85rem;"></i>';
         });
+    }
+
+    // Affiche l'image d'un doigt dans une cellule (base64 BMP ou JPEG)
+    function setCellImage(cellId, imgBase64) {
+        var cell = document.getElementById(cellId);
+        if (!cell) return;
+        if (cell.dataset.absent === '1') return; // doigt absent, ne pas toucher
+        if (!imgBase64) {
+            // Pas d'image individuelle : vert simple
+            cell.style.background = '#4ade80';
+            cell.style.borderColor = '#16a34a';
+            cell.innerHTML = '<i class="fa-solid fa-check" style="color:#fff;font-size:0.85rem;"></i>';
+            return;
+        }
+        var src = imgBase64.indexOf(',') >= 0 ? imgBase64 : 'data:image/bmp;base64,' + imgBase64;
+        cell.style.background = '#fff';
+        cell.style.borderColor = '#16a34a';
+        cell.style.padding = '0';
+        cell.style.overflow = 'hidden';
+        cell.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="doigt">';
+    }
+
+    function onStepCaptured(imageBase64, templateBase64, capturedFingers) {
+        var s = steps[currentStep];
+        // Distribuer les images individuelles dans les cellules
+        var fingers = capturedFingers || [];
+        s.cellIds.forEach(function(id, idx) {
+            var cell = document.getElementById(id);
+            if (!cell || cell.dataset.absent === '1') return;
+            setCellImage(id, fingers[idx] || null);
+        });
+        var b64El = document.getElementById(s.key + '_b64');
+        var tplEl = document.getElementById(s.key + '_template_b64');
+        if (b64El && imageBase64) b64El.value = imageBase64;
+        if (tplEl && templateBase64) tplEl.value = templateBase64;
+        countDone++;
+        updateProgress();
+        if (countDone >= 3) {
+            btnCapture.disabled = true;
+            btnCapture.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#4ade80;"></i> <span>Prélèvement terminé</span>';
+            btnCapture.style.background = '#16a34a';
+            if (stepInstruction) stepInstruction.innerHTML = 'Toutes les empreintes ont été capturées. Cliquez sur <strong>Enregistrer la biométrie</strong>.';
+            var scannerAlert = document.getElementById('scanner-alert');
+            if (scannerAlert) {
+                scannerAlert.style.background = '#f0fdf4';
+                scannerAlert.style.borderColor = '#bbf7d0';
+                scannerAlert.innerHTML = '<div style="display:flex;align-items:center;gap:0.6rem;"><span style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:2px;flex-shrink:0;"></span><span style="font-size:0.8rem;font-weight:700;color:#15803d;">CAPTURE TERMINÉE</span></div>';
+            }
+        } else {
+            setTimeout(function() {
+                currentStep = countDone;
+                if (stepInstruction) stepInstruction.innerHTML = steps[currentStep].instruction;
+                if (btnLabel) btnLabel.textContent = steps[currentStep].label;
+                setStatusMsg('', false);
+            }, 2000);
+        }
+    }
+
+    // Bouton capture principal
+    if (btnCapture) {
+        btnCapture.addEventListener('click', function() {
+            if (this.disabled) return;
+            var step = currentStep;
+            if (typeof MorphoSISEP !== 'undefined' && MorphoSISEP.captureStep) {
+                if (btnLabel) btnLabel.textContent = 'Capture en cours…';
+                btnCapture.disabled = true;
+                setStatusMsg('Connexion au capteur…', false);
+                var statusTimer = setTimeout(function() { setStatusMsg('Posez la main sur le lecteur…', false); }, 800);
+                var timeoutId = setTimeout(function() {
+                    setStatusMsg('Lecteur ne répond pas (port 8032). Utilisez le sélecteur de fichier.', true);
+                    btnCapture.disabled = false;
+                    if (btnLabel) btnLabel.textContent = steps[step].label;
+                }, 62000);
+                MorphoSISEP.captureStep(step).then(function(result) {
+                    clearTimeout(timeoutId); clearTimeout(statusTimer);
+                    btnCapture.disabled = false;
+                    if (btnLabel) btnLabel.textContent = steps[step].label;
+                    setStatusMsg('', false);
+                    if (result.success) {
+                        onStepCaptured(result.imageBase64 || '', result.templateBase64 || '', result.capturedFingers || []);
+                    } else {
+                        setStatusMsg(result.error || 'Échec capture.', true);
+                        var input = document.getElementById(steps[step].inputId);
+                        if (input) input.click();
+                    }
+                }).catch(function(e) {
+                    clearTimeout(timeoutId); clearTimeout(statusTimer);
+                    btnCapture.disabled = false;
+                    if (btnLabel) btnLabel.textContent = steps[step].label;
+                    setStatusMsg((e && e.message) || 'Erreur', true);
+                });
+                return;
+            }
+            // Fallback : sélecteur de fichier
+            var input = document.getElementById(steps[step].inputId);
+            if (input) input.click();
+        });
+    }
+
+    // Fallback upload fichier pour chaque étape
+    steps.forEach(function(s) {
+        var input = document.getElementById(s.inputId);
+        if (!input) return;
+        input.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file || !file.type.match(/^image\//)) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var b64 = e.target.result.split(',')[1] || '';
+                onStepCaptured(b64, '', []);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    updateProgress();
+})();
+
+// Vérifier le lecteur
+function verifierLecteur() {
+    if (typeof MorphoSISEP === 'undefined' || !MorphoSISEP.checkDevice) {
+        document.getElementById('scanner-alert-text').textContent = 'API Morpho non chargée.';
+        return;
+    }
+    MorphoSISEP.checkDevice().then(function(r) {
+        var alertEl = document.getElementById('scanner-alert');
+        if (r.available) {
+            alertEl.style.background = '#f0fdf4';
+            alertEl.style.borderColor = '#bbf7d0';
+            alertEl.innerHTML = '<div style="display:flex;align-items:center;gap:0.6rem;"><span style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:2px;flex-shrink:0;"></span><span style="font-size:0.8rem;font-weight:700;color:#15803d;">SCANNER BIOMÉTRIQUE : DÉTECTÉ</span></div>';
+        } else {
+            document.getElementById('scanner-alert-text').textContent = 'SCANNER BIOMÉTRIQUE : ' + (r.error || 'NON DÉTECTÉ');
+        }
+    });
+}
+
+// ── Sélection doigts manquants ──
+function ouvrirSelectionDoigts() {
+    var p = document.getElementById('panel-select-fingers');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+function fermerSelectionDoigts() {
+    document.getElementById('panel-select-fingers').style.display = 'none';
+}
+function selectionnerTous(checked) {
+    document.querySelectorAll('#panel-select-fingers input[type=checkbox]').forEach(function(cb) {
+        cb.checked = checked;
+    });
+    majSelectionDoigts();
+}
+function majSelectionDoigts() {
+    // Correspondance cell-id → clé fingerPosition MorFin
+    var CELL_TO_FINGER = {
+        'cell-L5': 'LEFT_LITTLE',
+        'cell-L4': 'LEFT_RING',
+        'cell-L3': 'LEFT_MIDDLE',
+        'cell-L2': 'LEFT_INDEX',
+        'cell-L1': 'LEFT_THUMB',
+        'cell-R1': 'RIGHT_THUMB',
+        'cell-R2': 'RIGHT_INDEX',
+        'cell-R3': 'RIGHT_MIDDLE',
+        'cell-R4': 'RIGHT_RING',
+        'cell-R5': 'RIGHT_LITTLE'
+    };
+    var total = 0;
+    var overrides = {};
+    document.querySelectorAll('#panel-select-fingers input[type=checkbox]').forEach(function(cb) {
+        var cellId = cb.dataset.cell;
+        var fingerKey = CELL_TO_FINGER[cellId];
+        var present = cb.checked;
+        // Mettre à jour l'affichage de la cellule
+        var cell = document.getElementById(cellId);
+        if (cell) {
+            if (!present) {
+                cell.dataset.absent = '1';
+                cell.style.background = '#e2e8f0';
+                cell.style.borderColor = '#94a3b8';
+                cell.style.padding = '';
+                cell.style.overflow = '';
+                cell.innerHTML = '<i class="fa-solid fa-xmark" style="color:#94a3b8;font-size:0.75rem;"></i>';
+            } else {
+                // Réinitialiser seulement si marqué absent (pas si déjà capturé avec image)
+                if (cell.dataset.absent === '1') {
+                    cell.dataset.absent = '0';
+                    cell.style.background = '#f8fafc';
+                    cell.style.borderColor = '#cbd5e1';
+                    cell.style.padding = '';
+                    cell.style.overflow = '';
+                    cell.innerHTML = '';
+                }
+                total++;
+            }
+        }
+        // Préparer l'override pour MorphoSISEP
+        // fingerPosition = true signifie "doigt ABSENT" dans l'API MorFin
+        if (fingerKey) overrides[fingerKey] = !present;
+    });
+    // Informer le capteur des doigts absents
+    if (typeof MorphoSISEP !== 'undefined' && MorphoSISEP.setFingerPosition) {
+        MorphoSISEP.setFingerPosition(overrides);
+    }
+    var countEl = document.getElementById('selected-count');
+    if (countEl) countEl.textContent = total;
 }
 </script>
 

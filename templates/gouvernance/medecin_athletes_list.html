@@ -1,38 +1,92 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 
-{% block title %}Athlètes — Dossiers médicaux | Médecin Inspecteur | SI-SEP Sport RDC{% endblock %}
+{% block title %}Dossiers médicaux | SI-SEP Sport RDC{% endblock %}
+
+{% block extra_css %}
+<style>
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+input:focus, select:focus { outline: none !important; }
+
+@media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .header-title { font-size: 1.7rem !important; }
+    .filter-bar { flex-direction: column !important; }
+    .filter-bar select, .filter-bar .search-wrap { min-width: 0 !important; width: 100% !important; }
+    .table-desktop { display: none !important; }
+    .cards-mobile { display: flex !important; }
+}
+@media (min-width: 769px) {
+    .cards-mobile { display: none !important; }
+}
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.6rem !important; }
+    .header-title { font-size: 1.4rem !important; }
+    .stat-num { font-size: 1.3rem !important; }
+}
+</style>
+{% endblock %}
 
 {% block page_header %}
-<div class="bg-rdc-blue border-b border-rdc-blue-dark/30">
-    <div class="px-4 lg:px-8 py-6">
-        <div class="flex items-center gap-4 mb-6">
-            <a href="{% url 'gouvernance:medecin_dashboard' %}" class="flex h-14 w-14 items-center justify-center bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors">
-                <i class="fa-solid fa-arrow-left text-white"></i>
-            </a>
-            <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-white tracking-tight">Dossiers médicaux des athlètes</h1>
-                <p class="text-sm text-white/80 mt-1">{{ ligue.nom_officiel }} — Accès au dossier médical</p>
-            </div>
-        </div>
-
-        <!-- Cartes statistiques (style Enrôlement des Athlètes) -->
-        <div class="flex flex-wrap gap-4">
-            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-users text-2xl text-rdc-yellow"></i>
-                    <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Total athlètes</p>
-                        <p class="text-2xl font-bold text-white">{{ total_athletes }}</p>
-                    </div>
+<div class="bg-slate-50 px-4 lg:px-8 pt-5 pb-4">
+    <div style="background:linear-gradient(120deg, #0d2240 0%, #1e3a5f 60%, #16304f 100%);border-radius:0.875rem;overflow:hidden;position:relative;">
+        <!-- Ligne lumineuse côté gauche -->
+        <div style="position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.35) 30%, rgba(253,224,21,0.7) 60%, transparent 100%);pointer-events:none;border-radius:0.875rem 0 0 0.875rem;"></div>
+        <div class="px-8" style="padding-top:2rem;padding-bottom:2rem;position:relative;z-index:1;">
+            <div style="display:flex;flex-direction:column;gap:1.25rem;">
+                <div>
+                    <h1 class="header-title" style="font-size:2.2rem;font-weight:800;margin:0 0 0.4rem;line-height:1.1;letter-spacing:-0.01em;">
+                        <span style="color:#fff;">DOSSIERS </span><span style="background:linear-gradient(90deg,#b8860b 0%,#FDE015 40%,#fff176 70%,#FDE015 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MÉDICAUX</span>
+                    </h1>
+                    <p style="color:rgba(255,255,255,0.45);font-size:0.875rem;margin:0;">
+                        {{ ligue.nom_officiel }} — Athlètes &amp; Arbitres
+                    </p>
                 </div>
-            </div>
-            <div class="flex-1 min-w-[140px] bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-file-medical text-2xl text-amber-300"></i>
-                    <div>
-                        <p class="text-xs text-white/70 uppercase tracking-wider">Avec visite (F67)</p>
-                        <p class="text-2xl font-bold text-white">{{ total_avec_visite }}</p>
+                <!-- Stats pleine largeur en bas -->
+                <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;width:100%;">
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:0.9rem 1rem;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-person-running" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Athlètes</p>
+                                <p class="stat-num" style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ total_athletes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:0.9rem 1rem;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-file-medical" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Avec F67</p>
+                                <p class="stat-num" style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ total_avec_visite }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:0.9rem 1rem;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-whistle" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Arbitres</p>
+                                <p class="stat-num" style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ total_arbitres }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;padding:0.9rem 1rem;">
+                        <div style="display:flex;align-items:center;gap:0.65rem;">
+                            <div style="width:32px;height:32px;background:rgba(255,255,255,0.1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid fa-circle-check" style="color:#FDE015;font-size:0.85rem;"></i>
+                            </div>
+                            <div>
+                                <p style="color:rgba(255,255,255,0.5);font-size:0.6rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;margin:0 0 0.1rem;">Aptes</p>
+                                <p class="stat-num" style="color:#fff;font-size:1.5rem;font-weight:800;margin:0;line-height:1;">{{ total_aptes }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -42,99 +96,378 @@
 {% endblock %}
 
 {% block content %}
-<!-- Barre de recherche (style Enrôlement des Athlètes) -->
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 p-4 lg:p-6 mb-6">
-    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-        <input type="text" id="search-input" placeholder="Rechercher par nom, club ou discipline..."
-               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rdc-blue focus:border-rdc-blue text-sm">
+
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+    <div class="filter-bar flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+        <div class="search-wrap relative flex-1">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="search-input" placeholder="Rechercher par nom…"
+                   style="width:100%;padding:0.55rem 0.75rem 0.55rem 2.25rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+        <select id="filter-type"
+                style="min-width:180px;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;"
+                onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e2e8f0'">
+            <option value="">Tous les types</option>
+            <option value="athlete">Athlètes</option>
+            <option value="arbitre">Arbitres</option>
+        </select>
+        <select id="filter-statut"
+                style="min-width:200px;padding:0.55rem 0.75rem;border:1px solid #e2e8f0;border-radius:0.4rem;background:#f8fafc;font-size:0.875rem;font-weight:500;color:#1e293b;"
+                onfocus="this.style.borderColor='#2d5a8e'" onblur="this.style.borderColor='#e2e8f0'">
+            <option value="">Tous les statuts</option>
+            <option value="apte">Apte</option>
+            <option value="reserve">Avec réserve</option>
+            <option value="inapte">Inapte</option>
+            <option value="aucun">Sans visite / En attente</option>
+        </select>
     </div>
 </div>
 
-<!-- Liste des athlètes (tableau style Enrôlement des Athlètes) -->
-<div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-    {% if athletes %}
-    <table class="min-w-full divide-y divide-slate-200">
+<div class="-mx-4 lg:-mx-8 table-desktop">
+<div class="bg-white border-y border-slate-200 overflow-x-auto">
+    <table class="min-w-full divide-y divide-slate-200" style="min-width:600px;">
         <thead class="bg-slate-50">
             <tr>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Athlète</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Club</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">Discipline</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Visites (F67)</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-slate-700 uppercase">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Personne</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase col-club">Club / Structure</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-slate-700 uppercase col-discipline">Discipline</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase">Statut médical</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-slate-700 uppercase" style="width:140px;">Actions</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100" id="table-body">
+        <tbody class="divide-y divide-slate-100" id="dossiers-tbody">
+
             {% for a in athletes %}
-            <tr class="hover:bg-slate-50 transition-colors"
-                data-nom="{{ a.nom_complet|lower }}"
-                data-club="{{ a.club.nom_officiel|lower }}"
-                data-discipline="{{ a.discipline.designation|default:''|lower }}">
+            <tr class="hover:bg-slate-50 transition-colors dossier-row"
+                data-search="{{ a.personne.nom|lower }} {{ a.personne.prenom|lower }}"
+                data-type="athlete"
+                data-statut="{% if a.nb_visites %}{% if a.resultat_test_medical == 'APTE_AVEC_RESERVE' %}reserve{% elif a.resultat_test_medical == 'INAPTE' %}inapte{% else %}apte{% endif %}{% else %}aucun{% endif %}">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                         {% if a.personne.photo %}
-                        <img src="{{ a.personne.photo.url }}" alt="{{ a.nom_complet }}" class="h-10 w-10 rounded-full object-cover">
+                            <img src="{{ a.personne.photo.url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">
                         {% else %}
-                        <div class="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center">
-                            <i class="fa-solid fa-user text-slate-400"></i>
-                        </div>
+                            <div style="width:36px;height:36px;border-radius:50%;background:#0036ca;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <span style="color:#fff;font-size:0.75rem;font-weight:700;">{{ a.personne.nom|first|upper }}</span>
+                            </div>
                         {% endif %}
                         <div>
-                            <div class="text-sm font-semibold text-slate-900">{{ a.nom_complet }}</div>
-                            <div class="text-xs text-slate-500">
-                                {% if a.personne.sexe == 'M' %}<i class="fa-solid fa-mars text-blue-500"></i>{% elif a.personne.sexe == 'F' %}<i class="fa-solid fa-venus text-pink-500"></i>{% endif %}
-                                {% if a.age %} {{ a.age }} ans{% endif %}
-                            </div>
+                            <p class="text-sm font-medium text-slate-900">{{ a.personne.prenom }} {{ a.personne.nom }}</p>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="text-sm text-slate-900">{{ a.club.nom_officiel }}</span>
+                    <span class="px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#eff6ff;color:#1d4ed8;">Athlète</span>
                 </td>
-                <td class="px-6 py-4">
-                    <span class="text-sm text-slate-700">{{ a.discipline.designation|default:"—" }}</span>
+                <td class="px-6 py-4 col-club">
+                    <span class="text-sm text-slate-700">{{ a.club.nom_officiel|default:"—"|capfirst }}</span>
+                </td>
+                <td class="px-6 py-4 col-discipline">
+                    <span class="text-sm text-slate-600">{{ a.discipline.designation|default:"—" }}</span>
                 </td>
                 <td class="px-6 py-4 text-center">
                     {% if a.nb_visites %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ a.nb_visites }} visite(s)</span>
+                        {% if a.resultat_test_medical == 'INAPTE' %}
+                            <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fee2e2;color:#dc2626;">Inapte</span>
+                        {% elif a.resultat_test_medical == 'APTE_AVEC_RESERVE' %}
+                            <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fef9c3;color:#d97706;">Avec réserve</span>
+                        {% else %}
+                            <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#dcfce7;color:#16a34a;">{{ a.nb_visites }} visite{% if a.nb_visites > 1 %}s{% endif %}</span>
+                        {% endif %}
                     {% else %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600">Aucune</span>
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#f1f5f9;color:#94a3b8;">Aucune visite</span>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 text-center">
                     <div class="flex items-center justify-center gap-1.5">
                         <a href="{% url 'gouvernance:medecin_athlete_dossier' a.uid %}"
-                           class="inline-flex items-center px-3 py-1.5 bg-rdc-blue text-white text-sm font-medium rounded-lg hover:bg-rdc-blue-dark transition-colors">
-                            <i class="fa-solid fa-folder-open mr-2"></i>
-                            Ouvrir le dossier
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                           style="background:#0036ca;" title="Voir le dossier">
+                            <i class="fa-solid fa-eye text-xs"></i>
                         </a>
+                        <button onclick="confirmerSuppression('athlete', '{{ a.uid }}', '{{ a.personne.prenom }} {{ a.personne.nom }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                                style="background:#dc2626;" title="Supprimer">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
             {% endfor %}
+
+            {% for arb in arbitres %}
+            <tr class="hover:bg-slate-50 transition-colors dossier-row"
+                data-search="{{ arb.personne.nom|lower }} {{ arb.personne.prenom|lower }}"
+                data-type="arbitre"
+                data-statut="{% if arb.resultat_medical == 'APTE' %}apte{% elif arb.resultat_medical == 'APTE_AVEC_RESERVE' %}reserve{% elif arb.resultat_medical == 'INAPTE' %}inapte{% else %}aucun{% endif %}">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        {% if arb.photo %}
+                            <img src="{{ arb.photo.url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                        {% else %}
+                            <div style="width:36px;height:36px;border-radius:50%;background:#1e3a5f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <span style="color:#fff;font-size:0.75rem;font-weight:700;">{{ arb.personne.nom|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-sm font-medium text-slate-900">{{ arb.personne.prenom }} {{ arb.personne.nom }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fef3c7;color:#92400e;">Arbitre</span>
+                </td>
+                <td class="px-6 py-4 col-club">
+                    <span class="text-sm text-slate-700">{{ arb.institution.nom_officiel|default:"—"|capfirst }}</span>
+                </td>
+                <td class="px-6 py-4 col-discipline">
+                    <span class="text-sm text-slate-600">{{ arb.discipline|default:"—" }}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    {% if arb.resultat_medical == 'APTE' %}
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#dcfce7;color:#16a34a;">Apte</span>
+                    {% elif arb.resultat_medical == 'APTE_AVEC_RESERVE' %}
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fef9c3;color:#d97706;">Avec réserve</span>
+                    {% elif arb.resultat_medical == 'INAPTE' %}
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#fee2e2;color:#dc2626;">Inapte</span>
+                    {% else %}
+                        <span class="inline-block px-2.5 py-1 text-xs font-bold rounded-full whitespace-nowrap" style="background:#f1f5f9;color:#94a3b8;">En attente</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <a href="{% url 'gouvernance:medecin_arbitre_dossier' arb.uid %}"
+                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                           style="background:#0036ca;" title="Voir le dossier">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                        <button onclick="confirmerSuppression('arbitre', '{{ arb.uid }}', '{{ arb.personne.prenom }} {{ arb.personne.nom }}')"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-white transition-colors"
+                                style="background:#dc2626;" title="Supprimer">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+
         </tbody>
     </table>
-    {% else %}
-    <div class="px-6 py-16 text-center">
-        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-4"></i>
-        <p class="text-base font-bold text-slate-900">Aucun athlète dans cette ligue</p>
-        <p class="text-sm text-slate-600 mt-2">Les athlètes des clubs affiliés apparaîtront ici.</p>
+
+    {% if not athletes and not arbitres %}
+    <div class="px-6 py-20 text-center">
+        <i class="fa-solid fa-folder-open text-5xl text-slate-200 mb-5 block"></i>
+        <p class="text-base font-bold text-slate-700">Aucun dossier médical</p>
+        <p class="text-sm text-slate-400 mt-1">Les athlètes et arbitres de la ligue apparaîtront ici.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- CARDS MOBILE (visible uniquement < 769px) -->
+<div class="cards-mobile" style="flex-direction:column;gap:0.75rem;margin-bottom:0.5rem;">
+
+    {% for a in athletes %}
+    <div class="dossier-card"
+         data-search="{{ a.personne.nom|lower }} {{ a.personne.prenom|lower }}"
+         data-type="athlete"
+         data-statut="{% if a.nb_visites %}{% if a.resultat_test_medical == 'APTE_AVEC_RESERVE' %}reserve{% elif a.resultat_test_medical == 'INAPTE' %}inapte{% else %}apte{% endif %}{% else %}aucun{% endif %}"
+         style="background:#fff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+            {% if a.personne.photo %}
+                <img src="{{ a.personne.photo.url }}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            {% else %}
+                <div style="width:42px;height:42px;border-radius:50%;background:#0036ca;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span style="color:#fff;font-size:0.8rem;font-weight:700;">{{ a.personne.nom|first|upper }}</span>
+                </div>
+            {% endif %}
+            <div style="flex:1;min-width:0;">
+                <p style="font-size:0.85rem;font-weight:700;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ a.personne.prenom }} {{ a.personne.nom }}</p>
+                <p style="font-size:0.7rem;color:#94a3b8;margin:0;">{{ a.club.nom_officiel|default:"—"|capfirst }}</p>
+            </div>
+            <span style="padding:0.2rem 0.6rem;background:#eff6ff;color:#1d4ed8;font-size:0.65rem;font-weight:700;border-radius:999px;white-space:nowrap;flex-shrink:0;">Athlète</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+            <div>
+                {% if a.nb_visites %}
+                    {% if a.resultat_test_medical == 'INAPTE' %}
+                        <span style="padding:0.2rem 0.65rem;background:#fee2e2;color:#dc2626;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Inapte</span>
+                    {% elif a.resultat_test_medical == 'APTE_AVEC_RESERVE' %}
+                        <span style="padding:0.2rem 0.65rem;background:#fef9c3;color:#d97706;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Avec réserve</span>
+                    {% else %}
+                        <span style="padding:0.2rem 0.65rem;background:#dcfce7;color:#16a34a;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">{{ a.nb_visites }} visite{% if a.nb_visites > 1 %}s{% endif %}</span>
+                    {% endif %}
+                {% else %}
+                    <span style="padding:0.2rem 0.65rem;background:#f1f5f9;color:#94a3b8;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Aucune visite</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;gap:0.4rem;">
+                <a href="{% url 'gouvernance:medecin_athlete_dossier' a.uid %}"
+                   style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0.5rem;background:#0036ca;color:#fff;text-decoration:none;">
+                    <i class="fa-solid fa-eye" style="font-size:0.75rem;"></i>
+                </a>
+                <button onclick="confirmerSuppression('athlete', '{{ a.uid }}', '{{ a.personne.prenom }} {{ a.personne.nom }}')"
+                        style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0.5rem;background:#dc2626;color:#fff;border:none;cursor:pointer;">
+                    <i class="fa-solid fa-trash" style="font-size:0.75rem;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% for arb in arbitres %}
+    <div class="dossier-card"
+         data-search="{{ arb.personne.nom|lower }} {{ arb.personne.prenom|lower }}"
+         data-type="arbitre"
+         data-statut="{% if arb.resultat_medical == 'APTE' %}apte{% elif arb.resultat_medical == 'APTE_AVEC_RESERVE' %}reserve{% elif arb.resultat_medical == 'INAPTE' %}inapte{% else %}aucun{% endif %}"
+         style="background:#fff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+            {% if arb.photo %}
+                <img src="{{ arb.photo.url }}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+            {% else %}
+                <div style="width:42px;height:42px;border-radius:50%;background:#1e3a5f;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span style="color:#fff;font-size:0.8rem;font-weight:700;">{{ arb.personne.nom|first|upper }}</span>
+                </div>
+            {% endif %}
+            <div style="flex:1;min-width:0;">
+                <p style="font-size:0.85rem;font-weight:700;color:#1e293b;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ arb.personne.prenom }} {{ arb.personne.nom }}</p>
+                <p style="font-size:0.7rem;color:#94a3b8;margin:0;">{{ arb.institution.nom_officiel|default:"—"|capfirst }}</p>
+            </div>
+            <span style="padding:0.2rem 0.6rem;background:#fef3c7;color:#92400e;font-size:0.65rem;font-weight:700;border-radius:999px;white-space:nowrap;flex-shrink:0;">Arbitre</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+            <div>
+                {% if arb.resultat_medical == 'APTE' %}
+                    <span style="padding:0.2rem 0.65rem;background:#dcfce7;color:#16a34a;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Apte</span>
+                {% elif arb.resultat_medical == 'APTE_AVEC_RESERVE' %}
+                    <span style="padding:0.2rem 0.65rem;background:#fef9c3;color:#d97706;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Avec réserve</span>
+                {% elif arb.resultat_medical == 'INAPTE' %}
+                    <span style="padding:0.2rem 0.65rem;background:#fee2e2;color:#dc2626;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">Inapte</span>
+                {% else %}
+                    <span style="padding:0.2rem 0.65rem;background:#f1f5f9;color:#94a3b8;font-size:0.68rem;font-weight:700;border-radius:999px;white-space:nowrap;">En attente</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;gap:0.4rem;">
+                <a href="{% url 'gouvernance:medecin_arbitre_dossier' arb.uid %}"
+                   style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0.5rem;background:#0036ca;color:#fff;text-decoration:none;">
+                    <i class="fa-solid fa-eye" style="font-size:0.75rem;"></i>
+                </a>
+                <button onclick="confirmerSuppression('arbitre', '{{ arb.uid }}', '{{ arb.personne.prenom }} {{ arb.personne.nom }}')"
+                        style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0.5rem;background:#dc2626;color:#fff;border:none;cursor:pointer;">
+                    <i class="fa-solid fa-trash" style="font-size:0.75rem;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not athletes and not arbitres %}
+    <div style="padding:3rem 1rem;text-align:center;">
+        <i class="fa-solid fa-folder-open" style="font-size:2.5rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+        <p style="font-size:0.9rem;font-weight:700;color:#475569;margin:0 0 0.3rem;">Aucun dossier médical</p>
+        <p style="font-size:0.78rem;color:#94a3b8;margin:0;">Les athlètes et arbitres apparaîtront ici.</p>
     </div>
     {% endif %}
 </div>
 
+<div id="no-results-mobile" style="display:none;padding:2.5rem 1rem;text-align:center;">
+    <i class="fa-solid fa-magnifying-glass" style="font-size:2rem;color:#cbd5e1;margin-bottom:0.75rem;display:block;"></i>
+    <p style="font-size:0.85rem;color:#94a3b8;margin:0;">Aucun résultat pour cette recherche.</p>
+</div>
+
+<div id="no-results" class="hidden -mx-4 lg:-mx-8 px-6 py-16 text-center bg-white border-y border-slate-200">    <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 mb-4 block"></i>
+    <p class="text-base font-bold text-slate-900">Aucun résultat</p>
+    <p class="text-sm text-slate-500 mt-1">Modifiez vos critères de recherche</p>
+</div>
+
+<!-- Modale suppression -->
+<div id="modal-suppression" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink:0" style="background:#fee2e2;">
+                <i class="fa-solid fa-trash text-sm" style="color:#dc2626;"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Supprimer le dossier</h3>
+                <p class="text-xs text-slate-500">Cette action est irréversible</p>
+            </div>
+        </div>
+        <p class="text-sm text-slate-700 mb-5">Voulez-vous vraiment supprimer <strong id="modal-nom-personne"></strong> ?</p>
+        <div class="flex gap-3">
+            <button onclick="fermerModal()" class="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Annuler</button>
+            <form id="form-suppression" method="post" action="" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full px-4 py-2.5 text-sm font-semibold text-white rounded-lg" style="background:#dc2626;">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-const searchInput = document.getElementById('search-input');
-if (searchInput) {
-    searchInput.addEventListener('input', function() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        document.querySelectorAll('#table-body tr').forEach(row => {
-            const nom = row.dataset.nom || '';
-            const club = row.dataset.club || '';
-            const discipline = row.dataset.discipline || '';
-            const match = !searchTerm || nom.includes(searchTerm) || club.includes(searchTerm) || discipline.includes(searchTerm);
-            row.style.display = match ? '' : 'none';
+(function() {
+    var searchInput = document.getElementById('search-input');
+    var filterType = document.getElementById('filter-type');
+    var filterStatut = document.getElementById('filter-statut');
+    var rows = document.querySelectorAll('.dossier-row');
+    var cards = document.querySelectorAll('.dossier-card');
+    var noResults = document.getElementById('no-results');
+    var noResultsMobile = document.getElementById('no-results-mobile');
+
+    function filterTable() {
+        var q = searchInput.value.toLowerCase().trim();
+        var type = filterType.value;
+        var statut = filterStatut.value;
+
+        // Table rows (desktop)
+        var visibleRows = 0;
+        rows.forEach(function(row) {
+            var matchQ = !q || row.dataset.search.includes(q);
+            var matchT = !type || row.dataset.type === type;
+            var matchS = !statut || row.dataset.statut === statut;
+            var show = matchQ && matchT && matchS;
+            row.style.display = show ? '' : 'none';
+            if (show) visibleRows++;
         });
-    });
+        noResults.classList.toggle('hidden', visibleRows > 0 || rows.length === 0);
+
+        // Cards (mobile)
+        var visibleCards = 0;
+        cards.forEach(function(card) {
+            var matchQ = !q || card.dataset.search.includes(q);
+            var matchT = !type || card.dataset.type === type;
+            var matchS = !statut || card.dataset.statut === statut;
+            var show = matchQ && matchT && matchS;
+            card.style.display = show ? '' : 'none';
+            if (show) visibleCards++;
+        });
+        if (noResultsMobile) noResultsMobile.style.display = visibleCards === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (filterType) filterType.addEventListener('change', filterTable);
+    if (filterStatut) filterStatut.addEventListener('change', filterTable);
+})();
+
+function confirmerSuppression(type, uid, nom) {
+    document.getElementById('modal-nom-personne').textContent = nom;
+    var base = type === 'athlete' ? '/gouvernance/athletes/' : '/gouvernance/arbitres/';
+    document.getElementById('form-suppression').action = base + uid + '/supprimer/';
+    var modal = document.getElementById('modal-suppression');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 }
+
+function fermerModal() {
+    var modal = document.getElementById('modal-suppression');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('modal-suppression').addEventListener('click', function(e) {
+    if (e.target === this) fermerModal();
+});
 </script>
+
 {% endblock %}

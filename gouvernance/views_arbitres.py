@@ -34,7 +34,7 @@ def _get_role(request):
 # Liste des arbitres
 # ─────────────────────────────────────────────
 @login_required
-@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE', 'MEDECIN_INSPECTEUR')
 def arbitres_list(request):
     role = _get_role(request)
     institution = _get_institution(request)
@@ -168,7 +168,7 @@ def arbitre_register(request):
 # Verdict médical (Médecin de la ligue)
 # ─────────────────────────────────────────────
 @login_required
-@require_role('MEDECIN_LIGUE')
+@require_role('MEDECIN_INSPECTEUR')
 def arbitre_verdict_medical(request, uid):
     arbitre = get_object_or_404(Arbitre, uid=uid)
 
@@ -176,14 +176,29 @@ def arbitre_verdict_medical(request, uid):
         messages.warning(request, "Ce dossier n'est plus en attente d'examen médical.")
         return redirect('gouvernance:arbitres_list')
 
+    # Biométrie obligatoire avant examen médical
+    if not arbitre.empreintes_capturees or not arbitre.photo:
+        messages.error(request, "La biométrie (photo + empreintes) doit être complétée avant l'examen médical.")
+        return redirect('gouvernance:medecin_athletes_en_attente_examen')
+
     if request.method == 'POST':
         resultat = request.POST.get('resultat_medical', '').strip()
         notes = request.POST.get('notes_medicales', '').strip()
-        date_examen = request.POST.get('date_examen_medical', '').strip() or timezone.now().date()
+        date_examen_str = request.POST.get('date_examen_medical', '').strip()
 
         if resultat not in ('APTE', 'INAPTE', 'APTE_AVEC_RESERVE'):
             messages.error(request, "Résultat médical invalide.")
-            return render(request, 'gouvernance/arbitre_verdict_medical.html', {'arbitre': arbitre})
+            return render(request, 'gouvernance/arbitre_verdict_medical.html', {
+                'arbitre': arbitre,
+                'today': timezone.now().date(),
+                'steps_workflow': [(1,'Enregistrement',True),(2,'Examen médical',False),(3,'Validation ligue',False)],
+            })
+
+        from datetime import datetime as dt
+        try:
+            date_examen = dt.strptime(date_examen_str, '%Y-%m-%d').date() if date_examen_str else timezone.now().date()
+        except ValueError:
+            date_examen = timezone.now().date()
 
         arbitre.resultat_medical = resultat
         arbitre.notes_medicales = notes
@@ -191,15 +206,40 @@ def arbitre_verdict_medical(request, uid):
 
         if resultat in ('APTE', 'APTE_AVEC_RESERVE'):
             arbitre.statut = 'INSTRUIT'
-            messages.success(request, f"Arbitre déclaré {arbitre.get_resultat_medical_display()}. Dossier instruit — en attente de validation par la ligue.")
         else:
             arbitre.statut = 'INAPTE'
-            messages.warning(request, "Arbitre déclaré inapte. Dossier bloqué.")
 
         arbitre.save()
+
+        # Générer le certificat médical PDF
+        try:
+            from django.core.files.base import ContentFile
+            from gouvernance.certificat_aptitude_generator import generer_certificat_medical_arbitre_pdf
+            base_url = request.build_absolute_uri('/').rstrip('/')
+            pdf_buffer = generer_certificat_medical_arbitre_pdf(arbitre, base_url=base_url)
+            nom_fichier = f"Certificat_Medical_Arbitre_{arbitre.uid}_{date_examen.strftime('%Y%m%d')}.pdf"
+            arbitre.certificat_medical.save(nom_fichier, ContentFile(pdf_buffer.getvalue()), save=True)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Génération certificat médical arbitre: %s", e)
+            messages.warning(request, "Verdict enregistré mais la génération du certificat PDF a échoué.")
+
+        if resultat in ('APTE', 'APTE_AVEC_RESERVE'):
+            messages.success(request, f"Arbitre déclaré {arbitre.get_resultat_medical_display()}. Certificat médical généré. Dossier en attente de validation par la ligue.")
+        else:
+            messages.warning(request, "Arbitre déclaré inapte. Dossier bloqué.")
+
         return redirect('gouvernance:arbitres_list')
 
-    return render(request, 'gouvernance/arbitre_verdict_medical.html', {'arbitre': arbitre})
+    return render(request, 'gouvernance/arbitre_verdict_medical.html', {
+        'arbitre': arbitre,
+        'today': timezone.now().date(),
+        'steps_workflow': [
+            (1, 'Enregistrement', True),
+            (2, 'Examen médical', False),
+            (3, 'Validation ligue', False),
+        ],
+    })
 
 
 # ─────────────────────────────────────────────
@@ -228,7 +268,7 @@ def arbitre_valider(request, uid):
 # Détail arbitre
 # ─────────────────────────────────────────────
 @login_required
-@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE')
+@require_role('INSTITUTION_ADMIN', 'MINISTRE', 'FEDERATION_SECRETARY', 'MEDECIN_LIGUE', 'MEDECIN_INSPECTEUR')
 def arbitre_detail(request, uid):
     arbitre = get_object_or_404(
         Arbitre.objects.select_related('personne', 'discipline', 'institution'),
@@ -259,11 +299,51 @@ def arbitre_biometrie(request, uid):
     arbitre = get_object_or_404(Arbitre, uid=uid)
 
     if request.method == 'POST':
-        # Photo
+        # Photos
         if 'photo' in request.FILES:
             arbitre.photo = request.FILES['photo']
+        if 'photo_gauche' in request.FILES:
+            arbitre.photo_gauche = request.FILES['photo_gauche']
+        if 'photo_droite' in request.FILES:
+            arbitre.photo_droite = request.FILES['photo_droite']
 
-        # Empreintes (template base64 envoyé par le capteur JS)
+        # Empreintes — images 4-4-2 (fichier ou base64)
+        import base64
+        from django.core.files.base import ContentFile
+
+        def save_b64_image(field_name, b64_field_name, filename):
+            if field_name in request.FILES:
+                setattr(arbitre, field_name, request.FILES[field_name])
+            else:
+                b64 = request.POST.get(b64_field_name, '').strip()
+                if b64:
+                    try:
+                        data = base64.b64decode(b64)
+                        setattr(arbitre, field_name, ContentFile(data, name=filename))
+                    except Exception:
+                        pass
+
+        def save_b64_template(field_name, b64_field_name):
+            b64 = request.POST.get(b64_field_name, '').strip()
+            if b64:
+                try:
+                    setattr(arbitre, field_name, base64.b64decode(b64))
+                except Exception:
+                    pass
+
+        save_b64_image('main_droite_4', 'main_droite_4_b64', f'empr_droite_{arbitre.uid}.bmp')
+        save_b64_image('main_gauche_4', 'main_gauche_4_b64', f'empr_gauche_{arbitre.uid}.bmp')
+        save_b64_image('pouces_2',      'pouces_2_b64',      f'empr_pouces_{arbitre.uid}.bmp')
+
+        save_b64_template('main_droite_4_template', 'main_droite_4_template_b64')
+        save_b64_template('main_gauche_4_template', 'main_gauche_4_template_b64')
+        save_b64_template('pouces_2_template',      'pouces_2_template_b64')
+
+        # Marquer empreintes capturées si les 3 étapes sont présentes
+        if arbitre.main_droite_4 and arbitre.main_gauche_4 and arbitre.pouces_2:
+            arbitre.empreintes_capturees = True
+
+        # Rétrocompatibilité : ancien champ empreintes_template
         empreintes_data = request.POST.get('empreintes_template', '').strip()
         if empreintes_data:
             arbitre.empreintes_template = empreintes_data
